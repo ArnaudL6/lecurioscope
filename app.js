@@ -2173,7 +2173,7 @@ async function buildIdentityCard(reads,qhist,allAnec){
   if(session){currentUser=await getProfile(session.user.id);}
   updateHeader();
   await loadToday();
-  if(currentUser){loadFavs();checkFriendRequests();}
+  if(currentUser){loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();}
 
 // ════════════════════════════════════════════════════════════════════════════
 // v2 FEATURES
@@ -2871,40 +2871,671 @@ window.readyForNext=readyForNext;
 
 // --- Extra functions ---
 async function viewUserProfile(uid, fallbackName){
-  // Remove existing modal if any
   const old=document.getElementById('user-modal-bd');if(old)old.remove();
-  
-  const[{data:prof},{data:reads},{data:qhist}]=await Promise.all([
-    sb.from('profiles').select('username,joined,xp,level_name,color').eq('id',uid).single(),
-    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',uid),
-    sb.from('quiz_history').select('pct').eq('user_id',uid)
+
+  // Ouvrir la modale de suite avec un loader
+  const bd=document.createElement('div');
+  bd.id='user-modal-bd';bd.className='user-modal-backdrop';
+  bd.onclick=e=>{if(e.target===bd)bd.remove();};
+  bd.innerHTML='<div class="user-modal user-modal-full"><div class="user-modal-loading">⏳ Chargement…</div></div>';
+  document.body.appendChild(bd);
+
+  // Fetch toutes les données
+  const[{data:prof},{data:reads},{data:qhist},{data:enigmaR},{data:badges_earned},{data:friendship},{data:userReads}]=await Promise.all([
+    sb.from('profiles').select('*').eq('id',uid).maybeSingle(),
+    sb.from('reads').select('anecdote_id,date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
+    sb.from('quiz_history').select('pct').eq('user_id',uid),
+    sb.from('enigma_responses').select('id,correct').eq('user_id',uid),
+    sb.from('quiz_history').select('pct').eq('user_id',uid), // reuse for badge count approx
+    currentUser?sb.from('friendships').select('id,status,requester_id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).filter('requester_id','in','('+[currentUser.id,uid].join(',')+')'):{data:null},
+    sb.from('reads').select('date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
   ]);
-  
+
   const name=prof?.username||fallbackName||'Anonyme';
-  const since=prof?.joined?new Date(prof.joined).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
-  const readCount=reads?.length||0;
-  const quizList=qhist||[];
-  const avgQuiz=quizList.length?Math.round(quizList.reduce((s,q)=>s+q.pct,0)/quizList.length):0;
-  const xp=prof?.xp||0;
   const color=prof?.color||'var(--a)';
   const level=prof?.level_name||'Novice';
-  
-  const bd=document.createElement('div');
-  bd.id='user-modal-bd';
-  bd.className='user-modal-backdrop';
-  bd.onclick=e=>{if(e.target===bd)bd.remove();};
-  bd.innerHTML=
-    '<div class="user-modal">'+
-      '<button class="user-modal-close" onclick="document.getElementById(\'user-modal-bd\').remove()">✕</button>'+
-      '<div class="user-modal-av" style="color:'+color+'">'+name[0].toUpperCase()+'</div>'+
-      '<div class="user-modal-name">'+name+'</div>'+
-      (since?'<div class="user-modal-since">Membre depuis le '+since+'</div>':'')+
-      '<div style="text-align:center;margin-bottom:.85rem;"><span class="prof-level-chip" style="color:'+color+'">✦ '+level+'</span></div>'+
-      '<div class="user-modal-stats">'+
-        '<div class="user-modal-stat"><div class="user-modal-stat-val" style="color:'+color+'">'+xp+'</div><div class="user-modal-stat-lbl">XP</div></div>'+
-        '<div class="user-modal-stat"><div class="user-modal-stat-val" style="color:#22d3ee">'+readCount+'</div><div class="user-modal-stat-lbl">Lectures</div></div>'+
-        '<div class="user-modal-stat"><div class="user-modal-stat-val" style="color:#34d399">'+(avgQuiz?avgQuiz+'%':'—')+'</div><div class="user-modal-stat-lbl">Moy. quiz</div></div>'+
+  const xp=prof?.xp||0;
+  const bio=prof?.bio||'';
+  const joined=prof?.joined||prof?.created_at;
+  const since=joined?new Date(joined).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+
+  // Stats
+  const readCount=(reads||[]).length;
+  const quizList=qhist||[];
+  const avgQuiz=quizList.length?Math.round(quizList.reduce((s,q)=>s+q.pct,0)/quizList.length):0;
+  const enigmaCount=(enigmaR||[]).length;
+  const enigmaCorrect=(enigmaR||[]).filter(e=>e.correct).length;
+
+  // Streak
+  let streak=0;
+  if(userReads&&userReads.length){
+    const dates=[...new Set(userReads.map(r=>r.date))].sort().reverse();
+    const todayStr=today();let expected=todayStr;
+    for(const date of dates){
+      if(date===expected){streak++;const d=new Date(expected+'T12:00:00');d.setDate(d.getDate()-1);expected=d.toISOString().slice(0,10);}
+      else if(date<expected)break;
+    }
+  }
+
+  // Badges approximatifs (compte ceux qui passent les checks de base)
+  const badgeData={reads:readCount,streak,quizzes:quizList.length,avgQuiz,friends:0,duelsPlayed:0,duelsWon:0,favs:0,shares:0,earlyBird:false,nightOwl:false,enigmaTotal:enigmaCount,enigmaCorrect,enigmaCats:0,enigmaChooser:false,enigmaLogique:0,enigmaHistorique:0,enigmaMaths:0,bestQuiz:avgQuiz,perfectQuiz:false,themes:0,themeMap:{},};
+  const badgesCount=typeof BADGES_DEF!=='undefined'?BADGES_DEF.filter(b=>{try{return b.check(badgeData);}catch{return false;}}).length:0;
+
+  // Friendship / duel button
+  const isFriend=friendship&&(friendship.data||[]).some(f=>f.status==='accepted');
+  const canChallenge=currentUser&&isFriend&&currentUser.id!==uid;
+
+  // Streak card color
+  const sColors=['#f97316','#ef4444','#f59e0b','#22c55e'];
+  const sColor=streak>0?sColors[Math.min(Math.floor(streak/7),sColors.length-1)]:'#64748b';
+
+  const modal=bd.querySelector('.user-modal');
+  modal.innerHTML=
+    // Close
+    '<button class="user-modal-close" onclick="document.getElementById(\'user-modal-bd\').remove()">✕</button>'+
+    // Header
+    '<div class="umo-header">'+
+      '<div class="umo-av" style="background:'+color+'22;border-color:'+color+'">'+
+        '<span style="color:'+color+'">'+name[0].toUpperCase()+'</span>'+
       '</div>'+
+      '<div class="umo-info">'+
+        '<div class="umo-level"><span class="prof-level-chip" style="color:'+color+'">✦ '+level+'</span></div>'+
+        '<div class="umo-name">'+name+'</div>'+
+        (since?'<div class="umo-since">Membre depuis le '+since+'</div>':'')+
+        (bio?'<div class="umo-bio">'+bio+'</div>':'')+
+        '<div class="umo-xp">'+xp+' XP</div>'+
+      '</div>'+
+    '</div>'+
+    // Streak card
+    (streak>0?'<div class="umo-streak-card" style="background:linear-gradient(135deg,'+sColor+'dd,'+sColor+'88)">'+
+      '<div class="umo-streak-num">'+streak+'</div>'+
+      '<div class="umo-streak-label">JOURS DE SUITE</div>'+
+      '<span style="font-size:2rem;position:absolute;right:1.25rem;top:50%;transform:translateY(-50%)">🔥</span>'+
+    '</div>':'<div class="umo-streak-card" style="background:var(--s1);border:1px solid var(--b1)">'+
+      '<div class="umo-streak-num" style="color:var(--ink3)">—</div>'+
+      '<div class="umo-streak-label" style="color:var(--ink3)">Pas encore de streak</div>'+
+    '</div>')+
+    // Stats grid
+    '<div class="umo-stats-grid">'+
+      '<div class="prof-stat-card stat-cyan"><div class="psc-icon">📖</div><div class="psc-val">'+readCount+'</div><div class="psc-lbl">Anecdotes</div></div>'+
+      '<div class="prof-stat-card stat-orange"><div class="psc-icon">🎯</div><div class="psc-val">'+quizList.length+'</div><div class="psc-lbl">Quiz</div></div>'+
+      '<div class="prof-stat-card stat-violet"><div class="psc-icon">🔮</div><div class="psc-val">'+enigmaCount+'</div><div class="psc-lbl">Énigmes</div></div>'+
+      '<div class="prof-stat-card stat-green"><div class="psc-icon">⭐</div><div class="psc-val">'+(avgQuiz?avgQuiz+'%':'—')+'</div><div class="psc-lbl">Score moy.</div></div>'+
+      (badgesCount?'<div class="prof-stat-card stat-purple"><div class="psc-icon">🏅</div><div class="psc-val">'+badgesCount+'</div><div class="psc-lbl">Badges</div></div>':'')+
+    '</div>'+
+    // Duel button
+    (canChallenge?'<button class="btn-main" style="width:100%;margin-top:.75rem;font-size:.78rem;" onclick="challengeFriend(\''+uid+'\',\''+name+'\');document.getElementById(\'user-modal-bd\').remove()">⚔️ Défier en duel</button>':'')+
+    '';
+}
+// ════════════════════════════════════════════════════════════════════════════
+// v2 — DÉCONNEXION + EDIT PSEUDO + NOTIFICATIONS + DUELS ASYNC
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Déconnexion ──────────────────────────────────────────────────────────────
+async function doSignOut(){
+  await sb.auth.signOut();
+  currentUser=null;
+  updateHeader();
+  closeNotifPanel();
+  showToast('À bientôt !');
+  goHome();
+}
+
+// ── Modifier le pseudo ────────────────────────────────────────────────────────
+function openEditUsername(){
+  const modal=document.getElementById('edit-name-modal');
+  if(!modal||!currentUser)return;
+  document.getElementById('edit-name-input').value=currentUser.username||'';
+  document.getElementById('edit-name-err').textContent='';
+  modal.style.display='flex';
+  setTimeout(()=>document.getElementById('edit-name-input')?.focus(),50);
+}
+function closeEditUsername(){
+  const modal=document.getElementById('edit-name-modal');
+  if(modal)modal.style.display='none';
+}
+async function saveUsername(){
+  const input=document.getElementById('edit-name-input');
+  const errEl=document.getElementById('edit-name-err');
+  const newName=(input?.value||'').trim();
+  if(!newName||newName.length<2){errEl.textContent='Minimum 2 caractères.';return;}
+  if(newName.length>24){errEl.textContent='Maximum 24 caractères.';return;}
+  if(!currentUser)return;
+  // Vérif unicité
+  const{data:existing}=await sb.from('profiles').select('id').ilike('username',newName).neq('id',currentUser.id).maybeSingle();
+  if(existing){errEl.textContent='Ce pseudo est déjà pris.';return;}
+  const{error}=await sb.from('profiles').update({username:newName}).eq('id',currentUser.id);
+  if(error){errEl.textContent='Erreur : '+error.message;return;}
+  currentUser.username=newName;
+  closeEditUsername();
+  updateHeader();
+  // Rafraîchir le nom affiché dans le profil
+  const el=document.getElementById('prof-name');if(el)el.textContent=newName;
+  showToast('✓ Pseudo mis à jour !');
+}
+
+// ── Système de Notifications ─────────────────────────────────────────────────
+let _notifChannel=null;
+
+async function loadNotifications(){
+  if(!currentUser)return;
+  const{data}=await sb.from('notifications')
+    .select('*').eq('user_id',currentUser.id)
+    .order('created_at',{ascending:false}).limit(30);
+  _renderNotifBadge(data||[]);
+  _renderNotifList(data||[]);
+}
+
+function subscribeNotifications(){
+  if(!currentUser)return;
+  if(_notifChannel){_notifChannel.unsubscribe();}
+  _notifChannel=sb.channel('notifs-'+currentUser.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+currentUser.id},()=>loadNotifications())
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+currentUser.id},()=>loadNotifications())
+    .subscribe();
+}
+
+function _renderNotifBadge(notifs){
+  const unread=(notifs||[]).filter(n=>!n.read).length;
+  const bell=document.getElementById('notif-bell');
+  const badge=document.getElementById('notif-bell-badge');
+  if(!bell)return;
+  if(currentUser){bell.style.display='flex';bell.style.alignItems='center';}
+  if(badge){
+    badge.style.display=unread>0?'flex':'none';
+    badge.textContent=unread>9?'9+':String(unread);
+  }
+}
+
+function _renderNotifList(notifs){
+  const el=document.getElementById('notif-list');if(!el)return;
+  if(!notifs||!notifs.length){el.innerHTML='<div class="notif-empty">Aucune notification</div>';return;}
+  const icons={friend_request:'👥',friend_accepted:'🤝',duel_invite:'⚔️',duel_your_turn:'🎯',duel_result:'🏆'};
+  el.innerHTML=notifs.map(n=>{
+    const ic=icons[n.type]||'🔔';
+    const p=n.payload||{};
+    const titles={
+      friend_request:(p.from||'Quelqu\'un')+' t\'a envoyé une demande d\'ami',
+      friend_accepted:(p.from||'Ton ami')+' a accepté ta demande',
+      duel_invite:(p.from||'Quelqu\'un')+' te défie en duel !',
+      duel_your_turn:'C\'est ton tour dans le duel vs '+(p.opponent||'?'),
+      duel_result:'Résultat du duel vs '+(p.opponent||'?')+' : '+(p.result||''),
+    };
+    const title=titles[n.type]||n.type;
+    const ts=n.created_at?_timeAgo(new Date(n.created_at)):'';
+    const action=_notifAction(n);
+    return '<div class="notif-item'+(n.read?'':' unread')+'" onclick="'+action+';markNotifRead(\''+n.id+'\')">'+
+      '<div class="notif-item-icon">'+ic+'</div>'+
+      '<div class="notif-item-body"><div class="notif-item-title">'+title+'</div></div>'+
+      '<div class="notif-item-time">'+ts+'</div>'+
     '</div>';
-  document.body.appendChild(bd);
+  }).join('');
+}
+
+function _notifAction(n){
+  const p=n.payload||{};
+  if(n.type==='friend_request'||n.type==='friend_accepted')return 'goProfile();switchTab(\'amis\')';
+  if(n.type==='duel_invite'||n.type==='duel_your_turn'||n.type==='duel_result')
+    return p.duel_id?'openAsyncDuel(\''+p.duel_id+'\')':'goPlay()';
+  return 'void(0)';
+}
+
+function _timeAgo(date){
+  const s=Math.round((Date.now()-date)/1000);
+  if(s<60)return 'à l\'instant';
+  if(s<3600)return Math.floor(s/60)+'min';
+  if(s<86400)return Math.floor(s/3600)+'h';
+  return Math.floor(s/86400)+'j';
+}
+
+function toggleNotifPanel(){
+  const bd=document.getElementById('notif-bd');if(!bd)return;
+  bd.classList.toggle('on');
+}
+function closeNotifPanel(){
+  const bd=document.getElementById('notif-bd');if(bd)bd.classList.remove('on');
+}
+
+async function markNotifRead(id){
+  await sb.from('notifications').update({read:true}).eq('id',id);
+  loadNotifications();
+}
+
+async function markAllNotifsRead(){
+  if(!currentUser)return;
+  await sb.from('notifications').update({read:true}).eq('user_id',currentUser.id).eq('read',false);
+  loadNotifications();
+}
+
+async function _sendNotif(userId,type,payload){
+  if(!userId)return;
+  await sb.from('notifications').insert({user_id:userId,type,payload});
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Duels Async — Refonte complète (sans code, tour par tour, 5 manches × 3q)
+// ════════════════════════════════════════════════════════════════════════════
+let _asyncDuel=null; // duel en cours
+const ASYNC_DUEL_THEMES=[
+  {id:'histoire',  label:'Histoire',    icon:'🏛️'},
+  {id:'science',   label:'Science',     icon:'🔬'},
+  {id:'nature',    label:'Nature',      icon:'🌿'},
+  {id:'insolite',  label:'Insolite',    icon:'🎭'},
+  {id:'art',       label:'Art',         icon:'🎨'},
+  {id:'espace',    label:'Espace',      icon:'🚀'},
+  {id:'sport',     label:'Sport',       icon:'⚡'},
+  {id:'food',      label:'Gastro',      icon:'🍽️'},
+  {id:'legendes',  label:'Légendes',    icon:'🔍'},
+];
+
+// Remplace la fonction showDuelLobby existante
+async function showDuelLobby(){
+  const el=document.getElementById('multi-content');if(!el)return;
+  document.getElementById('multi-title-txt').innerHTML='<em>Duels</em>';
+  document.getElementById('multi-sub').textContent='Tour par tour — 5 manches, 3 questions chacune.';
+  if(!currentUser){
+    el.innerHTML='<div class="duel-waiting"><p style="margin-bottom:16px">Connecte-toi pour jouer en duel !</p><button class="btn-main" onclick="show(\'screen-login\')">Se connecter</button></div>';
+    return;
+  }
+  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">⏳ Chargement…</div>';
+  // Charger les duels actifs
+  const{data:duels}=await sb.from('async_duels')
+    .select('*').or('player_a.eq.'+currentUser.id+',player_b.eq.'+currentUser.id)
+    .in('status',['pending','active']).order('updated_at',{ascending:false});
+  const activeHtml=(duels&&duels.length)?
+    '<div class="duel-active-label">Duels en cours</div>'+
+    duels.map(d=>{
+      const isA=d.player_a===currentUser.id;
+      const oppName=isA?d.player_b_name:d.player_a_name;
+      const myScore=isA?d.score_a:d.score_b;
+      const opScore=isA?d.score_b:d.score_a;
+      const myTurn=d.current_turn===currentUser.id;
+      const statusTxt=d.status==='pending'?'⏳ En attente d\'adversaire':
+        myTurn?'🎯 À ton tour !':'⏳ Tour de '+oppName;
+      return '<div class="duel-async-item" onclick="openAsyncDuel(\''+d.id+'\')">'+
+        '<div style="flex:1"><div class="duel-async-vs">vs '+(oppName||'Adversaire aléatoire')+'</div>'+
+        '<div class="duel-async-status'+(myTurn?' my-turn':'')+'">'+statusTxt+' · Manche '+d.current_round+'/'+d.total_rounds+'</div></div>'+
+        '<div class="duel-async-score">'+myScore+' – '+opScore+'</div>'+
+      '</div>';
+    }).join('')
+  :'';
+  el.innerHTML='<div class="duel-async-lobby">'+
+    '<div class="duel-async-actions">'+
+      '<button class="btn-main" onclick="showChallengeFriend()">⚔️ Défier un ami</button>'+
+      '<button class="btn-sec" onclick="joinRandomDuel()">🎲 Adversaire aléatoire</button>'+
+    '</div>'+
+    (activeHtml?'<div class="duel-active-list">'+activeHtml+'</div>':'<div style="text-align:center;padding:1.5rem 1rem;color:var(--ink3);font-size:.8rem;">Aucun duel en cours. Lance-toi !</div>')+
+  '</div>';
+}
+
+async function showChallengeFriend(){
+  const el=document.getElementById('multi-content');if(!el)return;
+  document.getElementById('multi-title-txt').innerHTML='<em>Défier</em> un ami';
+  const backBtn=document.querySelector('#screen-multi .btn-back');
+  if(backBtn){backBtn.style.display='block';}
+  el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--ink3);">⏳ Chargement des amis…</div>';
+  const{data:friends}=await sb.from('friendships')
+    .select('*,req:profiles!friendships_requester_id_fkey(id,username),adr:profiles!friendships_addressee_id_fkey(id,username)')
+    .or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id)
+    .eq('status','accepted');
+  if(!friends||!friends.length){
+    el.innerHTML='<div class="duel-friend-list"><div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">Tu n\'as pas encore d\'amis.<br><a onclick="goProfile();switchTab(\'amis\')" style="color:var(--a);cursor:pointer;">Chercher des amis →</a></div></div>';
+    return;
+  }
+  const items=friends.map(f=>{
+    const isReq=f.requester_id===currentUser.id;
+    const friend=isReq?f.adr:f.req;
+    if(!friend)return '';
+    const av=(friend.username||'?')[0].toUpperCase();
+    return '<div class="duel-friend-item">'+
+      '<div class="duel-friend-av">'+av+'</div>'+
+      '<div class="duel-friend-name">'+friend.username+'</div>'+
+      '<button class="duel-challenge-btn" id="challenge-btn-'+friend.id+'" onclick="challengeFriend(\''+friend.id+'\',\''+friend.username+'\')">Défier</button>'+
+    '</div>';
+  }).join('');
+  el.innerHTML='<div class="duel-friend-list">'+items+'</div>';
+}
+
+async function challengeFriend(friendId,friendName){
+  if(!currentUser)return;
+  const btn=document.getElementById('challenge-btn-'+friendId);
+  if(btn){btn.disabled=true;btn.textContent='⏳';}
+  // Créer le duel
+  const{data:duel,error}=await sb.from('async_duels').insert({
+    player_a:currentUser.id,player_a_name:currentUser.username,
+    player_b:friendId,player_b_name:friendName,
+    status:'active',current_turn:currentUser.id,current_round:1
+  }).select().maybeSingle();
+  if(error||!duel){showToast('Erreur lors de la création du duel');if(btn){btn.disabled=false;btn.textContent='Défier';}return;}
+  // Notifier l'ami
+  await _sendNotif(friendId,'duel_invite',{from:currentUser.username,duel_id:duel.id});
+  showToast('✓ Défi envoyé à '+friendName+' !');
+  openAsyncDuel(duel.id);
+}
+
+async function joinRandomDuel(){
+  if(!currentUser){showToast('Connecte-toi !');return;}
+  showToast('🔍 Recherche d\'adversaire…');
+  // Chercher un duel aléatoire en attente d'un joueur
+  const{data:waiting}=await sb.from('async_duels')
+    .select('*').eq('status','pending').eq('is_random',true)
+    .is('player_b',null).neq('player_a',currentUser.id).limit(1).maybeSingle();
+  if(waiting){
+    // Rejoindre ce duel
+    const{error}=await sb.from('async_duels').update({
+      player_b:currentUser.id,player_b_name:currentUser.username,
+      status:'active',current_turn:waiting.player_a
+    }).eq('id',waiting.id);
+    if(error){showToast('Erreur : '+error.message);return;}
+    await _sendNotif(waiting.player_a,'duel_your_turn',{opponent:currentUser.username,duel_id:waiting.id});
+    showToast('✓ Adversaire trouvé !');
+    openAsyncDuel(waiting.id);
+  }else{
+    // Créer un duel aléatoire en attente
+    const{data:duel,error}=await sb.from('async_duels').insert({
+      player_a:currentUser.id,player_a_name:currentUser.username,
+      status:'pending',current_turn:currentUser.id,is_random:true
+    }).select().maybeSingle();
+    if(error||!duel){showToast('Erreur');return;}
+    showToast('⏳ En attente d\'un adversaire… Tu seras notifié dès qu\'il arrive !');
+    openAsyncDuel(duel.id);
+  }
+}
+
+async function openAsyncDuel(duelId){
+  const el=document.getElementById('multi-content');if(!el)return;
+  document.getElementById('multi-title-txt').innerHTML='<em>Duel</em>';
+  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);">⏳ Chargement…</div>';
+  const{data:duel}=await sb.from('async_duels').select('*').eq('id',duelId).maybeSingle();
+  if(!duel){showToast('Duel introuvable');showDuelLobby();return;}
+  _asyncDuel=duel;show('screen-multi');renderAsyncDuelView(duel);
+}
+
+async function renderAsyncDuelView(duel){
+  const el=document.getElementById('multi-content');if(!el)return;
+  const isA=duel.player_a===currentUser.id;
+  const myScore=isA?duel.score_a:duel.score_b;
+  const opScore=isA?duel.score_b:duel.score_a;
+  const oppName=isA?duel.player_b_name:duel.player_a_name;
+  const myTurn=duel.current_turn===currentUser.id;
+
+  // Scoreboard
+  const scoreHtml='<div class="duel-score-header">'+
+    '<div class="duel-score-player mine"><div class="duel-score-name">Toi</div><div class="duel-score-val">'+myScore+'</div></div>'+
+    '<div class="duel-score-sep">⚔️</div>'+
+    '<div class="duel-score-player"><div class="duel-score-name">'+(oppName||'Adversaire')+'</div><div class="duel-score-val">'+opScore+'</div></div>'+
+  '</div>'+
+  '<div class="duel-round-label">Manche '+duel.current_round+' / '+duel.total_rounds+'</div>';
+
+  if(duel.status==='pending'&&duel.is_random){
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>En attente d\'un adversaire…<br><br><button class="btn-sec" style="margin-top:.5rem;font-size:.75rem" onclick="cancelAsyncDuel(\''+duel.id+'\')">Annuler</button></div>';
+    return;
+  }
+  if(duel.status==='completed'){renderAsyncDuelResult(duel);return;}
+  if(duel.status==='pending'){
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">⏳ En attente que <strong>'+(oppName||'ton adversaire')+'</strong> rejoigne le duel.</div>';
+    return;
+  }
+  // Chercher le round actuel
+  const{data:round}=await sb.from('async_duel_rounds')
+    .select('*').eq('duel_id',duel.id).eq('round_number',duel.current_round).maybeSingle();
+  const myAnswerField=isA?'answers_a':'answers_b';
+  const iHaveAnswered=round&&round[myAnswerField]!==null&&round[myAnswerField]!==undefined;
+
+  if(myTurn&&(!round||!iHaveAnswered)){
+    if(!round){
+      // Je dois choisir le thème
+      renderAsyncThemePicker(el,scoreHtml,duel);
+    }else{
+      // Le round existe (l'autre l'a créé), je dois juste répondre aux questions
+      renderAsyncQuestions(el,scoreHtml,duel,round);
+    }
+  }else if(!myTurn&&(!round||!iHaveAnswered)){
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>C\'est au tour de <strong>'+(oppName||'ton adversaire')+'</strong>.<br><small style="color:var(--ink3)">Tu seras notifié quand ce sera ton tour.</small></div>';
+  }else if(iHaveAnswered&&round&&(isA?round.answers_b:round.answers_a)===null){
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div><strong>'+(oppName||'Ton adversaire')+'</strong> n\'a pas encore répondu à cette manche.<br><small style="color:var(--ink3)">Tu seras notifié quand ce sera ton tour.</small></div>';
+  }else{
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">⏳ Manche en cours…</div>';
+  }
+}
+
+function renderAsyncThemePicker(el,scoreHtml,duel){
+  const btnHtml=ASYNC_DUEL_THEMES.map(t=>
+    '<button class="duel-round-theme-btn" onclick="asyncPickTheme(\''+duel.id+'\','+duel.current_round+',\''+t.id+'\')">'+t.icon+'<br>'+t.label+'</button>'
+  ).join('');
+  el.innerHTML=scoreHtml+
+    '<div style="font-weight:700;font-size:.82rem;margin-bottom:.75rem;text-align:center;">🎯 C\'est ton tour ! Choisis un thème pour cette manche :</div>'+
+    '<div class="duel-round-theme-grid">'+btnHtml+'</div>';
+}
+
+async function asyncPickTheme(duelId,roundNumber,theme){
+  // Désactiver boutons
+  document.querySelectorAll('.duel-round-theme-btn').forEach(b=>{b.disabled=true;b.style.opacity='.5';});
+  const el=document.getElementById('multi-content');
+  if(el)el.innerHTML+='<div style="text-align:center;padding:1rem;color:var(--ink3);font-size:.78rem;">⏳ Génération des questions…</div>';
+  // Chercher 3 questions sur ce thème
+  const{data:anecs}=await sb.from('anecdotes').select('id').eq('theme',theme).limit(100);
+  const pool=(anecs&&anecs.length)?anecs:(await sb.from('anecdotes').select('id').limit(100)).data||[];
+  if(!pool.length){showToast('Pas de questions disponibles pour ce thème');showDuelLobby();return;}
+  // Tirer 3 anecdotes aléatoires
+  const shuffled=[...pool].sort(()=>Math.random()-.5).slice(0,3);
+  const anecIds=shuffled.map(a=>a.id);
+  const{data:allQs}=await sb.from('questions').select('*').in('anecdote_id',anecIds);
+  if(!allQs||!allQs.length){showToast('Pas de questions disponibles');showDuelLobby();return;}
+  // Prendre 1 question par anecdote (3 questions total)
+  const questions=anecIds.map(aid=>{
+    const q=(allQs.filter(q=>q.anecdote_id===aid)||[]).sort(()=>Math.random()-.5)[0];
+    return q?{type:q.type,question:q.question,options:q.options,answer:q.answer,explanation:q.explanation}:null;
+  }).filter(Boolean).slice(0,3);
+  if(questions.length<1){showToast('Pas assez de questions');showDuelLobby();return;}
+  // Insérer le round
+  const isA=_asyncDuel&&_asyncDuel.player_a===currentUser.id;
+  const answers_me={answers:[],score:0,answered_at:null};
+  const{error}=await sb.from('async_duel_rounds').insert({
+    duel_id:duelId,round_number:roundNumber,theme,initiated_by:currentUser.id,questions,
+    answers_a:isA?null:null,answers_b:null
+  });
+  if(error){showToast('Erreur : '+error.message);return;}
+  // Recharger le duel
+  const{data:duel}=await sb.from('async_duels').select('*').eq('id',duelId).maybeSingle();
+  if(duel){_asyncDuel=duel;renderAsyncDuelView(duel);}
+}
+
+// ─── ASYNC DUEL QUESTION RENDERING ───────────────────────────────────────────
+let _asyncRoundAnswers = [];
+let _asyncRoundQIdx    = 0;
+let _asyncCurrentRound = null;
+window._asyncRoundQs   = [];   // questions stored globally (no JSON in onclick)
+
+function renderAsyncQuestions(el, scoreHtml, duel, round) {
+  _asyncCurrentRound  = round;
+  _asyncRoundAnswers  = [];
+  _asyncRoundQIdx     = 0;
+  window._asyncRoundQs = round.questions || [];
+  if (!window._asyncRoundQs.length) { showToast('Aucune question dans cette manche'); return; }
+  el.innerHTML = scoreHtml + '<div id="duel-q-zone"></div>';
+  renderAsyncQuestion(duel);
+}
+
+function renderAsyncQuestion(duel) {
+  const qZone = document.getElementById('duel-q-zone');
+  if (!qZone) return;
+  const qs  = window._asyncRoundQs;
+  const idx = _asyncRoundQIdx;
+  if (idx >= qs.length) { submitAsyncAnswers(duel); return; }
+  const q    = qs[idx];
+  const isVF = q.type === 'vf';
+  const total = qs.length;
+  const pct   = Math.round((idx / total) * 100);
+
+  const opts = q.options.map((o, i) =>
+    '<button class="q-opt" onclick="answerAsyncQ(' + i + ',\'' + duel.id + '\')">' +
+    (isVF ? o : String.fromCharCode(65 + i) + '. ' + o) +
+    '</button>'
+  ).join('');
+
+  qZone.innerHTML =
+    '<div class="q-block">' +
+      '<div class="q-header">' +
+        '<span class="q-prog-txt">Question ' + (idx + 1) + ' / ' + total + '</span>' +
+      '</div>' +
+      '<div class="q-prog-bar"><div class="q-prog-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="q-theme-chip">' + (q.theme || '') + '</div>' +
+      '<div class="q-text">' + q.question + '</div>' +
+      '<div class="q-opts">' + opts + '</div>' +
+    '</div>';
+}
+
+function answerAsyncQ(optIdx, duelId) {
+  const qs = window._asyncRoundQs;
+  const q  = qs[_asyncRoundQIdx];
+  if (!q) return;
+  const correct = (optIdx === q.correct_index);
+  _asyncRoundAnswers.push({ question: q.question, chosen: optIdx, correct: correct });
+
+  // Flash feedback
+  const btns = document.querySelectorAll('.q-opt');
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct_index) b.classList.add('correct');
+    else if (i === optIdx && !correct) b.classList.add('wrong');
+  });
+
+  setTimeout(() => {
+    _asyncRoundQIdx++;
+    // Reload duel then continue
+    sb.from('async_duels').select('*').eq('id', duelId).maybeSingle().then(({ data: duel }) => {
+      if (duel) renderAsyncQuestion(duel);
+    });
+  }, 900);
+}
+
+async function submitAsyncAnswers(duel) {
+  const qs      = window._asyncRoundQs;
+  const score   = _asyncRoundAnswers.filter(a => a.correct).length;
+  const roundNo = _asyncCurrentRound ? _asyncCurrentRound.round_number : 1;
+
+  // Determine which score column to update
+  const isChallenger = (duel.challenger_id === currentUser.id);
+  const scoreCol     = isChallenger ? 'challenger_score' : 'opponent_score';
+  const answersCol   = isChallenger ? 'challenger_answers' : 'opponent_answers';
+  const doneCol      = isChallenger ? 'challenger_done' : 'opponent_done';
+
+  // Update the round row
+  const { error: rErr } = await sb.from('async_duel_rounds')
+    .update({
+      [scoreCol]:   (duel[scoreCol] || 0) + score,
+      [answersCol]: _asyncRoundAnswers,
+      [doneCol]:    true
+    })
+    .eq('duel_id', duelId)
+    .eq('round_number', roundNo);
+
+  if (rErr) { showToast('Erreur sauvegarde : ' + rErr.message); return; }
+
+  await advanceAsyncDuel(duel, roundNo, score);
+}
+
+async function advanceAsyncDuel(duel, roundNo, roundScore) {
+  const isChallenger = (duel.challenger_id === currentUser.id);
+  const opponentId   = isChallenger ? duel.opponent_id : duel.challenger_id;
+
+  // Reload fresh duel state
+  const { data: freshDuel } = await sb.from('async_duels').select('*').eq('id', duel.id).maybeSingle();
+  if (!freshDuel) return;
+
+  // Check if opponent also finished this round
+  const challDone = freshDuel.challenger_round_done;
+  const oppDone   = freshDuel.opponent_round_done;
+
+  let newStatus   = freshDuel.status;
+  let newRound    = freshDuel.current_round;
+  let nextTurn    = freshDuel.current_turn;
+  let scoreUpdate = {};
+
+  // Update this player's score on the duel
+  const myScoreCol = isChallenger ? 'challenger_score' : 'opponent_score';
+  scoreUpdate[myScoreCol] = (freshDuel[myScoreCol] || 0) + roundScore;
+
+  if (isChallenger) scoreUpdate.challenger_round_done = true;
+  else              scoreUpdate.opponent_round_done   = true;
+
+  const bothDone = (isChallenger ? true : challDone) && (isChallenger ? oppDone : true);
+
+  if (bothDone) {
+    // Both answered — advance round or finish
+    newRound = freshDuel.current_round + 1;
+    if (newRound > 5) {
+      newStatus  = 'finished';
+      nextTurn   = null;
+    } else {
+      // Alternate who picks theme: challenger picks odd rounds, opponent picks even
+      nextTurn = (newRound % 2 === 1) ? freshDuel.challenger_id : freshDuel.opponent_id;
+    }
+    scoreUpdate.current_round         = newRound;
+    scoreUpdate.current_turn          = nextTurn;
+    scoreUpdate.status                = newStatus;
+    scoreUpdate.challenger_round_done = false;
+    scoreUpdate.opponent_round_done   = false;
+  }
+
+  await sb.from('async_duels').update(scoreUpdate).eq('id', duel.id);
+
+  // Notify opponent
+  if (opponentId) {
+    const notifType = (newStatus === 'finished') ? 'duel_result' : 'duel_your_turn';
+    const payload   = { duel_id: duel.id };
+    if (notifType === 'duel_result') payload.winner_id = resolveWinner(scoreUpdate, freshDuel);
+    await _sendNotif(opponentId, notifType, payload);
+  }
+
+  // Show result screen
+  const { data: finalDuel } = await sb.from('async_duels').select('*').eq('id', duel.id).maybeSingle();
+  if (finalDuel) renderAsyncDuelResult(finalDuel, roundScore);
+}
+
+function resolveWinner(updates, duel) {
+  const cs = (updates.challenger_score !== undefined) ? updates.challenger_score : duel.challenger_score;
+  const os = (updates.opponent_score   !== undefined) ? updates.opponent_score   : duel.opponent_score;
+  if (cs > os)  return duel.challenger_id;
+  if (os > cs)  return duel.opponent_id;
+  return null; // draw
+}
+
+function renderAsyncDuelResult(duel, roundScore) {
+  const el = document.getElementById('screen-duel');
+  if (!el) return;
+
+  const isChallenger = (duel.challenger_id === currentUser.id);
+  const myScore      = isChallenger ? (duel.challenger_score || 0) : (duel.opponent_score || 0);
+  const theirScore   = isChallenger ? (duel.opponent_score   || 0) : (duel.challenger_score || 0);
+  const finished     = (duel.status === 'finished');
+
+  let emoji, title, sub;
+  if (finished) {
+    if (myScore > theirScore)       { emoji = '🏆'; title = 'Victoire !';   sub = myScore + ' – ' + theirScore; }
+    else if (theirScore > myScore)  { emoji = '😢'; title = 'Défaite';      sub = myScore + ' – ' + theirScore; }
+    else                            { emoji = '🤝'; title = 'Égalité !';    sub = myScore + ' – ' + theirScore; }
+  } else {
+    emoji = '✅'; title = 'Manche terminée !';
+    sub   = 'Tu as marqué ' + roundScore + ' point' + (roundScore > 1 ? 's' : '') + ' cette manche. En attente de l\'adversaire…';
+  }
+
+  el.innerHTML =
+    '<div class="duel-result-card">' +
+      '<div class="duel-result-emoji">' + emoji + '</div>' +
+      '<div class="duel-result-title">' + title + '</div>' +
+      '<div class="duel-result-sub">' + sub + '</div>' +
+      (finished
+        ? '<button class="btn-primary" onclick="showDuelLobby()">Retour aux duels</button>'
+        : '<button class="btn-secondary" onclick="showDuelLobby()">Voir mes duels</button>') +
+    '</div>';
+}
+
+async function cancelAsyncDuel(duelId) {
+  if (!confirm('Abandonner ce duel ?')) return;
+  const { error } = await sb.from('async_duels').update({ status: 'cancelled' }).eq('id', duelId);
+  if (error) { showToast('Erreur : ' + error.message); return; }
+  showToast('Duel annulé');
+  showDuelLobby();
 }
