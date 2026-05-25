@@ -443,31 +443,76 @@ function updateHeader(){
   else{if(btnL)btnL.style.display='';if(btnA)btnA.classList.remove('on');}
 }
 
+async function doDiscordLogin(){
+  const{error}=await sb.auth.signInWithOAuth({
+    provider:'discord',
+    options:{redirectTo:window.location.origin}
+  });
+  if(error)showToast('Erreur Discord : '+error.message);
+}
+
+async function doForgotPassword(){
+  const email=(document.getElementById('lu')?.value||'').trim();
+  if(!email||!email.includes('@')){showErr('lerr','Entre ton email d\'abord.');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'?reset=1'});
+  if(error){showErr('lerr','Erreur : '+error.message);return;}
+  showToast('\u2709 Email de r\u00e9initialisation envoy\u00e9 !');
+}
+
+function checkPwStrength(pw){
+  const fill=document.getElementById('pw-strength-fill');
+  const lbl=document.getElementById('pw-strength-lbl');
+  if(!fill||!lbl)return;
+  let score=0;
+  if(pw.length>=8)score++;
+  if(pw.length>=12)score++;
+  if(/[A-Z]/.test(pw))score++;
+  if(/[0-9]/.test(pw))score++;
+  if(/[^a-zA-Z0-9]/.test(pw))score++;
+  const levels=[
+    {pct:'0%',color:'transparent',txt:''},
+    {pct:'25%',color:'#ef4444',txt:'Faible'},
+    {pct:'50%',color:'#f97316',txt:'Moyen'},
+    {pct:'75%',color:'#eab308',txt:'Bien'},
+    {pct:'100%',color:'#22c55e',txt:'Fort \u2713'},
+  ];
+  const l=levels[Math.min(score,4)];
+  fill.style.width=l.pct;fill.style.background=l.color;
+  lbl.textContent=l.txt;lbl.style.color=l.color;
+}
+
 async function doLogin(){
-  const u=(document.getElementById('lu')?.value||'').trim(),p=document.getElementById('lp')?.value||'';
+  const email=(document.getElementById('lu')?.value||'').trim(),p=document.getElementById('lp')?.value||'';
   hideErr('lerr');
-  if(!u||!p){showErr('lerr','Remplis tous les champs.');return;}
+  if(!email||!p){showErr('lerr','Remplis tous les champs.');return;}
+  if(!email.includes('@')){showErr('lerr','Entre une adresse email valide.');return;}
   setBtn('btn-login',true);
-  const{data,error}=await sb.auth.signInWithPassword({email:u+'@adj.app',password:p});
+  const{data,error}=await sb.auth.signInWithPassword({email,password:p});
   setBtn('btn-login',false);
-  if(error){showErr('lerr','Pseudo ou mot de passe incorrect.');return;}
+  if(error){showErr('lerr','Email ou mot de passe incorrect.');return;}
   currentUser=await getProfile(data.user.id);
   if(!currentUser){showErr('lerr','Profil introuvable.');return;}
   updateHeader();afterLogin();
 }
 
 async function doRegister(){
-  const u=(document.getElementById('ru')?.value||'').trim(),p=document.getElementById('rp')?.value||'';
+  const u=(document.getElementById('ru')?.value||'').trim();
+  const email=(document.getElementById('re')?.value||'').trim();
+  const p=document.getElementById('rp')?.value||'';
   hideErr('rerr');
-  if(!u||!p){showErr('rerr','Remplis tous les champs.');return;}
-  if(p.length<6){showErr('rerr','Mot de passe trop court (min. 6 caract\u00e8res).');return;}
+  if(!u||!email||!p){showErr('rerr','Remplis tous les champs.');return;}
+  if(!email.includes('@')||!email.includes('.')){showErr('rerr','Adresse email invalide.');return;}
+  if(p.length<8){showErr('rerr','Mot de passe trop court (min. 8 caract\u00e8res).');return;}
   if(!/^[a-zA-Z0-9_\-]{2,20}$/.test(u)){showErr('rerr','Pseudo invalide (2-20 caract\u00e8res, lettres/chiffres/_-).');return;}
   setBtn('btn-register',true);
   const{data:ex}=await sb.from('profiles').select('id').eq('username',u).maybeSingle();
   if(ex){setBtn('btn-register',false);showErr('rerr','Ce pseudo est d\u00e9j\u00e0 pris.');return;}
-  const{data,error}=await sb.auth.signUp({email:u+'@adj.app',password:p});
+  const{data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:u}}});
   setBtn('btn-register',false);
-  if(error){showErr('rerr','Erreur: '+error.message);return;}
+  if(error){showErr('rerr','Erreur : '+error.message);return;}
+  if(data.user&&!data.session){
+    showErr('rerr','\ud83d\udce7 V\u00e9rifie ta bo\u00eete mail pour confirmer ton compte !');return;
+  }
   await sb.from('profiles').insert({id:data.user.id,username:u,joined:today()});
   currentUser={id:data.user.id,username:u,joined:today()};
   updateHeader();afterLogin();

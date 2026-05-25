@@ -52,10 +52,6 @@
       <span class="logo-txt">T'as&thinsp;dit&thinsp;quoi&thinsp;?!</span>
       <span style="font-size:.48rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#f97316;color:#fff;border-radius:999px;padding:.1rem .4rem;margin-left:.25rem;">WIP</span>
     </button>
-    <button class="top-tab" id="top-tab-biais" onclick="" title="Bientôt disponible" style="opacity:.45;cursor:not-allowed;">
-      <span class="logo-txt">Ton&thinsp;cerveau&thinsp;ment</span>
-      <span style="font-size:.48rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#f97316;color:#fff;border-radius:999px;padding:.1rem .4rem;margin-left:.25rem;">WIP</span>
-    </button>
   </div>
   <div class="h-right">
     <button class="streak-badge" id="streak-badge" onclick="openBingo()" title="Voir le Bingo de l'été"><span class="streak-fire">🔥</span><span class="streak-num" id="streak-num">0</span><span class="streak-lbl">jours</span></button>
@@ -73,10 +69,15 @@
       <div class="auth-brand"><div class="auth-eyebrow">Bienvenue</div>
         <div class="auth-bigtitle">Anecdote<br>du Jour</div>
         <div class="auth-tagline">Une curiosit&eacute; partag&eacute;e par la communaut&eacute; &mdash; chaque matin.</div></div>
-      <div class="auth-heading">Connexion</div>
+      <button class="btn-discord-oauth" onclick="doDiscordLogin()">
+        <svg width="18" height="14" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>
+        Continuer avec Discord
+      </button>
+      <div class="auth-sep"><span>ou par email</span></div>
       <div class="err" id="lerr"></div>
-      <div class="f"><label>Pseudo</label><input id="lu" placeholder="votre pseudo" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <div class="f"><label>Mot de passe</label><input id="lp" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="f"><label>Email</label><input id="lu" type="email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="f"><label>Mot de passe</label><input id="lp" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="auth-forgot"><a onclick="doForgotPassword()">Mot de passe oubli&eacute; ?</a></div>
       <button class="btn-main" id="btn-login" onclick="doLogin()">Se connecter</button>
       <div class="auth-alt">Pas encore membre ? <a onclick="show('screen-register')">Cr&eacute;er un compte</a></div>
       <div class="auth-guest"><a onclick="goHome()">Continuer sans compte</a></div>
@@ -87,10 +88,16 @@
       <div class="auth-brand"><div class="auth-eyebrow">Inscription</div>
         <div class="auth-bigtitle">Cr&eacute;er un<br>compte</div>
         <div class="auth-tagline">Historique, quiz quotidien et amis &mdash; tout est ici.</div></div>
-      <div class="auth-heading">Nouveau compte</div>
+      <button class="btn-discord-oauth" onclick="doDiscordLogin()">
+        <svg width="18" height="14" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>
+        Continuer avec Discord
+      </button>
+      <div class="auth-sep"><span>ou par email</span></div>
       <div class="err" id="rerr"></div>
-      <div class="f"><label>Pseudo</label><input id="ru" placeholder="choisissez un pseudo" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-      <div class="f"><label>Mot de passe</label><input id="rp" type="password" placeholder="min. 6 caract&egrave;res" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="f"><label>Pseudo</label><input id="ru" placeholder="choisissez un pseudo" autocomplete="username" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="f"><label>Email</label><input id="re" type="email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="f"><label>Mot de passe <span id="pw-strength-lbl" style="font-weight:400;font-size:.55rem;"></span></label><input id="rp" type="password" placeholder="min. 8 caract&egrave;res" autocomplete="new-password" oninput="checkPwStrength(this.value)" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div id="pw-strength-bar" style="height:3px;border-radius:2px;background:var(--b1);margin-top:-.5rem;margin-bottom:.5rem;transition:all .2s;"><div id="pw-strength-fill" style="height:100%;border-radius:2px;width:0;transition:all .3s;"></div></div>
       <button class="btn-main" id="btn-register" onclick="doRegister()">Cr&eacute;er mon compte</button>
       <div class="auth-alt">D&eacute;j&agrave; membre ? <a onclick="show('screen-login')">Se connecter</a></div>
       <div class="auth-guest"><a onclick="goHome()">Continuer sans compte</a></div>
