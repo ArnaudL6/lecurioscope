@@ -59,7 +59,8 @@ body{
   -webkit-font-smoothing:antialiased;
   transition:background .25s,color .25s;
 }
-button,input,textarea,select{font-family:inherit;}
+button{font-family:inherit;appearance:none;-webkit-appearance:none;background:none;border:none;cursor:pointer;padding:0;line-height:1;}
+input,textarea,select{font-family:inherit;}
 a{color:var(--a);text-decoration:none;}
 img{max-width:100%;display:block;}
 
@@ -346,18 +347,20 @@ header{
 
 /* ── Anecdote card ──────────────────────────────────────────────────── */
 .anec-card{
-  background:var(--s1);border:1px solid var(--b1);
+  background:var(--s1);
+  border:1.5px solid var(--b1);
+  border-left:4px solid var(--a);
   border-radius:var(--r);padding:1.5rem 1.5rem 1.25rem;
-  box-shadow:var(--sh);
+  box-shadow:0 6px 32px rgba(56,189,248,.13),0 1px 6px rgba(0,0,0,.07);
   display:flex;flex-direction:column;gap:.75rem;
   position:relative;overflow:hidden;
   transition:box-shadow .25s,transform .25s;
 }
-.anec-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(56,189,248,.12),0 2px 8px rgba(0,0,0,.06);}
-.anec-glow{position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(56,189,248,.06),transparent 65%);pointer-events:none;}
+.anec-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(56,189,248,.18),0 2px 8px rgba(0,0,0,.09);}
+.anec-glow{position:absolute;top:-60px;right:-60px;width:250px;height:250px;background:radial-gradient(circle,rgba(56,189,248,.09),transparent 65%);pointer-events:none;}
 .anec-body{
   font-family:'DM Serif Display',Georgia,serif;
-  font-size:clamp(1rem,2.5vw,1.12rem);line-height:1.8;
+  font-size:clamp(1rem,2.5vw,1.12rem);line-height:1.85;
   color:var(--ink);letter-spacing:.01em;position:relative;z-index:1;
 }
 
@@ -388,25 +391,33 @@ header{
 
 /* ── Anecdote action buttons ────────────────────────────────────────── */
 .anec-actions{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
-.btn-share,.btn-fav{
+.btn-share{
   display:inline-flex;align-items:center;gap:.35rem;
-  padding:.42rem .8rem;
-  background:var(--s2);border:1.5px solid var(--b1);border-radius:999px;
-  font-size:.72rem;font-weight:600;color:var(--ink2);
-  cursor:pointer;transition:all .15s;
+  padding:.45rem .9rem;
+  background:var(--s2);border:1.5px solid var(--b2);border-radius:999px;
+  font-size:.72rem;font-weight:700;color:var(--ink2);
+  cursor:pointer;transition:all .18s;
 }
-.btn-share:hover,.btn-fav:hover{border-color:var(--a);color:var(--a);background:var(--adim);}
-.btn-fav.active{border-color:#f43f5e;color:#f43f5e;background:rgba(244,63,94,.08);}
+.btn-share:hover{border-color:var(--a);color:var(--a);background:var(--adim);transform:translateY(-1px);}
+.btn-fav{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.45rem .7rem;
+  background:var(--s2);border:1.5px solid var(--b2);border-radius:999px;
+  font-size:.82rem;font-weight:700;color:var(--ink2);
+  cursor:pointer;transition:all .18s;
+}
+.btn-fav:hover{border-color:#f43f5e;color:#f43f5e;background:rgba(244,63,94,.08);transform:scale(1.08);}
+.btn-fav.active{border-color:#f43f5e;color:#f43f5e;background:rgba(244,63,94,.1);}
 .react-wrap{display:flex;align-items:center;gap:6px;}
 .react-btn{
   display:inline-flex;align-items:center;gap:5px;
-  padding:5px 11px;border-radius:999px;
-  border:1.5px solid var(--b2);background:none;
-  color:var(--ink);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;
+  padding:.4rem .75rem;border-radius:999px;
+  border:1.5px solid var(--b2);background:var(--s2);
+  color:var(--ink);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .18s;
 }
-.react-btn:hover{border-color:var(--a);transform:scale(1.07);}
-.react-btn.active-up{border-color:#22c55e;background:rgba(34,197,94,.1);color:#22c55e;}
-.react-btn.active-down{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;}
+.react-btn:hover{border-color:var(--a);transform:scale(1.07);background:var(--adim);}
+.react-btn.active-up{border-color:#22c55e;background:rgba(34,197,94,.12);color:#22c55e;}
+.react-btn.active-down{border-color:#ef4444;background:rgba(239,68,68,.12);color:#ef4444;}
 
 /* ── Anecdote footer ────────────────────────────────────────────────── */
 .anec-footer{
