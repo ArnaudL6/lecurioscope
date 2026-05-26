@@ -3988,12 +3988,12 @@ async function confirmDeleteAccount() {
 // ─── 1 CONTRE 100 ─────────────────────────────────────────────────────────────
 
 const BOT_RANKS_DEF=[
-  {id:'E',count:40,successRate:0.38,color:'#9ca3af'},
-  {id:'D',count:25,successRate:0.52,color:'#60a5fa'},
-  {id:'C',count:20,successRate:0.65,color:'#34d399'},
-  {id:'B',count:10,successRate:0.75,color:'#fbbf24'},
-  {id:'A',count:4, successRate:0.85,color:'#f97316'},
-  {id:'S',count:1, successRate:0.93,color:'#a855f7'},
+  {id:'E',count:40,minRate:0.30,maxRate:0.50,color:'#9ca3af'},
+  {id:'D',count:25,minRate:0.45,maxRate:0.65,color:'#60a5fa'},
+  {id:'C',count:20,minRate:0.60,maxRate:0.75,color:'#34d399'},
+  {id:'B',count:10,minRate:0.72,maxRate:0.85,color:'#fbbf24'},
+  {id:'A',count:4, minRate:0.82,maxRate:0.92,color:'#f97316'},
+  {id:'S',count:1, minRate:0.90,maxRate:0.97,color:'#a855f7'},
 ];
 
 const BOT_NAMES_POOL=[
@@ -4035,26 +4035,28 @@ function generateVs100Bots(){
         name:BOT_NAMES_POOL[nameIdx%BOT_NAMES_POOL.length],
         rank:tier.id,
         color:tier.color,
-        successRate:tier.successRate,
+        successRate:tier.minRate+Math.random()*(tier.maxRate-tier.minRate),
         eliminated:false,
       });
       nameIdx++;
     }
   });
-  return bots;
+  // 0.5% chance: Rang National (quasi-imbattable)
+  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'NAT',color:'#e2e8f0',successRate:0.99,name:'??? [NAT]'};}
+    return bots;
 }
 
 async function fetchVs100Questions(){
   try{
     const{data}=await sb.from('quiz_questions')
-      .select('id,question,correct_answer,wrong_answers')
+      .select('id,question,correct_answer,wrong_answers,explanation')
       .limit(300);
     if(data&&data.length>=10){
-      const shuffled=data.sort(()=>Math.random()-.5).slice(0,10);
+      const shuffled=data.sort(()=>Math.random()-.5);
       return shuffled.map(q=>{
         const allAns=[q.correct_answer,...(q.wrong_answers||[])].filter(Boolean).sort(()=>Math.random()-.5);
         if(allAns.length<2)return null;
-        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer)};
+        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer),explanation:q.explanation||''};
       }).filter(Boolean);
     }
   }catch(e){console.error('fetchVs100',e);}
@@ -4091,12 +4093,12 @@ function show1vs100Lobby(){
     <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
   </div>
   <div class="vs100-rules-grid">
-    <div class="vs100-rule"><span>❓</span><span>10 questions · 4 choix</span></div>
-    <div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S</span></div>
+    <div class="vs100-rule"><span>❓</span><span>4 choix · questions des anecdotes</span></div>
+    <div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S (voire NAT)</span></div>
     <div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>
     <div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>
-    <div class="vs100-rule"><span>🏆</span><span>Tous éliminés = +500 XP</span></div>
-    <div class="vs100-rule"><span>📈</span><span>Les forts survivent plus longtemps</span></div>
+    <div class="vs100-rule"><span>🏆</span><span>Victoire = +500 XP (bonus survie)</span></div>
+    <div class="vs100-rule"><span>📈</span><span>Rang NAT : 0.5% de chance (99% précision)</span></div>
   </div>
   <div class="vs100-preview-wrap">
     <div class="vs100-preview-label">LES 100 CHALLENGERS</div>
@@ -4134,7 +4136,7 @@ function renderVs100Question(){
   <div class="vs100-arena-top">
     <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
     <div class="vs100-arena-info">
-      <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
+      <span class="vs100-q-badge">Q${s.currentQ+1}</span>
       <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
     </div>
     <div class="vs100-timer-ring" id="vs100-timer">20</div>
@@ -4186,6 +4188,18 @@ async function pickVs100Answer(chosen){
   // Animate bot eliminations
   await vs100AnimateElim(eliminated);
 
+  // Show explanation
+  const expl = q.explanation||'';
+  if(expl){
+    const qBox=document.querySelector('.vs100-question-box');
+    if(qBox){
+      const explDiv=document.createElement('div');
+      explDiv.className='vs100-expl';
+      explDiv.innerHTML='💡 '+expl;
+      qBox.appendChild(explDiv);
+    }
+  }
+
   // Update alive counter
   const aliveEl=document.getElementById('vs100-alive-count');
   if(aliveEl)aliveEl.textContent=s.botsAlive;
@@ -4233,7 +4247,7 @@ function vs100ShowInterlude(elimCount,botsLeft,nextQ){
         <span class="vs100-interlude-count">${botsLeft}</span>
         <span class="vs100-interlude-lbl">challenger${botsLeft>1?'s':''} encore debout</span>
       </div>
-      <div class="vs100-interlude-next">Question ${nextQ}/10</div>
+      <div class="vs100-interlude-next">Question ${nextQ}</div>
       <button class="vs100-continue-btn" onclick="this.closest('.vs100-interlude').remove();renderVs100Question();">Continuer ▶</button>
     </div>`;
   sc.appendChild(panel);
@@ -4251,7 +4265,7 @@ function endVs100Defeat(q,chosen){
   <div class="vs100-defeat-title">ÉLIMINÉ</div>
   <div class="vs100-defeat-msg">Les challengers ont eu raison de toi !</div>
   <div class="vs100-defeat-card">
-    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ-1} / 10</span></div>
+    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ-1}</span></div>
     <div class="vs100-dc-row"><span>Ta réponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
     <div class="vs100-dc-row"><span>Bonne réponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
     <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
