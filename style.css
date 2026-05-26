@@ -1486,4 +1486,32 @@ html.dark .hist-item, html.dark .prof-stat-card, html.dark .badge-card{
   background:var(--s0);
   border:1px solid var(--b1);
 }
-html.dark .hist-item:hover{border-colo
+html.dark .hist-item:hover{border-color:rgba(168,85,247,.2);}
+
+/* Stats window SL (déjà dark mais s'assure de la cohérence) */
+html.dark .sl-stats-panel{background:var(--s0);}
+
+/* Screen-wide background fix : retire tout fond parasite */
+#screen-anec,#screen-quiz,#screen-play,#screen-hist,
+#screen-profil,#screen-enigme,#screen-login,#screen-reg{
+  background:transparent;
+}
+
+/* sl-stats-btn dans la hunter card */
+.sl-stats-btn{
+  margin-top:.75rem;
+  width:100%;
+  padding:.5rem;
+  background:rgba(168,85,247,.1);
+  border:1px solid rgba(168,85,247,.25);
+  border-radius:.6rem;
+  color:#a855f7;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  cursor:pointer;
+  transition:background .15s,box-shadow .15s;
+}
+.sl-stats-btn:hover{background:rgba(168,85,247,.18);box-shadow:0 0 12px rgba(168,85,247,.2);}
+
