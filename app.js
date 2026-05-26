@@ -852,7 +852,7 @@ function buildList(){
     THEMES.forEach(t=>{
     const d=document.createElement('div');d.className='t-card';
     const tr=_TR[t.id]||{r:'E',c:'#9ca3af'};
-    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>;
+    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>';
     d.onclick=()=>{document.querySelectorAll('.t-card').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');selThemeId=t.id;if(btn)btn.classList.add('ok');};
     grid.appendChild(d);
   });
