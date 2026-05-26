@@ -550,6 +550,7 @@ async function showHub(){
         sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
       ]);
       const streak=computeStreak((allReads||[]).map(x=>x.date));
+      userStreak=streak;
       xp=calcSLXP({reads:(allReads||[]).length,quizzes:allQuiz||[],enigmas:allEnigma||[],streak});
       currentUserXP=xp;currentUserRank=getRank(xp);rank=currentUserRank;nextRank=getNextRank(xp);
     }
@@ -630,7 +631,7 @@ async function showHub(){
         </div>
         <div class="sl-hunter-streak">
           <span class="sl-streak-icon">🔥</span>
-          <span>${streak} jour${streak!==1?'s':''} de streak</span>
+          <span>${userStreak} jour${userStreak!==1?'s':''} de streak</span>
           ${done===3?'<span class="sl-missions-done">⚡ Missions complètes !</span>':'<span class="sl-missions-left">'+(3-done)+' mission'+(3-done>1?'s':'')+' restante'+(3-done>1?'s':'')+'</span>'}
         </div>
         <button class="sl-stats-btn" onclick="showStatsWindow()">📊 Stats</button>
