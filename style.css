@@ -1901,3 +1901,14 @@ html.dark .hist-item, html.dark .prof-stat
 @keyframes sl-spin{to{transform:rotate(360deg);}}
 @keyframes sl-pulse-txt{0%,100%{opacity:1;}50%{opacity:.45;}}
 @keyframes sl-scan{0%{left:-50%;width:50%;}100%{left:100%;width:50%;}}
+
+
+/* CENTERING FIX — anec-card + wrap padding */
+.anec-card{
+  margin-left:auto!important;
+  margin-right:auto!important;
+  max-width:680px!important;
+}
+.anec-wrap{
+  padding:1.5rem 1.5rem 4rem!important;
+}
