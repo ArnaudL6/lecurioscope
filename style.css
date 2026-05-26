@@ -1912,3 +1912,7 @@ html.dark .hist-item, html.dark .prof-stat
 .anec-wrap{
   padding:1.5rem 1.5rem 4rem!important;
 }
+
+/* CENTERING FIX */
+.anec-card{margin-left:auto!important;margin-right:auto!important;max-width:680px!important;}
+.anec-wrap{padding:1.5rem!important;}
