@@ -2102,3 +2102,14 @@ html.dark .hist-item, html.dark .prof-stat
   text-align:center!important;
   font-style:italic!important;
 }
+
+
+/* ── SL FIX: anecdote page – taille réduite ── */
+.anec-wrap{padding:.6rem .75rem .75rem!important;}
+.anec-card{padding:1.1rem 1.2rem!important;}
+.anec-title{font-size:1rem!important;margin-bottom:.4rem!important;}
+.anec-meta{font-size:.68rem!important;margin-bottom:.5rem!important;}
+#anec-body{font-size:.82rem!important;line-height:1.55!important;}
+#anec-body p{margin:.45rem 0!important;}
+.anec-tags{margin-top:.5rem!important;}
+.anec-note{font-size:.72rem!important;margin-top:.5rem!important;}
