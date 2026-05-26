@@ -2484,34 +2484,17 @@ function showHunterToast(username){
   updateToggleIcon();updateHeader();
   const savedColor=localStorage.getItem('adj_prof_color');
   if(savedColor)applyProfileColor(savedColor,false);
-  // onAuthStateChange: handles PKCE redirect + new OAuth users
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&!currentUser){
-      currentUser=await getProfile(session.user.id);
-      if(!currentUser){
-        const meta=session.user.user_metadata||{};
-        let uname=(meta.user_name||meta.full_name||meta.name||'chasseur'+Math.floor(Math.random()*9999)).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,20);
-        const{data:ex}=await sb.from('profiles').select('id').eq('username',uname).maybeSingle();
-        if(ex)uname=uname.slice(0,15)+'_'+Math.floor(Math.random()*999);
-        await sb.from('profiles').insert({id:session.user.id,username:uname,joined:today()});
-        currentUser={id:session.user.id,username:uname,joined:today(),email:session.user.email||''};
-      } else {currentUser.email=session.user.email||'';}
-      if(document.getElementById('screen-login')?.style.display!=='none'){
-        updateHeader();afterLogin();
-        loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
-      }
-    } else if(event==='SIGNED_OUT'){currentUser=null;updateHeader();show('screen-login');}
-  });
   const{data:{session}}=await sb.auth.getSession();
-  if(session){currentUser=await getProfile(session.user.id);if(currentUser)currentUser.email=session.user.email||'';
+  if(session){
+    currentUser=await getProfile(session.user.id);
     if(!currentUser){
       const meta=session.user.user_metadata||{};
-      let uname=(meta.user_name||meta.full_name||meta.name||'chasseur'+Math.floor(Math.random()*9999)).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,20);
+      let uname=(meta.user_name||meta.full_name||meta.name||'chasseur'+Math.floor(Math.random()*9999)).replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,20);
       const{data:ex}=await sb.from('profiles').select('id').eq('username',uname).maybeSingle();
       if(ex)uname=uname.slice(0,15)+'_'+Math.floor(Math.random()*999);
       await sb.from('profiles').insert({id:session.user.id,username:uname,joined:today()});
       currentUser={id:session.user.id,username:uname,joined:today(),email:session.user.email||''};
-    }
+    } else {currentUser.email=session.user.email||'';}
   }
   updateHeader();
   // Précharger l'anecdote en arrière-plan sans l'afficher
