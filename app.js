@@ -2715,6 +2715,17 @@ function _mysForm(ws){
   return `<div class="mys-form-t">🔎 Votre verdict</div><div class="mys-fg"><label class="mys-lbl">Nom du suspect</label><input class="mys-inp" id="mys-s-${ws}" type="text" placeholder="Entrez le nom du traître..." autocomplete="off"></div><div class="mys-fg"><label class="mys-lbl">Votre raisonnement</label><textarea class="mys-ta" id="mys-r-${ws}" placeholder="Expliquez les indices qui vous ont guidé..." rows="4"></textarea></div><button class="mys-sub" onclick="submitMystery('${ws}')">⚔️ SOUMETTRE MON VERDICT</button>`;
 }
 
+async function submitMysteryGuess(mysteryId){
+  if(!currentUser){showToast('⚠️ Connecte-toi pour soumettre !');return;}
+  const input=document.getElementById('wm-culprit-input');
+  if(!input||!input.value.trim()){showToast('⚠️ Entre ta déduction !');return;}
+  const{error}=await sb.from('mystery_guesses').insert({user_id:currentUser.id,mystery_id:mysteryId,culprit:input.value.trim()});
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('✓ Déduction soumise !');
+  const mw=document.getElementById('hub-mystery-wrap');
+  if(mw)buildWeeklyMystery(mw);
+}
+
 async function submitMystery(ws){
   const si=document.getElementById('mys-s-'+ws);
   const ri=document.getElementById('mys-r-'+ws);
@@ -4097,7 +4108,9 @@ function generateVs100Bots(){
 }
 
 async function fetchVs100Questions(userId){
-  try{const{data}=await sb.rpc('get_random_questions',{n:300,p_user_id:userId??null});
+  try{const _rq=sb.rpc('get_random_questions',{n:300,p_user_id:userId??null});
+    const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000));
+    const{data}=await Promise.race([_rq,_t]);
   if(data&&data.length>=10){const r=data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);if(r.length>=10)return r;}
   }catch(e){console.error('fetchVs100',e);}return null;
 }
