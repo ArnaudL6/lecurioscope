@@ -696,6 +696,8 @@ async function showHub(){
           </div>`;
         }).join('')}
       </div>
+      <div class="sl-section-header" style="margin-top:1rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
+      <div id="hub-challenge-wrap" style="margin-top:.5rem;"></div>
 
     </div>
   </div>
@@ -703,6 +705,7 @@ async function showHub(){
 </div>`;
 
   show('screen-hub');updateNav('');
+  setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);},200);
 }
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -903,7 +906,7 @@ function showAnec(typewrite){
     const cur=document.createElement('span');cur.className='cursor';bodyEl.appendChild(cur);
     const iv=setInterval(()=>{if(i>=txt.length){clearInterval(iv);cur.remove();initQuizArea();return;}cur.insertAdjacentText('beforebegin',txt[i++]);},18);
   }else{bodyEl.textContent=txt;initQuizArea();}
-  startCountdown();initRating();setTimeout(loadCommentsFeed,300);setTimeout(()=>{if(typeof loadContexte==='function')loadContexte();},400);setTimeout(loadReactions,500);setTimeout(()=>{const hw=document.getElementById('home-challenge-wrap');if(hw)buildCommunityChallenge(hw);},600);
+  startCountdown();initRating();setTimeout(loadCommentsFeed,300);setTimeout(()=>{if(typeof loadContexte==='function')loadContexte();},400);setTimeout(loadReactions,500);
 }
 
 async function markRead(){
