@@ -710,7 +710,7 @@ async function showHub(){
   setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);},200);
 }
 
-═════════════════════════════
+// ═════════════════════════════
 
 function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
   const old=document.getElementById('sl-notif');if(old)old.remove();
