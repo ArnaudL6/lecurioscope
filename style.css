@@ -1408,6 +1408,8 @@ main{padding-bottom:5.5rem;}
   .theme-grid{max-width:680px;margin-left:auto;margin-right:auto;}
   /* Profil max-width */
   #screen-profile{max-width:720px;margin:0 auto;}
+  /* Autres screens max-width */
+  #screen-pick,#screen-hist,#screen-multi{max-width:720px;margin:0 auto;}
 
   /* Anecdote / quiz plus larges */
   .anec-card{max-width:680px;}
@@ -1488,3 +1490,28 @@ html.dark .opt-btn.wrong{border-color:#f87171;background:rgba(248,113,113,.08);}
 
 /* History / profil cards */
 html.dark .hist-item, html.dark .prof-stat
+
+/* ═══════════════════════════════════════════════════════════
+   SL — THEME PICKER RANKS + PLAY GATES + MISC
+═══════════════════════════════════════════════════════════ */
+/* Rank badge on theme cards */
+.sl-trank{font-size:.52rem;font-weight:800;letter-spacing:.1em;border:1.5px solid;border-radius:.3rem;padding:.12rem .38rem;flex-shrink:0;font-family:'Space Grotesk',sans-serif;}
+.sl-txp{font-size:.6rem;font-weight:700;font-family:'Space Grotesk',sans-serif;margin-left:auto;flex-shrink:0;opacity:.85;}
+.t-card{justify-content:flex-start;}
+.t-card.sel .sl-trank{box-shadow:0 0 8px currentColor;}
+
+/* SL Play gates (Jouer screen) */
+.sl-play-gates{display:flex;flex-direction:column;gap:.75rem;}
+.sl-play-gate{background:var(--s1);border:1px solid var(--b1);border-radius:var(--card-radius);padding:1rem 1.2rem;cursor:pointer;transition:all .22s;box-shadow:var(--card-shadow);}
+.sl-play-gate:hover{border-color:rgba(168,85,247,.4);background:var(--s2);box-shadow:0 0 20px rgba(168,85,247,.1);}
+.sl-play-gate-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:.65rem;}
+.sl-play-gate-bd{display:flex;align-items:center;gap:.85rem;margin-bottom:.65rem;}
+
+/* SL hist cards — subtle glow on hover */
+.hist-screen-card:hover{border-color:rgba(168,85,247,.25);box-shadow:0 4px 20px rgba(168,85,247,.07);}
+.hist-read-badge{color:#34d399;font-size:.6rem;font-weight:700;letter-spacing:.05em;}
+.hist-unread-badge{color:#9ca3af;font-size:.6rem;font-weight:700;letter-spacing:.05em;}
+
+/* Ligue screen */
+.sl-btn-primary{background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(168,85,247,.1));border:1.5px solid rgba(168,85,247,.5);border-radius:.65rem;color:#a855f7;font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.06em;padding:.7rem 1rem;cursor:pointer;transition:all .22s;}
+.sl-btn-primary:hover{background:rgba(168,85,247,.2);box-shadow:0 0 16px rgba(168,85,247,.2);}
