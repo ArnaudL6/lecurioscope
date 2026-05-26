@@ -752,6 +752,7 @@ async function awardXP(amount,questTitle){
   if(newRank.id!==prevRank.id){
     setTimeout(()=>showLevelUp(newRank),1500);
   }
+  sb.from('profiles').update({xp:currentUserXP}).eq('id',currentUser.id);
 }
 
 async function showStatsWindow(){
@@ -1009,6 +1010,7 @@ async function goProfile(){
   // XP & niveau
   const xp=calcXP(r.length,q.length,streak);
   currentUserXP=calcSLXP({reads:r.length,quizzes:q,enigmas:enigmaStats||[],streak});
+if(currentUser?.xp&&currentUser.xp>currentUserXP)currentUserXP=currentUser.xp;
   currentUserRank=getRank(currentUserXP);
   const nextSlRank=getNextRank(currentUserXP);
   const chip=document.getElementById('prof-level-chip');
@@ -4066,7 +4068,7 @@ function generateVs100Bots(){
   return bots;
 }
 
-async function fetchVs100Questions(){try{const{data}=await sb.rpc('get_random_questions',{n:300});if(data&&data.length>=10){return data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);}}catch(e){console.error('fetchVs100',e);}}
+async function fetchVs100Questions(){try{const{data}=await sb.rpc('get_random_questions',{n:300,p_user_id:uid});if(data&&data.length>=10){return data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);}}catch(e){console.error('fetchVs100',e);}}
 
 function getOrCreateVs100Screen(){
   let sc=document.getElementById('screen-vs100');
@@ -4222,6 +4224,7 @@ async function pickVs100Answer(chosen){
   if(s.botsAlive===0){await vs100Delay(400);endVs100Victory();return;}
 
   // Show inter-question panel
+  await new Promise(res=>{const btn=document.createElement('button');btn.className='sl-btn vs100-continue-btn';btn.textContent='Continuer →';btn.onclick=()=>{btn.remove();res();};const qb=document.getElementById('vs100-qbox');if(qb)qb.appendChild(btn);else res();});
   vs100ShowInterlude(eliminated.length,s.botsAlive,s.currentQ);
 }
 
