@@ -2117,3 +2117,7 @@ html.dark .hist-item, html.dark .prof-stat
 /* ── SL FIX: écran anecdote – fond transparent + hauteur naturelle ── */
 #screen-anec{background:transparent!important;}
 .anec-wrap{min-height:unset!important;padding-bottom:2rem!important;}
+
+/* ── SL FIX: anecdote – card plus large, marges réduites ── */
+.anec-card{max-width:min(860px,88vw)!important;margin:1rem auto!important;}
+.anec-wrap{max-width:min(920px,92vw)!important;margin:0 auto!important;padding:.5rem .5rem 2rem!important;}
