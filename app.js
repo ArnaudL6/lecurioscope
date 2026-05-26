@@ -1388,7 +1388,7 @@ function buildBadgesTab(data){
     +'<div class="badges-grid">'+earned.map(b=>card(b,true)).join('')+locked.map(b=>card(b,false)).join('')+'</div>';
 }
 
-function toggleDark(){const d=document.documentElement.classList.toggle('dark');localStorage.setItem('adj_mode',d?'dark':'light');updateToggleIcon();}
+function toggleDark(){/* dark mode permanent */}
 function updateToggleIcon(){const btn=document.getElementById('dark-toggle');if(!btn)return;btn.textContent=document.documentElement.classList.contains('dark')?'☀️':'🌙';}
 
 function goPlay(){
@@ -2463,8 +2463,8 @@ async function buildIdentityCard(reads,qhist,allAnec){
 }
 
 (async function init(){
-  const mode=localStorage.getItem('adj_mode')||'dark';
-  if(mode==='dark')document.documentElement.classList.add('dark');
+  document.documentElement.classList.add('dark');
+  localStorage.setItem('adj_mode','dark');
   updateToggleIcon();updateHeader();
   const savedColor=localStorage.getItem('adj_prof_color');
   if(savedColor)applyProfileColor(savedColor,false);
