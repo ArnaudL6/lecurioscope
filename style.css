@@ -1525,3 +1525,6 @@ html.dark .hist-item, html.dark .prof-stat
 
 .sl-stats-btn{background:none;border:1px solid rgba(52,211,153,.35);color:#34d399;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .75rem;border-radius:.3rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.3rem;margin-top:.4rem;}
 .sl-stats-btn:hover{background:rgba(52,211,153,.1);border-color:#34d399;box-shadow:0 0 10px rgba(52,211,153,.2);}
+
+.vs100-expl{margin-top:.75rem;padding:.6rem .9rem;background:rgba(52,211,153,.08);border-left:3px solid #34d399;border-radius:0 .4rem .4rem 0;font-size:.75rem;color:var(--ink2);line-height:1.55;animation:vs100ExplIn .3s ease;}
+@keyframes vs100ExplIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
