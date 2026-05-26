@@ -2113,3 +2113,7 @@ html.dark .hist-item, html.dark .prof-stat
 #anec-body p{margin:.45rem 0!important;}
 .anec-tags{margin-top:.5rem!important;}
 .anec-note{font-size:.72rem!important;margin-top:.5rem!important;}
+
+/* ── SL FIX: écran anecdote – fond transparent + hauteur naturelle ── */
+#screen-anec{background:transparent!important;}
+.anec-wrap{min-height:unset!important;padding-bottom:2rem!important;}
