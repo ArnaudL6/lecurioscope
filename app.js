@@ -2679,7 +2679,7 @@ async function buildCommunityChallenge(el){
   const now=new Date();
   const dow=(now.getDay()+6)%7;
   const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
-  const ws=mon.toISOString().slice(0,10);
+  const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
 
   const{data:ch}=await sb.from('community_challenges').select('*').eq('week_start',ws).maybeSingle();
   if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">🎯</span><p style="color:var(--ink3);font-size:.8rem">Défi de la semaine bientôt disponible !</p></div>';return;}
