@@ -663,6 +663,8 @@ async function showHub(){
         </div>
       </div>
 
+      <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
+      <div id="hub-challenge-wrap" style="margin-top:.5rem;"></div>
     </div>
     <div class="sl-hub-right">
 
@@ -699,15 +701,12 @@ async function showHub(){
       <div class="sl-section-header" style="margin-top:1rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
       <div id="hub-challenge-wrap" style="margin-top:.5rem;"></div>
 
+
+
     </div>
   </div>
 
-</div>`;
-
-  show('screen-hub');updateNav('');
-  setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);},200);
-}
-// ══════════════════════════════════════════════════════════════════════════════
+</div>═════════════════════════════
 
 function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
   const old=document.getElementById('sl-notif');if(old)old.remove();
