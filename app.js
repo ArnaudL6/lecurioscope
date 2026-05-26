@@ -603,96 +603,104 @@ async function showHub(){
     <div class="sl-system-date">${cap(dateStr)}</div>
   </div>
 
-  ${currentUser?`
-  <div class="sl-hunter-card" style="--rank-color:${rank.color};--rank-glow:${rank.glow};--rank-bg:${rank.bg};">
-    <div class="sl-hunter-top">
-      <div class="sl-hunter-info">
-        <div class="sl-hunter-label">CHASSEUR</div>
-        <div class="sl-hunter-name">${currentUser.username}</div>
-      </div>
-      <div class="sl-rank-badge" style="color:${rank.color};border-color:${rank.color};box-shadow:${rank.glow};">
-        <span class="sl-rank-id">${rank.label}</span>
-        <span class="sl-rank-title">${rank.title}</span>
-      </div>
-    </div>
-    <div class="sl-xp-section">
-      <div class="sl-xp-row">
-        <span class="sl-xp-label">XP TOTAL</span>
-        <span class="sl-xp-val" style="color:${rank.color};">${xp.toLocaleString('fr-FR')}</span>
-        ${nextRank?`<span class="sl-xp-next">/ ${nextRank.minXP.toLocaleString('fr-FR')} → ${nextRank.label}</span>`:'<span class="sl-xp-next">⭐ RANG MAXIMUM</span>'}
-      </div>
-      <div class="sl-xp-track">
-        <div class="sl-xp-fill" style="width:${pctRank}%;background:${rank.color};box-shadow:0 0 8px ${rank.color}66;"></div>
-      </div>
-    </div>
-    <div class="sl-hunter-streak">
-      <span class="sl-streak-icon">🔥</span>
-      <span>${userStreak} jour${userStreak!==1?'s':''} de streak</span>
-      ${done===3?'<span class="sl-missions-done">⚡ Missions complètes !</span>':'<span class="sl-missions-left">'+(3-done)+' mission'+(3-done>1?'s':'')+' restante'+(3-done>1?'s':'')+'</span>'}
-    </div>
-  </div>`:`
-  <div class="sl-guest-card">
-    <div class="sl-system-label">⚡ THE SYSTEM</div>
-    <div style="font-size:.85rem;color:var(--ink3);margin-top:.5rem;">Connecte-toi pour rejoindre le Système.</div>
-    <button class="sl-btn-primary" style="margin-top:1rem;" onclick="show('screen-login')">S'éveiller →</button>
-  </div>`}
+  <div class="sl-hub-cols">
+    <div class="sl-hub-left">
 
-  <div class="sl-section-header">
-    <span class="sl-section-icon">⚔</span>
-    <span>QUÊTES JOURNALIÈRES</span>
-    <span class="sl-section-count">${done}/3</span>
-  </div>
-  <div class="sl-gates">
-    ${gateHTML(gateAnec)}
-    ${gateHTML(gateEnigma)}
-    ${gateHTML(gateQuiz)}
-  </div>
+      ${currentUser?`
+      <div class="sl-hunter-card" style="--rank-color:${rank.color};--rank-glow:${rank.glow};--rank-bg:${rank.bg};">
+        <div class="sl-hunter-top">
+          <div class="sl-hunter-info">
+            <div class="sl-hunter-label">CHASSEUR</div>
+            <div class="sl-hunter-name">${currentUser.username}</div>
+          </div>
+          <div class="sl-rank-badge" style="color:${rank.color};border-color:${rank.color};box-shadow:${rank.glow};">
+            <span class="sl-rank-id">${rank.label}</span>
+            <span class="sl-rank-title">${rank.title}</span>
+          </div>
+        </div>
+        <div class="sl-xp-section">
+          <div class="sl-xp-row">
+            <span class="sl-xp-label">XP TOTAL</span>
+            <span class="sl-xp-val" style="color:${rank.color};">${xp.toLocaleString('fr-FR')}</span>
+            ${nextRank?`<span class="sl-xp-next">/ ${nextRank.minXP.toLocaleString('fr-FR')} → ${nextRank.label}</span>`:'<span class="sl-xp-next">⭐ RANG MAXIMUM</span>'}
+          </div>
+          <div class="sl-xp-track">
+            <div class="sl-xp-fill" style="width:${pctRank}%;background:${rank.color};box-shadow:0 0 8px ${rank.color}66;"></div>
+          </div>
+        </div>
+        <div class="sl-hunter-streak">
+          <span class="sl-streak-icon">🔥</span>
+          <span>${userStreak} jour${userStreak!==1?'s':''} de streak</span>
+          ${done===3?'<span class="sl-missions-done">⚡ Missions complètes !</span>':'<span class="sl-missions-left">'+(3-done)+' mission'+(3-done>1?'s':'')+' restante'+(3-done>1?'s':'')+'</span>'}
+        </div>
+        <button class="sl-stats-btn" onclick="showStatsWindow()">📊 Stats</button>
+      </div>`:`
+      <div class="sl-guest-card">
+        <div class="sl-system-label">⚡ THE SYSTEM</div>
+        <div style="font-size:.85rem;color:var(--ink3);margin-top:.5rem;">Connecte-toi pour rejoindre le Système.</div>
+        <button class="sl-btn-primary" style="margin-top:1rem;" onclick="show('screen-login')">S'éveiller →</button>
+      </div>`}
 
-  <div class="sl-section-header sl-section-arena">
-    <span class="sl-section-icon">⚔</span>
-    <span>ARÈNE</span>
-    <span class="sl-section-new">NOUVEAU</span>
-  </div>
-  <div class="sl-arena-section">
-    <div class="sl-arena-gate" onclick="show1vs100Lobby()">
-      <div class="sl-arena-gate-hd">
-        <span class="sl-arena-tag">S-RANG</span>
-        <span class="sl-arena-xp">+500 XP</span>
+      <div class="sl-section-header sl-section-arena">
+        <span class="sl-section-icon">⚔</span>
+        <span>ARÈNE</span>
+        <span class="sl-section-new">NOUVEAU</span>
       </div>
-      <div class="sl-arena-gate-bd">
-        <span class="sl-arena-ico">⚡</span>
-        <div>
-          <div class="sl-arena-name">1 CONTRE 100</div>
-          <div class="sl-arena-desc">Affronte 100 challengers. Reste le dernier debout.</div>
+      <div class="sl-arena-section">
+        <div class="sl-arena-gate" onclick="show1vs100Lobby()">
+          <div class="sl-arena-gate-hd">
+            <span class="sl-arena-tag">S-RANG</span>
+            <span class="sl-arena-xp">+500 XP</span>
+          </div>
+          <div class="sl-arena-gate-bd">
+            <span class="sl-arena-ico">⚡</span>
+            <div>
+              <div class="sl-arena-name">1 CONTRE 100</div>
+              <div class="sl-arena-desc">Affronte 100 challengers. Reste le dernier debout.</div>
+            </div>
+          </div>
+          <div class="sl-arena-enter">▶ ENTRER DANS L'ARÈNE</div>
         </div>
       </div>
-      <div class="sl-arena-enter">▶ ENTRER DANS L'ARÈNE</div>
+
+    </div>
+    <div class="sl-hub-right">
+
+      <div class="sl-section-header">
+        <span class="sl-section-icon">⚔</span>
+        <span>QUÊTES JOURNALIÈRES</span>
+        <span class="sl-section-count">${done}/3</span>
+      </div>
+      <div class="sl-gates">
+        ${gateHTML(gateAnec)}
+        ${gateHTML(gateEnigma)}
+        ${gateHTML(gateQuiz)}
+      </div>
+
+      <div class="sl-section-header sl-section-locked">
+        <span class="sl-section-icon">🔒</span>
+        <span>PORTAILS FERMÉS</span>
+        <span class="sl-section-count">BIENTÔT</span>
+      </div>
+      <div class="sl-locked-gates">
+        ${[
+          {rank:'S',icon:'🎙',name:'Mais dis moi ?'},
+          {rank:'A',icon:'📅',name:'Éphéméride'},
+          {rank:'S',icon:'💬',name:"T'as dit quoi ?!"},
+        ].map(g=>{
+          const rk=RANKS.find(r=>r.id===g.rank)||RANKS[5];
+          return `<div class="sl-locked-gate">
+            <span class="sl-locked-icon">${g.icon}</span>
+            <span class="sl-locked-name">${g.name}</span>
+            <span class="sl-locked-rank" style="color:${rk.color};">[${g.rank}-RANG]</span>
+          </div>`;
+        }).join('')}
+      </div>
+
     </div>
   </div>
 
-  <div class="sl-section-header sl-section-locked">
-    <span class="sl-section-icon">🔒</span>
-    <span>PORTAILS FERMÉS</span>
-    <span class="sl-section-count">BIENTÔT</span>
-  </div>
-  <div class="sl-locked-gates">
-    ${[
-      {rank:'S',icon:'🎙',name:'Mais dis moi ?'},
-      {rank:'A',icon:'📅',name:'Éphéméride'},
-      {rank:'S',icon:'💬',name:"T'as dit quoi ?!"},
-    ].map(g=>{
-      const rk=RANKS.find(r=>r.id===g.rank)||RANKS[5];
-      return `<div class="sl-locked-gate">
-        <span class="sl-locked-icon">${g.icon}</span>
-        <span class="sl-locked-name">${g.name}</span>
-        <span class="sl-locked-rank" style="color:${rk.color};">[${g.rank}-RANG]</span>
-      </div>`;
-    }).join('')}
-  </div>
-
-</div>`;
-
-  show('screen-hub');updateNav('');
+</div>`;updateNav('');
 }
 // ══════════════════════════════════════════════════════════════════════════════
 

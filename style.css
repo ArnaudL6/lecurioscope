@@ -11,15 +11,15 @@
   --header-bg:rgba(255,255,255,.94);
 }
 html.dark{
-  /* ── Dark theme ──────────────────────────────────────────────────────── */
-  --bg:#07090d;--s0:#0e1218;--s1:#0e1218;--s2:#131a24;
-  --b1:rgba(255,255,255,.055);--b2:rgba(255,255,255,.10);--b3:rgba(255,255,255,.18);
+  /* ── Solo Leveling dark theme ──────────────────────────────────────── */
+  --bg:#07090f;--s0:#0d0f1c;--s1:#101320;--s2:#141728;
+  --b1:rgba(255,255,255,.055);--b2:rgba(255,255,255,.10);--b3:rgba(255,255,255,.20);
   --ink:#eef0f4;--ink2:#94a3b8;--ink3:#475569;
-  --a:#22d3ee;--a2:#06b6d4;--adim:rgba(34,211,238,.08);--aglow:rgba(34,211,238,.22);
+  --a:#a855f7;--a2:#9333ea;--adim:rgba(168,85,247,.08);--aglow:rgba(168,85,247,.20);
   --gr:#34d399;--re:#f87171;--bl:#818cf8;
   --card-shadow:none;
-  --card-radius:.25rem;
-  --header-bg:rgba(7,9,13,.85);
+  --card-radius:.5rem;
+  --header-bg:rgba(7,9,15,.88);
 }
 /* Light-only visual tweaks */
 body::before{opacity:.18;}
@@ -1145,7 +1145,7 @@ main{padding-bottom:5.5rem;}
 .hub-wip-pill{display:inline-block;font-family:'Space Grotesk',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.1em;background:var(--b1);color:var(--ink3);border-radius:8px;padding:.15rem .4rem;}
 
 /* ══ SOLO LEVELING — SYSTÈME ══════════════════════════════════════════════════ */
-#screen-hub{overflow-y:auto;background:var(--bg);}
+#screen-hub{overflow-y:auto;}
 .sl-hub{max-width:480px;margin:0 auto;padding:1.25rem 1rem 5rem;}
 
 /* System header */
@@ -1281,7 +1281,7 @@ main{padding-bottom:5.5rem;}
 /* ═══════════════════════════════════════════════════════════
    1 CONTRE 100 — LOBBY
 ═══════════════════════════════════════════════════════════ */
-#screen-vs100{background:#080810;overflow-y:auto;}
+#screen-vs100{overflow-y:auto;}
 .vs100-lobby{max-width:480px;margin:0 auto;padding:1.5rem 1rem 3rem;}
 .vs100-lobby-header{text-align:center;margin-bottom:1.5rem;}
 .vs100-back-btn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:.75rem;padding:.35rem .8rem;border-radius:.5rem;cursor:pointer;margin-bottom:1rem;}
@@ -1376,7 +1376,136 @@ main{padding-bottom:5.5rem;}
 .vs100-back-gold{background:linear-gradient(135deg,#fbbf24,#f97316);border:none;border-radius:.75rem;color:#000;font-size:.9rem;font-weight:800;padding:.85rem 2rem;cursor:pointer;box-shadow:0 4px 20px rgba(251,191,36,.35);}
 /* Particles */
 .vs100-vp{position:absolute;width:6px;height:6px;border-radius:50%;background:#fbbf24;animation:vs100-confetti 3s ease-out calc(var(--vi)*0.12s) infinite;top:50%;left:50%;}
-@keyframes vs100-confetti{
-  0%{transform:translate(0,0) scale(1);opacity:1;}
-  100%{transform:translate(calc((var(--vi)-10)*30px),calc(-200px - var(--vi)*15px)) scale(0);opacity:0;}
+@keyframes
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESKTOP — Hub 2 colonnes + écrans larges
+═══════════════════════════════════════════════════════════ */
+
+/* Sur desktop, les screens peuvent être plus larges */
+@media(min-width:768px){
+  main{padding:2rem 2.5rem;}
+  .screen{max-width:100%;}
+  .auth-panel{max-width:420px;}
+
+  /* Hub — 2 colonnes */
+  .sl-hub{max-width:980px;padding:1.5rem 0 3rem;}
+  .sl-hub-cols{display:flex;flex-direction:row;gap:1.5rem;align-items:flex-start;}
+  .sl-hub-left{width:340px;flex-shrink:0;position:sticky;top:70px;}
+  .sl-hub-right{flex:1;min-width:0;}
+  .sl-gates{display:flex;flex-direction:column;gap:.75rem;}
+  .sl-section-header{margin-top:.5rem;}
+
+  /* Anecdote / quiz plus larges */
+  .anec-card{max-width:680px;}
+  .quiz-card{max-width:680px;}
+  .pick-grid{grid-template-columns:repeat(3,1fr);}
+  .t-grid{grid-template-columns:repeat(3,1fr);}
+
+  /* Profile wider */
+  .prof-hero-card{max-width:700px;}
+  .prof-stats-grid{grid-template-columns:repeat(4,1fr);}
 }
+
+@media(min-width:1100px){
+  .sl-hub{max-width:1100px;}
+  .sl-hub-left{width:380px;}
+}
+
+/* Mobile: hub colonnes en colonne simple */
+@media(max-width:767px){
+  .sl-hub-cols{display:flex;flex-direction:column;}
+  .sl-hub-left,.sl-hub-right{width:100%;}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HARMONISATION DESIGN SL — Tous écrans
+═══════════════════════════════════════════════════════════ */
+
+/* Cards et surfaces principales dans le thème SL */
+html.dark .anec-card{
+  background:linear-gradient(135deg,var(--s0),var(--s1));
+  border:1px solid var(--b1);
+  box-shadow:0 0 0 1px rgba(168,85,247,.08),0 8px 32px rgba(0,0,0,.3);
+}
+html.dark .anec-card:hover{
+  border-color:rgba(168,85,247,.2);
+  box-shadow:0 0 0 1px rgba(168,85,247,.15),0 12px 40px rgba(0,0,0,.4);
+}
+
+/* Boutons primaires → SL purple */
+html.dark .btn-primary{
+  background:linear-gradient(135deg,#a855f7,#9333ea);
+  border:none;
+  box-shadow:0 4px 16px rgba(168,85,247,.3);
+}
+html.dark .btn-primary:hover{
+  box-shadow:0 6px 24px rgba(168,85,247,.45);
+  transform:translateY(-1px);
+}
+
+/* Inputs dans le thème SL */
+html.dark .f input, html.dark .f textarea, html.dark .f select{
+  background:var(--s1);
+  border:1px solid var(--b2);
+  color:var(--ink);
+}
+html.dark .f input:focus, html.dark .f textarea:focus{
+  border-color:#a855f7;
+  box-shadow:0 0 0 3px rgba(168,85,247,.12);
+}
+
+/* Nav bottom bar dans le thème SL */
+html.dark .bn{background:rgba(7,9,15,.95);border-top:1px solid rgba(168,85,247,.1);}
+html.dark .bn-item.active .bn-icon,html.dark .bn-item.active .bn-lbl{color:#a855f7;}
+
+/* Header SL */
+html.dark header{border-bottom:1px solid rgba(168,85,247,.1);}
+
+/* Quiz options SL */
+html.dark .opt-btn{
+  background:var(--s1);
+  border:1px solid var(--b1);
+  transition:border-color .15s,box-shadow .15s;
+}
+html.dark .opt-btn:hover{border-color:rgba(168,85,247,.3);box-shadow:0 0 0 1px rgba(168,85,247,.15);}
+html.dark .opt-btn.selected{border-color:#a855f7;background:rgba(168,85,247,.08);box-shadow:0 0 0 1px #a855f7;}
+html.dark .opt-btn.correct{border-color:#34d399;background:rgba(52,211,153,.08);}
+html.dark .opt-btn.wrong{border-color:#f87171;background:rgba(248,113,113,.08);}
+
+/* History / profil cards */
+html.dark .hist-item, html.dark .prof-stat-card, html.dark .badge-card{
+  background:var(--s0);
+  border:1px solid var(--b1);
+}
+html.dark .hist-item:hover{border-color:rgba(168,85,247,.2);}
+
+/* Stats window SL (déjà dark mais s'assure de la cohérence) */
+html.dark .sl-stats-panel{background:var(--s0);}
+
+/* Screen-wide background fix : retire tout fond parasite */
+#screen-anec,#screen-quiz,#screen-play,#screen-hist,
+#screen-profil,#screen-enigme,#screen-login,#screen-reg{
+  background:transparent;
+}
+
+/* sl-stats-btn dans la hunter card */
+.sl-stats-btn{
+  margin-top:.75rem;
+  width:100%;
+  padding:.5rem;
+  background:rgba(168,85,247,.1);
+  border:1px solid rgba(168,85,247,.25);
+  border-radius:.6rem;
+  color:#a855f7;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  cursor:pointer;
+  transition:background .15s,box-shadow .15s;
+}
+.sl-stats-btn:hover{background:rgba(168,85,247,.18);box-shadow:0 0 12px rgba(168,85,247,.2);}
+
+/* sl-hub-cols mobile par défaut */
+.sl-hub-cols{display:flex;flex-direction:column;gap:0;}
+.sl-hub-left,.sl-hub-right{width:100%;}
