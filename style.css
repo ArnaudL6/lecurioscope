@@ -2137,3 +2137,46 @@ html.dark .hist-item, html.dark .prof-stat
 
 /* ── SL FIX: supprimer le trait sur contexte-toggle ── */
 .contexte-toggle{border:none!important;border-top:none!important;}
+
+
+/* ── SL MYSTERY : L'Enquête de la semaine ── */
+.sl-mystery-card{background:linear-gradient(160deg,#060e1e 0%,#030810 100%);border:1px solid rgba(0,200,255,.18);border-radius:10px;padding:1rem 1.1rem 1.2rem;position:relative;overflow:hidden;}
+.sl-mystery-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,200,255,.05) 0%,transparent 70%);pointer-events:none;}
+.mys-empty{color:rgba(0,200,255,.5);font-size:.85rem;text-align:center;padding:1.5rem 0;font-style:italic;}
+.mys-title{font-size:.95rem;font-weight:700;color:#e8f4ff;letter-spacing:.04em;text-transform:uppercase;margin:.45rem 0 .8rem;padding-bottom:.5rem;border-bottom:1px solid rgba(0,200,255,.12);}
+
+/* Actes */
+.mys-acts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.85rem;}
+.mys-act{border-radius:7px;padding:.6rem .8rem;transition:box-shadow .2s;}
+.mys-act--on{background:rgba(0,200,255,.06);border:1px solid rgba(0,200,255,.22);box-shadow:0 0 8px rgba(0,200,255,.07);}
+.mys-act--on:hover{box-shadow:0 0 14px rgba(0,200,255,.14);}
+.mys-act--off{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;gap:.5rem;opacity:.65;}
+.mys-act-hd{font-size:.78rem;font-weight:700;color:#00c8ff;letter-spacing:.03em;margin-bottom:.35rem;display:block;}
+.mys-act--off .mys-act-hd{margin-bottom:0;color:rgba(0,200,255,.5);}
+.mys-act-day{font-weight:400;color:rgba(0,200,255,.6);font-size:.74rem;}
+.mys-act-body{font-size:.82rem;line-height:1.65;color:#c8dff0;white-space:pre-line;}
+.mys-act-lock{font-size:.74rem;color:rgba(200,220,240,.4);font-style:italic;white-space:nowrap;}
+
+/* Formulaire */
+.mys-form-wait{font-size:.8rem;color:rgba(0,200,255,.45);text-align:center;padding:.6rem;font-style:italic;}
+.mys-form{display:flex;flex-direction:column;gap:.6rem;padding:.7rem .85rem;background:rgba(0,0,0,.25);border-radius:8px;border:1px solid rgba(0,200,255,.12);margin-top:.3rem;}
+.mys-form-t{font-size:.82rem;font-weight:700;color:#00c8ff;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.1rem;}
+.mys-fg{display:flex;flex-direction:column;gap:.25rem;}
+.mys-lbl{font-size:.72rem;color:rgba(200,220,240,.55);letter-spacing:.04em;text-transform:uppercase;}
+.mys-inp,.mys-ta{background:rgba(0,10,25,.7);border:1px solid rgba(0,200,255,.18);border-radius:6px;color:#e0f0ff;font-size:.82rem;padding:.45rem .6rem;outline:none;resize:none;font-family:inherit;transition:border-color .2s;}
+.mys-inp:focus,.mys-ta:focus{border-color:rgba(0,200,255,.45);box-shadow:0 0 8px rgba(0,200,255,.1);}
+.mys-ta{min-height:90px;line-height:1.55;}
+.mys-sub{margin-top:.2rem;background:linear-gradient(135deg,#00a8d8,#0070a8);border:none;border-radius:7px;color:#fff;font-size:.82rem;font-weight:700;letter-spacing:.06em;padding:.55rem;cursor:pointer;text-transform:uppercase;transition:opacity .2s,box-shadow .2s;}
+.mys-sub:hover{opacity:.9;box-shadow:0 0 14px rgba(0,200,255,.35);}
+
+/* Verdict */
+.mys-verdict{border-radius:8px;padding:.75rem .9rem;margin-top:.3rem;}
+.mys-v--ok{background:rgba(36,225,128,.08);border:1px solid rgba(36,225,128,.3);}
+.mys-v--ko{background:rgba(220,50,50,.08);border:1px solid rgba(220,50,50,.3);}
+.mys-vt{font-size:.88rem;font-weight:700;margin-bottom:.35rem;}
+.mys-v--ok .mys-vt{color:#24e180;}
+.mys-v--ko .mys-vt{color:#f06060;}
+.mys-vd{font-size:.8rem;color:rgba(200,220,240,.7);line-height:1.55;margin-bottom:.4rem;}
+.mys-explain{font-size:.78rem;color:rgba(200,220,240,.55);line-height:1.6;padding-top:.4rem;border-top:1px solid rgba(36,225,128,.15);margin-top:.3rem;}
+.mys-retry{background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.25);border-radius:6px;color:#00c8ff;font-size:.76rem;font-weight:700;padding:.35rem .7rem;cursor:pointer;transition:background .2s;}
+.mys-retry:hover{background:rgba(0,200,255,.2);}
