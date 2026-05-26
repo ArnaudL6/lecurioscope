@@ -2134,3 +2134,6 @@ html.dark .hist-item, html.dark .prof-stat
 .contexte-txt{padding:0!important;margin-bottom:.75rem!important;line-height:1.65!important;}
 .contexte-toggle{justify-content:flex-end!important;padding:.3rem 0!important;margin-bottom:.25rem!important;border-top:1px solid rgba(0,200,255,.12)!important;margin-top:.5rem!important;}
 .contexte-sources{padding:0!important;margin-top:.5rem!important;}
+
+/* ── SL FIX: supprimer le trait sur contexte-toggle ── */
+.contexte-toggle{border:none!important;border-top:none!important;}
