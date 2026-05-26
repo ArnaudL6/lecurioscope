@@ -1506,6 +1506,3 @@ html.dark .sl-stats-panel{background:var(--s0);}
 }
 .sl-stats-btn:hover{background:rgba(168,85,247,.18);box-shadow:0 0 12px rgba(168,85,247,.2);}
 
-/* sl-hub-cols mobile par défaut */
-.sl-hub-cols{display:flex;flex-direction:column;gap:0;}
-.sl-hub-left,.sl-hub-right{width:100%;}
