@@ -4095,40 +4095,43 @@ function getOrCreateVs100Screen(){
 }
 function show1vs100Lobby(){
   const sc=getOrCreateVs100Screen();
-  let previewDots='';
-  BOT_RANKS_DEF.forEach(tier=>{
-    for(let i=0;i<tier.count;i++){
-      previewDots+=`<div class="vs100-dot" style="background:${tier.color};box-shadow:0 0 5px ${tier.color}55;"></div>`;
-    }
-  });
-  sc.innerHTML=`
-<div class="vs100-lobby">
-  <div class="vs100-lobby-header">
-    <button class="vs100-back-btn" onclick="showHub()">← Retour</button>
-    <div class="vs100-logo-wrap">
-      <div class="vs100-logo-1">1</div>
-      <div class="vs100-logo-vs">CONTRE</div>
-      <div class="vs100-logo-100">100</div>
-    </div>
-    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
-  </div>
-  <div class="vs100-rules-grid">
-    <div class="vs100-rule"><span>❓</span><span>4 choix · questions des anecdotes</span></div>
-    <div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S (voire NAT)</span></div>
-    <div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>
-    <div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>
-    <div class="vs100-rule"><span>🏆</span><span>Victoire = +500 XP (bonus survie)</span></div>
-    <div class="vs100-rule"><span>📈</span><span>Rang NAT : 0.5% de chance (99% précision)</span></div>
-  </div>
-  <div class="vs100-preview-wrap">
-    <div class="vs100-preview-label">LES 100 CHALLENGERS</div>
-    <div class="vs100-preview-grid">${previewDots}</div>
-    <div class="vs100-preview-legend">
-      ${BOT_RANKS_DEF.map(t=>`<span class="vs100-leg-dot" style="background:${t.color};"></span><span class="vs100-leg-lbl">${t.id} (${t.count})</span>`).join('')}
-    </div>
-  </div>
-  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">⚡ LANCER LA PARTIE</button>
-</div>`;
+  const previewBots=generateVs100Bots();
+  const rankColors={E:"#9ca3af",D:"#60a5fa",C:"#34d399",B:"#fbbf24",A:"#f97316",S:"#a855f7",NAT:"#e2e8f0"};
+  const counts={};
+  previewBots.forEach(b=>{counts[b.rank]=(counts[b.rank]||0)+1;});
+  const previewDots=previewBots.map(b=>'<div class="vs100-dot" style="background:'+b.color+';box-shadow:0 0 5px '+b.color+'55;" title="'+b.rank+'"></div>').join('');
+  const rankOrder=['NAT','S','A','B','C','D','E'];
+  const legendItems=Object.entries(counts).sort((a,b)=>rankOrder.indexOf(a[0])-rankOrder.indexOf(b[0])).map(([rank,cnt])=>{
+    const color=rankColors[rank]||"#fff";
+    const lbl=rank==="NAT"?"<b style='color:#e2e8f0'>★ NAT</b> ("+cnt+")":rank+" ("+cnt+")";
+    return '<span class="vs100-leg-dot" style="background:'+color+';"></span><span class="vs100-leg-lbl">'+lbl+'</span>';
+  }).join('');
+  const hasNat=previewBots.some(b=>b.rank==='NAT');
+  const natBadge=hasNat
+    ?'<div class="vs100-nat-badge">⚠️ Rang National détecté dans cette session !</div>'
+    :'<div class="vs100-nat-hint">★ Rang National : 0,5% de chance · 99% de précision</div>';
+  window._vs100PreviewBots=previewBots;
+  sc.innerHTML='<div class="vs100-lobby">'
+    +'<div class="vs100-lobby-header">'
+    +'<button class="vs100-back-btn" onclick="showHub()">← Retour</button>'
+    +'<div class="vs100-logo-wrap"><div class="vs100-logo-1">1</div><div class="vs100-logo-vs">CONTRE</div><div class="vs100-logo-100">100</div></div>'
+    +'<p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p></div>'
+    +'<div class="vs100-rules-grid">'
+    +'<div class="vs100-rule"><span>❓</span><span>4 choix · questions des anecdotes</span></div>'
+    +'<div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S (voire NAT)</span></div>'
+    +'<div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>'
+    +'<div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>'
+    +'<div class="vs100-rule"><span>🏆</span><span>Victoire = +500 XP (bonus survie)</span></div>'
+    +'<div class="vs100-rule"><span>🎲</span><span>Composition du panel aléatoire à chaque partie</span></div>'
+    +'</div>'
+    +'<div class="vs100-preview-wrap">'
+    +'<div class="vs100-preview-label">LES 100 CHALLENGERS</div>'
+    +natBadge
+    +'<div class="vs100-preview-grid">'+previewDots+'</div>'
+    +'<div class="vs100-preview-legend">'+legendItems+'</div>'
+    +'</div>'
+    +'<button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">⚡ LANCER LA PARTIE</button>'
+    +'</div>';
   show('screen-vs100');updateNav('');
 }
 
@@ -4136,7 +4139,7 @@ async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
   const questions=await fetchVs100Questions();
-  const bots=generateVs100Bots();
+  const bots=window._vs100PreviewBots||generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   renderVs100Question();
 }
