@@ -711,6 +711,53 @@ async function showHub(){
   setTimeout(()=>{const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
 }
 
+// ── Weekly Mystery ────────────────────────────────────────────────────────────────────────────────
+async function buildWeeklyMystery(el){
+  if(!el)return;
+  const now=new Date();
+  const dow=(now.getDay()+6)%7;
+  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
+  const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+  const{data:mystery}=await sb.from('weekly_mysteries').select('*').eq('week_start',ws).maybeSingle();
+  if(!mystery){el.innerHTML='<div class="wm-empty">🔒 Nouvelle énigme disponible lundi !</div>';return;}
+  const days=['lundi','mardi','mercredi','jeudi','vendredi'];
+  const actNames=['I','II','III','IV','V'];
+  const unlockedCount=Math.min(dow+1,5);
+  const acts=(mystery.story_days||[]).map((day,i)=>{
+    const unlocked=i<unlockedCount;
+    const actDate=new Date(mon);actDate.setDate(mon.getDate()+i);
+    const dateStr=actDate.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+    if(unlocked)return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${day}</div></div>`;
+    return`<div class="wm-act wm-act-locked"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-lock">🔒 Disponible ${days[i]} ${dateStr}</span></div></div>`;
+  }).join('');
+  let userGuess=null;
+  if(currentUser){const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',currentUser.id).eq('mystery_id',mystery.id).maybeSingle();userGuess=g;}
+  const canGuess=dow>=4;
+  const daysLeft=Math.max(0,4-dow);
+  let guessHtml='';
+  if(canGuess){
+    if(userGuess){
+      const correct=mystery.culprit&&userGuess.culprit&&mystery.culprit.toLowerCase().split(' ').some(w=>userGuess.culprit.toLowerCase().includes(w));
+      guessHtml=`<div class="wm-verdict ${correct?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${correct?'✅ Bonne déduction !':'❌ Mauvaise piste…'}</div><div class="wm-verdict-culprit">Le coupable : <strong>${mystery.culprit}</strong></div>${mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}</div>`;
+    }else{
+      guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">🔍 Votre déduction</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}')">Soumettre ma déduction →</button></div>`;
+    }
+  }else{
+    guessHtml=`<div class="wm-guess-pending">🔍 Déduction disponible vendredi après le dernier acte — encore ${daysLeft} jour${daysLeft>1?'s':''}.</div>`;
+  }
+  const weekLabel=mon.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  el.innerHTML=`<div class="wm-card"><div class="wm-header"><span class="wm-badge">🕵️ DÉFI DE LA SEMAINE</span><div class="wm-title">${mystery.title}</div><div class="wm-week">Semaine du ${weekLabel}</div></div><div class="wm-acts">${acts}</div>${guessHtml}</div>`;
+}
+async function submitMysteryGuess(mysteryId){
+  if(!currentUser){showToast('⚠️ Connecte-toi pour soumettre !');return;}
+  const input=document.getElementById('wm-culprit-input');
+  if(!input||!input.value.trim()){showToast('⚠️ Entre ta déduction !');return;}
+  const{error}=await sb.from('mystery_guesses').insert({user_id:currentUser.id,mystery_id:mysteryId,culprit:input.value.trim()});
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('✓ Déduction soumise !');
+  const mw=document.getElementById('hub-mystery-wrap');
+  if(mw)buildWeeklyMystery(mw);
+}
 // ═════════════════════════════
 
 function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
@@ -2671,60 +2718,7 @@ function copyShareText(){
   });
 }
 
-// ── Community challenge ──────────────────────────────────────────────────────
-async function buildWeeklyMystery(el){
-  if(!el)return;
-  const now=new Date();
-  const dow=(now.getDay()+6)%7;
-  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
-  const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
-  const actsVisible=Math.min(dow+1,5);
-  const{data,error}=await sb.from('weekly_mysteries').select('*').eq('week_start',ws).single();
-  if(error||!data){el.innerHTML='<div class="mys-empty">🔎 Aucune enquête cette semaine — revenez lundi !</div>';return;}
-  const DAY=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
-  const ICO=['🏰','📜','🔍','⚔️','🎭'];
-  let actsH='';
-  for(let i=0;i<5;i++){
-    if(i<actsVisible){
-      const txt=data.story_days[i].replace(/\n/g,'<br>');
-      actsH+=`<div class="mys-act mys-act--on"><div class="mys-act-hd">${ICO[i]} Acte ${i+1} <span class="mys-act-day">— ${DAY[i]}</span></div><div class="mys-act-body">${txt}</div></div>`;
-    }else{
-      const ud=new Date(mon);ud.setDate(mon.getDate()+i);
-      const h=Math.max(0,Math.ceil((ud-now)/3600000));
-      actsH+=`<div class="mys-act mys-act--off"><span class="mys-act-hd">🔒 Acte ${i+1} — ${DAY[i]}</span><span class="mys-act-lock">Disponible ${h>0?'dans ~'+h+'h':'bientôt'}</span></div>`;
-    }
-  }
-  const sv=localStorage.getItem('mys_v_'+ws);
-  let formH='';
-  if(sv){
-    const v=JSON.parse(sv);
-    if(v.ok){
-      formH=`<div class="mys-verdict mys-v--ok"><div class="mys-vt">✅ Enquête résolue !</div><div class="mys-vd">Le traître était bien <strong>${data.culprit}</strong>.</div><div class="mys-explain">${data.explanation}</div></div>`;
-    }else{
-      formH=`<div class="mys-verdict mys-v--ko" id="mys-ko-${ws}"><div class="mys-vt">❌ Analyse incorrecte</div><div class="mys-vd">Vos indices ne sont pas suffisants. Relisez les actes et réessayez.</div><button class="mys-retry" onclick="document.getElementById('mys-ko-${ws}').remove();document.getElementById('mys-frm-${ws}').style.display='flex'">🔄 Réessayer</button></div><div class="mys-form" id="mys-frm-${ws}" style="display:none">${_mysForm(ws)}</div>`;
-    }
-  }else if(actsVisible>=2){
-    formH=`<div class="mys-form" id="mys-frm-${ws}">${_mysForm(ws)}</div>`;
-  }else{
-    formH='<div class="mys-form-wait">🕐 Le formulaire de verdict sera disponible <strong>dès mardi</strong> — continuez à lire les actes au fil des jours.</div>';
-  }
-  el.innerHTML=`<div class="sl-mystery-card"><div class="sl-section-header"><span class="sl-section-icon">🔎</span><span>L'ENQUÊTE DE LA SEMAINE</span><span class="sl-section-count">${actsVisible}/5</span></div><div class="mys-title">${data.title}</div><div class="mys-acts">${actsH}</div>${formH}</div>`;
-}
 
-function _mysForm(ws){
-  return `<div class="mys-form-t">🔎 Votre verdict</div><div class="mys-fg"><label class="mys-lbl">Nom du suspect</label><input class="mys-inp" id="mys-s-${ws}" type="text" placeholder="Entrez le nom du traître..." autocomplete="off"></div><div class="mys-fg"><label class="mys-lbl">Votre raisonnement</label><textarea class="mys-ta" id="mys-r-${ws}" placeholder="Expliquez les indices qui vous ont guidé..." rows="4"></textarea></div><button class="mys-sub" onclick="submitMystery('${ws}')">⚔️ SOUMETTRE MON VERDICT</button>`;
-}
-
-async function submitMysteryGuess(mysteryId){
-  if(!currentUser){showToast('⚠️ Connecte-toi pour soumettre !');return;}
-  const input=document.getElementById('wm-culprit-input');
-  if(!input||!input.value.trim()){showToast('⚠️ Entre ta déduction !');return;}
-  const{error}=await sb.from('mystery_guesses').insert({user_id:currentUser.id,mystery_id:mysteryId,culprit:input.value.trim()});
-  if(error){showToast('Erreur : '+error.message);return;}
-  showToast('✓ Déduction soumise !');
-  const mw=document.getElementById('hub-mystery-wrap');
-  if(mw)buildWeeklyMystery(mw);
-}
 
 async function submitMystery(ws){
   const si=document.getElementById('mys-s-'+ws);
