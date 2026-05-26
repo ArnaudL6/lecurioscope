@@ -37,12 +37,14 @@ let userStreak=0,bingoCompleted=new Set();
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));const el=document.getElementById(id);if(el)el.classList.add('on');}
 function updateNav(active){['bn-anec','bn-hist','bn-play','bn-league','bn-profil'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',id===active);});}
-function goHome(){
+function goAnec(){
   document.getElementById('top-tab-anec')?.classList.add('active');
   document.getElementById('top-tab-enigme')?.classList.remove('active');
   document.getElementById('top-tab-sondage')?.classList.remove('active');
-  updateNav('bn-anec');show(todayAnec?'screen-anec':'screen-pick');
+  updateNav('bn-anec');
+  if(todayAnec) showAnec(false); else loadToday();
 }
+function goHome(){showHub();}
 function showEnigmeWIP(){goEnigme();}
 
 async function goEnigme(){
@@ -523,7 +525,129 @@ async function getProfile(uid){const{data}=await sb.from('profiles').select('*')
 
 function afterLogin(){
   showToast('\u2713 Connect\u00e9 en tant que '+currentUser.username+' !');
-  if(todayAnec){markRead();showAnec(false);}else loadToday();
+  showHub();
+}
+
+// \u2500\u2500 Hub gamifi\u00e9 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function showHub(){
+  let readToday=false,enigmaToday=false,quizToday=false;
+  if(currentUser){
+    const[{data:rd},{data:en},{data:qz}]=await Promise.all([
+      sb.from('reads').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
+      sb.from('enigma_responses').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
+      sb.from('quiz_history').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
+    ]);
+    readToday=!!rd;enigmaToday=!!en;quizToday=!!qz;
+  }
+  const done=(readToday?1:0)+(enigmaToday?1:0)+(quizToday?1:0);
+  const pct=Math.round(done/3*100);
+  const dateStr=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+  let hub=document.getElementById('screen-hub');
+  if(!hub){hub=document.createElement('div');hub.id='screen-hub';hub.className='screen';
+    // ins\u00e9rer avant le premier .screen existant
+    const first=document.querySelector('.screen');
+    if(first)first.parentNode.insertBefore(hub,first);else document.body.appendChild(hub);
+  }
+
+  hub.innerHTML=`
+<div class="hub-wrap">
+  <div class="hub-hero">
+    <div class="hub-hero-date">${cap(dateStr)}</div>
+    ${currentUser?`
+    <div class="hub-hero-greeting">Bonjour, <strong>${currentUser.username}</strong> \ud83d\udc4b</div>
+    <div class="hub-hero-streak"><span class="hub-flame">\ud83d\udd25</span><span>${userStreak} jour${userStreak!==1?'s':''} de streak</span></div>
+    `:`<div class="hub-hero-greeting">Bienvenue sur <strong>Le Curioscope</strong></div>`}
+  </div>
+
+  ${currentUser?`
+  <div class="hub-progress-block">
+    <div class="hub-progress-header">
+      <span class="hub-progress-label">Missions du jour</span>
+      <span class="hub-progress-count">${done}/3 compl\u00e9t\u00e9es</span>
+    </div>
+    <div class="hub-progress-track"><div class="hub-progress-fill" style="width:${pct}%"></div></div>
+    ${done===3?'<div class="hub-perfect">\ud83c\udfc6 Toutes les missions accomplies !</div>':''}
+  </div>`:''}
+
+  <div class="hub-section-label">Missions du jour</div>
+  <div class="hub-missions">
+
+    <div class="hub-mission ${readToday?'hub-mission-done':'hub-mission-open'}" onclick="goAnec()">
+      <div class="hub-mission-left">
+        <span class="hub-mission-icon">\ud83d\udca1</span>
+        <div class="hub-mission-info">
+          <div class="hub-mission-name">Le Saviez-Vous ?</div>
+          <div class="hub-mission-desc">L'anecdote surprenante du jour</div>
+        </div>
+      </div>
+      <div class="hub-mission-right">
+        ${readToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">Nouveau \u2192</span>'}
+      </div>
+    </div>
+
+    <div class="hub-mission ${enigmaToday?'hub-mission-done':'hub-mission-open'}" onclick="goEnigme()">
+      <div class="hub-mission-left">
+        <span class="hub-mission-icon">\ud83d\udd10</span>
+        <div class="hub-mission-info">
+          <div class="hub-mission-name">Crack le code !</div>
+          <div class="hub-mission-desc">R\u00e9sous l'\u00e9nigme du jour</div>
+        </div>
+      </div>
+      <div class="hub-mission-right">
+        ${enigmaToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">R\u00e9soudre \u2192</span>'}
+      </div>
+    </div>
+
+    <div class="hub-mission ${quizToday?'hub-mission-done':'hub-mission-open'}" onclick="renderPlayChoice();show('screen-play');updateNav('bn-play');">
+      <div class="hub-mission-left">
+        <span class="hub-mission-icon">\ud83c\udfaf</span>
+        <div class="hub-mission-info">
+          <div class="hub-mission-name">Quiz</div>
+          <div class="hub-mission-desc">Teste tes connaissances</div>
+        </div>
+      </div>
+      <div class="hub-mission-right">
+        ${quizToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">Jouer \u2192</span>'}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="hub-section-label">Bient\u00f4t disponible</div>
+  <div class="hub-wip-grid">
+    <div class="hub-wip-card">
+      <span class="hub-wip-icon">\ud83c\udf99</span>
+      <div class="hub-wip-name">Mais dis moi ?</div>
+      <span class="hub-wip-pill">WIP</span>
+    </div>
+    <div class="hub-wip-card">
+      <span class="hub-wip-icon">\ud83d\udcc5</span>
+      <div class="hub-wip-name">\u00c9ph\u00e9m\u00e9ride</div>
+      <span class="hub-wip-pill">WIP</span>
+    </div>
+    <div class="hub-wip-card">
+      <span class="hub-wip-icon">\ud83d\udcac</span>
+      <div class="hub-wip-name">T'as dit quoi ?!</div>
+      <span class="hub-wip-pill">WIP</span>
+    </div>
+  </div>
+</div>`;
+
+  show('screen-hub');
+  updateNav('');
+}
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+async function loadTodayBackground(){
+  // Pr\u00e9charge l'anecdote sans naviguer
+  if(todayAnec)return;
+  try{
+    const res=await fetch(EDGE+'?date='+today()+'&_t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+SB_ANON,'apikey':SB_ANON}});
+    const{anecdote,questions}=await res.json();
+    if(anecdote){todayAnec=anecdote;todayQs=questions||[];}
+  }catch(e){console.error(e);}
 }
 
 async function loadToday(){
@@ -1374,7 +1498,7 @@ async function loadMultiScores(){
 }
 
 function leaveMulti(){if(multiChannel)multiChannel.unsubscribe();multiState=null;multiChannel=null;renderPlayChoice();}
-function goHome(){if(todayAnec){if(currentUser)markRead();showAnec(false);}else loadToday();}
+// goHome → hub (défini plus haut, écrasé ici pour compatibilité)
 
 
 // ── Onboarding ───────────────────────────────────────────────────────────
@@ -2119,8 +2243,14 @@ async function buildIdentityCard(reads,qhist,allAnec){
   const{data:{session}}=await sb.auth.getSession();
   if(session){currentUser=await getProfile(session.user.id);if(currentUser)currentUser.email=session.user.email||'';}
   updateHeader();
-  await loadToday();
-  if(currentUser){loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();}
+  // Précharger l'anecdote en arrière-plan sans l'afficher
+  loadTodayBackground();
+  if(currentUser){
+    showHub();
+    loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();
+  } else {
+    show('screen-login');
+  }
 
 // ════════════════════════════════════════════════════════════════════════════
 // v2 FEATURES
@@ -3582,111 +3712,10 @@ function _renderProviders() {
   const names = { email: 'Email / Mot de passe', discord: 'Discord', google: 'Google', github: 'GitHub' };
   el.innerHTML = providers.map(p =>
     '<div class="acct-provider-row">' +
-      '<span class="acct-provider-icon">' + (icons[p] || '🔗') + '</span>' +
+      '<span class="acct-provider-icon">' + (icons[p] || '❓') + '</span>' +
       '<span class="acct-provider-name">' + (names[p] || p) + '</span>' +
-      '<span class="acct-provider-badge">Connecté</span>' +
     '</div>'
   ).join('');
-}
-
-// ── Sauvegarder le pseudo ────────────────────────────────────────────────────
-async function saveUsername() {
-  const input = document.getElementById('acct-username-input') || document.getElementById('edit-name-input');
-  const errEl = document.getElementById('acct-username-err') || document.getElementById('edit-name-err');
-  if (!input) return;
-  const val = input.value.trim();
-  if (!val || val.length < 2) { if (errEl) errEl.textContent = 'Minimum 2 caractères.'; return; }
-
-  // Unicité
-  const { data: existing } = await sb.from('profiles').select('id').eq('username', val).neq('id', currentUser.id).maybeSingle();
-  if (existing) { if (errEl) errEl.textContent = 'Ce pseudo est déjà pris.'; return; }
-
-  const { error } = await sb.from('profiles').update({ username: val }).eq('id', currentUser.id);
-  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
-
-  if (currentUser) currentUser.username = val;
-  if (errEl) errEl.textContent = '';
-  showToast('Pseudo mis à jour ! 🎉');
-  // Rafraîchir l'affichage du profil
-  const nameEl = document.getElementById('prof-name');
-  if (nameEl) nameEl.textContent = val;
-}
-
-// ── Sauvegarder la bio ───────────────────────────────────────────────────────
-async function saveBioSettings() {
-  const input = document.getElementById('acct-bio-input');
-  const errEl = document.getElementById('acct-bio-err');
-  if (!input) return;
-  const val = input.value.trim();
-  const { error } = await sb.from('profiles').update({ bio: val }).eq('id', currentUser.id);
-  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
-  if (currentUser) currentUser.bio = val;
-  if (errEl) errEl.textContent = '';
-  const bioEl = document.getElementById('prof-bio-text');
-  if (bioEl) bioEl.textContent = val || 'Ajoute une bio...';
-  showToast('Bio mise à jour !');
-}
-
-// ── Changer l'email ──────────────────────────────────────────────────────────
-async function saveEmail() {
-  const input = document.getElementById('acct-email-input');
-  const errEl = document.getElementById('acct-email-err');
-  if (!input) return;
-  const val = input.value.trim();
-  if (!val || !val.includes('@')) { if (errEl) errEl.textContent = 'Adresse e-mail invalide.'; return; }
-  if (val === currentUser.email) { if (errEl) errEl.textContent = 'C\'est déjà ton adresse actuelle.'; return; }
-
-  const { error } = await sb.auth.updateUser({ email: val });
-  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
-  if (errEl) errEl.textContent = '';
-  input.value = '';
-  showToast('Confirme le changement dans ta nouvelle boîte mail 📧');
-}
-
-// ── Changer le mot de passe ──────────────────────────────────────────────────
-async function savePassword() {
-  const pwNew = document.getElementById('acct-pw-new');
-  const pwConf = document.getElementById('acct-pw-confirm');
-  const errEl = document.getElementById('acct-pw-err');
-  if (!pwNew || !pwConf) return;
-  const pw = pwNew.value;
-  const conf = pwConf.value;
-  if (pw.length < 8) { if (errEl) errEl.textContent = 'Minimum 8 caractères.'; return; }
-  if (pw !== conf)   { if (errEl) errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
-
-  const { error } = await sb.auth.updateUser({ password: pw });
-  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
-  pwNew.value = ''; pwConf.value = '';
-  if (errEl) errEl.textContent = '';
-  showToast('Mot de passe mis à jour ! 🔒');
-}
-
-// ── Préférences notifications ────────────────────────────────────────────────
-function _loadNotifPrefs() {
-  const prefs = JSON.parse(localStorage.getItem('notif_prefs') || '{"friend":true,"duel":true,"turn":true,"result":true}');
-  ['friend','duel','turn','result'].forEach(k => {
-    const el = document.getElementById('notif-pref-' + k);
-    if (el) el.checked = prefs[k] !== false;
-  });
-}
-
-function saveNotifPref(key, val) {
-  const prefs = JSON.parse(localStorage.getItem('notif_prefs') || '{}');
-  prefs[key] = val;
-  localStorage.setItem('notif_prefs', JSON.stringify(prefs));
-  showToast(val ? 'Notification activée' : 'Notification désactivée');
-}
-
-// ── Réinitialiser la progression ─────────────────────────────────────────────
-async function confirmResetProgress() {
-  if (!confirm('Réinitialiser toute ta progression (XP, badges, série) ? Cette action est irréversible.')) return;
-  const { error } = await sb.from('profiles').update({
-    xp: 0, badges: [], streak: 0, longest_streak: 0
-  }).eq('id', currentUser.id);
-  if (error) { showToast('Erreur : ' + error.message); return; }
-  showToast('Progression réinitialisée.');
-  closeAccountSettings();
-  loadProfile();
 }
 
 // ── Supprimer le compte ──────────────────────────────────────────────────────
