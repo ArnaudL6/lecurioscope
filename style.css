@@ -473,17 +473,21 @@ main{padding-bottom:5.5rem;}
 .streak-sub{font-size:.62rem;color:rgba(255,255,255,.65);margin-top:.2rem;font-style:italic;}
 .streak-fire{font-size:3.8rem;position:relative;z-index:1;line-height:1;filter:drop-shadow(0 0 18px rgba(251,191,36,.7));animation:fire-bob .9s ease-in-out infinite alternate;}
 @keyframes fire-bob{from{transform:scale(1) rotate(-4deg);}to{transform:scale(1.1) rotate(4deg);}}
-/* Stats colorées */
+/* Stats SL dark glass */
 .prof-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;width:100%;margin-bottom:1.25rem;}
 .prof-stat-card{border:1px solid var(--b1);padding:1.1rem .4rem 1rem;text-align:center;transition:all .2s;border-radius:.5rem;display:flex;flex-direction:column;align-items:center;gap:.28rem;}
 .prof-stat-card:hover{transform:translateY(-2px);filter:brightness(1.08);}
-.stat-cyan{background:rgba(34,211,238,.07);border-color:rgba(34,211,238,.2);}
-.stat-cyan .psc-val{color:#22d3ee;}
-.stat-orange{background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.2);}
-.stat-orange .psc-val{color:#f97316;}
-.stat-green{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.2);}
-.stat-green .psc-val{color:#34d399;}
-.stat-purple{background:rgba(168,85,247,.07);border-color:rgba(168,85,247,.2);}
+/* Unified SL stat card */
+.sl-stat{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.sl-stat .psc-val{color:#a855f7;}
+/* Legacy color classes kept for backwards compat */
+.stat-cyan{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.stat-cyan .psc-val{color:#a855f7;}
+.stat-orange{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.stat-orange .psc-val{color:#a855f7;}
+.stat-green{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.stat-green .psc-val{color:#a855f7;}
+.stat-purple{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
 .stat-purple .psc-val{color:#a855f7;}
 .psc-icon{font-size:1.15rem;line-height:1.4;}
 .psc-val{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;line-height:1.3;letter-spacing:-.01em;}
@@ -885,10 +889,9 @@ main{padding-bottom:5.5rem;}
 .btn-gen-enigme{font-family:'Space Grotesk',sans-serif;padding:.88rem 2.5rem;font-size:.76rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:#a78bfa;color:#fff;border:none;cursor:pointer;transition:all .22s;opacity:.2;pointer-events:none;border-radius:.75rem;}
 .btn-gen-enigme.ok{opacity:1;pointer-events:all;}
 .btn-gen-enigme.ok:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(167,139,250,.4);}
-/* Enigme profile stats */
-.prof-stat-card.stat-violet{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(167,139,250,.02));}
-.prof-stat-card.stat-violet .psc-icon{background:rgba(167,139,250,.12);}
-.prof-stat-card.stat-violet .psc-val{color:#a78bfa;}
+/* Enigme profile stats (SL unified) */
+.prof-stat-card.stat-violet{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.prof-stat-card.stat-violet .psc-val{color:#a855f7;}
 
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -991,17 +994,23 @@ main{padding-bottom:5.5rem;}
 .user-modal-loading{text-align:center;padding:2rem;color:var(--ink3);font-size:.82rem;}
 /* Header profil ami */
 .umo-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem;}
-.umo-av{width:64px;height:64px;border-radius:50%;border:2.5px solid;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;flex-shrink:0;font-family:'Syne',sans-serif;}
+.umo-av{width:72px;height:72px;border-radius:50%;border:2.5px solid;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;flex-shrink:0;font-family:'Syne',sans-serif;transition:box-shadow .3s;}
 .umo-info{flex:1;min-width:0;}
 .umo-level{margin-bottom:.3rem;}
 .umo-name{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:.15rem;}
 .umo-since{font-size:.64rem;color:var(--ink3);margin-bottom:.25rem;}
 .umo-bio{font-size:.76rem;color:var(--ink2);font-style:italic;margin-bottom:.25rem;line-height:1.5;}
 .umo-xp{font-size:.68rem;color:var(--ink3);font-weight:600;}
-/* Streak card */
-.umo-streak-card{position:relative;border-radius:.85rem;padding:1.1rem 1.4rem;margin-bottom:1rem;overflow:hidden;}
-.umo-streak-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;line-height:1;}
-.umo-streak-label{font-size:.54rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-top:.2rem;}
+/* Streak card SL */
+.umo-streak-card{position:relative;border-radius:.85rem;padding:1.1rem 1.4rem;margin-bottom:1rem;overflow:hidden;background:var(--s1);border:1px solid rgba(168,85,247,.18);display:flex;align-items:center;gap:1rem;}
+.umo-streak-active{border-color:rgba(249,115,22,.35);box-shadow:0 0 20px rgba(249,115,22,.12),inset 0 0 30px rgba(249,115,22,.04);}
+.umo-streak-fire{font-size:2.2rem;line-height:1;flex-shrink:0;}
+.umo-streak-content{flex:1;}
+.umo-streak-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:#f97316;line-height:1;}
+.umo-streak-label{font-size:.54rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:.2rem;}
+.umo-streak-zero{color:var(--ink3) !important;}
+/* SL Rank badge in profile modal */
+.umo-sl-rank-badge{display:inline-flex;align-items:center;gap:.3rem;font-family:'Space Grotesk',sans-serif;font-size:.52rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;padding:.25rem .7rem;border-radius:4px;border:1px solid currentColor;margin-bottom:.3rem;}
 /* Stats grid */
 .umo-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.6rem;}
 
@@ -1078,10 +1087,10 @@ main{padding-bottom:5.5rem;}
 .acct-danger-zone{border-top:1px solid var(--err);padding-top:1.2rem;margin-top:1.2rem;}
 
 /* ── Profil ami enrichi ────────────────────────────────────────────────────── */
-.stat-blue{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);}
-.stat-blue .psc-val{color:#3b82f6;}
+.stat-blue{background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.18);}
+.stat-blue .psc-val{color:#a855f7;}
 
-.umo-streak-sub{font-size:.65rem;font-weight:600;color:rgba(255,255,255,.75);margin-top:.15rem;}
+.umo-streak-sub{font-size:.65rem;font-weight:600;color:var(--ink3);margin-top:.15rem;}
 
 .umo-section-title{font-family:'Space Grotesk',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin:1rem 0 .6rem;padding-top:.75rem;border-top:1px solid var(--b1);}
 
@@ -1477,32 +1486,4 @@ html.dark .hist-item, html.dark .prof-stat-card, html.dark .badge-card{
   background:var(--s0);
   border:1px solid var(--b1);
 }
-html.dark .hist-item:hover{border-color:rgba(168,85,247,.2);}
-
-/* Stats window SL (déjà dark mais s'assure de la cohérence) */
-html.dark .sl-stats-panel{background:var(--s0);}
-
-/* Screen-wide background fix : retire tout fond parasite */
-#screen-anec,#screen-quiz,#screen-play,#screen-hist,
-#screen-profil,#screen-enigme,#screen-login,#screen-reg{
-  background:transparent;
-}
-
-/* sl-stats-btn dans la hunter card */
-.sl-stats-btn{
-  margin-top:.75rem;
-  width:100%;
-  padding:.5rem;
-  background:rgba(168,85,247,.1);
-  border:1px solid rgba(168,85,247,.25);
-  border-radius:.6rem;
-  color:#a855f7;
-  font-family:'Space Grotesk',sans-serif;
-  font-size:.7rem;
-  font-weight:700;
-  letter-spacing:.08em;
-  cursor:pointer;
-  transition:background .15s,box-shadow .15s;
-}
-.sl-stats-btn:hover{background:rgba(168,85,247,.18);box-shadow:0 0 12px rgba(168,85,247,.2);}
-
+html.dark .hist-item:hover{border-colo

@@ -3238,46 +3238,49 @@ async function viewUserProfile(uid, fallbackName){
     }
   }
 
-  const sColors=['#f97316','#ef4444','#f59e0b','#22c55e'];
-  const sColor=streak>0?sColors[Math.min(Math.floor(streak/7),sColors.length-1)]:'#64748b';
+  const slRank=getRank(xp);
   const shareUrl=window.location.origin+window.location.pathname+'#/profil/'+uid;
 
   const modal=bd.querySelector('.user-modal');
   modal.innerHTML=
     '<button class="user-modal-close" onclick="_closeUserModal()">✕</button>'+
-    // En-tête
+    // En-tête SL
     '<div class="umo-header">'+
-      '<div class="umo-av" style="background:'+color+'22;border-color:'+color+'"><span style="color:'+color+'">'+name[0].toUpperCase()+'</span></div>'+
+      '<div class="umo-av" style="background:'+slRank.bg+';border-color:'+slRank.color+';box-shadow:'+slRank.glow+'"><span style="color:'+slRank.color+'">'+name[0].toUpperCase()+'</span></div>'+
       '<div class="umo-info">'+
-        '<div class="umo-level"><span class="prof-level-chip" style="color:'+color+'">✦ '+level+'</span></div>'+
+        '<div class="umo-level"><span class="umo-sl-rank-badge" style="color:'+slRank.color+';background:'+slRank.bg+'">RANG '+slRank.id+' · '+slRank.title+'</span></div>'+
         '<div class="umo-name">'+name+'</div>'+
         (since?'<div class="umo-since">Membre depuis le '+since+'</div>':'')+
         (bio?'<div class="umo-bio">'+bio+'</div>':'')+
         '<div class="umo-xp">'+xp+' XP</div>'+
       '</div>'+
     '</div>'+
-    // Streak card
+    // Streak card SL
     (streak>0
-      ?'<div class="umo-streak-card" style="background:linear-gradient(135deg,'+sColor+'dd,'+sColor+'88)">'+
-          '<div class="umo-streak-num">'+streak+'</div>'+
-          '<div class="umo-streak-label">JOURS DE SUITE</div>'+
-          (streakRecord>streak?'<div class="umo-streak-sub">Record : '+streakRecord+' 🏆</div>':'')+
-          '<span style="font-size:2rem;position:absolute;right:1.25rem;top:50%;transform:translateY(-50%)">🔥</span>'+
+      ?'<div class="umo-streak-card umo-streak-active">'+
+          '<div class="umo-streak-fire">🔥</div>'+
+          '<div class="umo-streak-content">'+
+            '<div class="umo-streak-num">'+streak+'</div>'+
+            '<div class="umo-streak-label">JOURS DE SUITE</div>'+
+            (streakRecord>streak?'<div class="umo-streak-sub">Record : '+streakRecord+' 🏆</div>':'')+
+          '</div>'+
         '</div>'
-      :'<div class="umo-streak-card" style="background:var(--s1);border:1px solid var(--b1)">'+
-          '<div class="umo-streak-num" style="color:var(--ink3)">—</div>'+
-          '<div class="umo-streak-label" style="color:var(--ink3)">Pas encore de streak</div>'+
-          (streakRecord?'<div class="umo-streak-sub" style="color:var(--ink3)">Record : '+streakRecord+'</div>':'')+
+      :'<div class="umo-streak-card">'+
+          '<div class="umo-streak-content">'+
+            '<div class="umo-streak-num umo-streak-zero">—</div>'+
+            '<div class="umo-streak-label umo-streak-zero">Pas encore de streak</div>'+
+            (streakRecord?'<div class="umo-streak-sub umo-streak-zero">Record : '+streakRecord+'</div>':'')+
+          '</div>'+
         '</div>'
     )+
-    // Grille stats (6 cases)
+    // Grille stats SL (6 cases)
     '<div class="umo-stats-grid">'+
-      '<div class="prof-stat-card stat-cyan"><div class="psc-icon">📖</div><div class="psc-val">'+readCount+'</div><div class="psc-lbl">Anecdotes</div></div>'+
-      '<div class="prof-stat-card stat-orange"><div class="psc-icon">🎯</div><div class="psc-val">'+quizList.length+'</div><div class="psc-lbl">Quiz</div></div>'+
-      '<div class="prof-stat-card stat-violet"><div class="psc-icon">🔮</div><div class="psc-val">'+enigmaTotal+'</div><div class="psc-lbl">Énigmes</div></div>'+
-      '<div class="prof-stat-card stat-green"><div class="psc-icon">⭐</div><div class="psc-val">'+(avgQuiz?avgQuiz+'%':'—')+'</div><div class="psc-lbl">Score moy.</div></div>'+
-      '<div class="prof-stat-card stat-purple"><div class="psc-icon">🏅</div><div class="psc-val">'+earnedBadges.length+'</div><div class="psc-lbl">Badges</div></div>'+
-      '<div class="prof-stat-card stat-blue"><div class="psc-icon">👥</div><div class="psc-val">'+totalFriends+'</div><div class="psc-lbl">Amis</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">📖</div><div class="psc-val">'+readCount+'</div><div class="psc-lbl">Anecdotes</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">🎯</div><div class="psc-val">'+quizList.length+'</div><div class="psc-lbl">Quiz</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">🔮</div><div class="psc-val">'+enigmaTotal+'</div><div class="psc-lbl">Énigmes</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">⭐</div><div class="psc-val">'+(avgQuiz?avgQuiz+'%':'—')+'</div><div class="psc-lbl">Score moy.</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">🏅</div><div class="psc-val">'+earnedBadges.length+'</div><div class="psc-lbl">Badges</div></div>'+
+      '<div class="prof-stat-card sl-stat"><div class="psc-icon">👥</div><div class="psc-val">'+totalFriends+'</div><div class="psc-lbl">Amis</div></div>'+
     '</div>'+
     // Badges obtenus
     (earnedBadges.length
