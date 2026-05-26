@@ -1916,3 +1916,15 @@ html.dark .hist-item, html.dark .prof-stat
 /* CENTERING FIX */
 .anec-card{margin-left:auto!important;margin-right:auto!important;max-width:680px!important;}
 .anec-wrap{padding:1.5rem!important;}
+
+
+/* ── SL FIX: card width, glow, contexte purple overrides ── */
+.anec-card{max-width:580px!important;margin:2rem auto!important;}
+.anec-card{box-shadow:0 0 8px rgba(0,200,255,.6),0 0 20px rgba(0,200,255,.2)!important;}
+.anec-glow{display:none!important;}
+.contexte-toggle,.ct-title,.ct-icon,.ct-arrow{color:#00c8ff!important;}
+.contexte-src-lnk{color:#00c8ff!important;background:rgba(0,200,255,.05)!important;border-left:2px solid rgba(0,200,255,.4)!important;border-radius:0!important;}
+.contexte-src-lnk:hover{background:rgba(0,200,255,.12)!important;}
+.contexte-card{background:rgba(3,8,20,.95)!important;border:1px solid rgba(0,200,255,.25)!important;color:#b0cce0!important;}
+.contexte-txt{color:#b0cce0!important;}
+.anec-note,.contexte-sources{border-left:2px solid #00c8ff!important;color:#00c8ff!important;font-size:.78rem!important;}
