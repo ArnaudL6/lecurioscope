@@ -700,7 +700,9 @@ async function showHub(){
     </div>
   </div>
 
-</div>`;updateNav('');
+</div>`;
+
+  show('screen-hub');updateNav('');
 }
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -4238,6 +4240,6 @@ async function endVs100Victory(){
       '<div class="vs100-vc-row"><span>XP remporté</span><span style="color:#a855f7;">+'+xpGain+' XP</span></div>'+
     '</div>'+
     '<button class="vs100-back-gold" onclick="showHub()">← Retour au Système</button>'+
-  '</div>'+
+   '</div>'+
 '</div>';
 }
