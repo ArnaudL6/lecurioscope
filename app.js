@@ -848,9 +848,12 @@ function buildList(){
   if(dayBadge)dayBadge.textContent='Jour '+dayOfYear()+' / '+daysInYear();
   const grid=document.getElementById('theme-grid'),btn=document.getElementById('btn-gen');
   if(!grid)return;grid.innerHTML='';
+  const _TR={histoire:{r:'D',c:'#60a5fa'},science:{r:'C',c:'#34d399'},nature:{r:'E',c:'#9ca3af'},insolite:{r:'B',c:'#fbbf24'},art:{r:'D',c:'#60a5fa'},espace:{r:'B',c:'#fbbf24'},sport:{r:'C',c:'#34d399'},food:{r:'E',c:'#9ca3af'},legendes:{r:'A',c:'#f97316'}};
+  const _TX={E:'+50 XP',D:'+80 XP',C:'+100 XP',B:'+150 XP',A:'+200 XP'};
   THEMES.forEach(t=>{
     const d=document.createElement('div');d.className='t-card';
-    d.innerHTML='<div class="t-dot"></div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>';
+    const tr=_TR[t.id]||{r:'E',c:'#9ca3af'};
+    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div><div class="sl-txp" style="color:'+tr.c+';">'+_TX[tr.r]+'</div>';
     d.onclick=()=>{document.querySelectorAll('.t-card').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');selThemeId=t.id;if(btn)btn.classList.add('ok');};
     grid.appendChild(d);
   });
@@ -1413,15 +1416,16 @@ async function buildLeagueDashboard(){
     return;
   }
   document.getElementById('multi-content').innerHTML=
+    '<div class="sl-section-header" style="margin-bottom:1rem;"><span class="sl-section-icon">⚔</span><span>LIGUE HEBDOMADAIRE</span></div>'+
     '<div style="display:flex;gap:.6rem;margin-bottom:1.25rem;">'+
-    '<button class="btn-main" style="flex:1;" onclick="goLeaguePlay()">🏆 Jouer en Ligue</button>'+
-    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Partie privée</button>'+
+    '<button class="sl-btn-primary" style="flex:1;" onclick="goLeaguePlay()">⚡ Jouer en Ligue</button>'+
+    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Privée</button>'+
     '</div>'+
     '<div id="ldash-ranking" style="margin-bottom:1.5rem;"></div>'+
     '<div id="ldash-pending" style="margin-bottom:.5rem;"></div>'+
     '<div class="friend-search" style="margin-bottom:.75rem;"><input id="friend-q" placeholder="Rechercher un pseudo…"/><button onclick="searchFriend()">Rechercher</button></div>'+
     '<div id="friend-results"></div>'+
-    '<div style="margin-top:1rem;"><div class="prev-head">Mes amis</div><div id="friend-list-own"></div></div>';
+    '<div style="margin-top:1rem;"><div class="sl-section-header" style="margin-bottom:.75rem;"><span class="sl-section-icon">👥</span><span>ALLIÉS</span></div><div id="friend-list-own"></div></div>';
   await buildWeeklyLeague(document.getElementById('ldash-ranking'));
   await buildPendingRequests(document.getElementById('ldash-pending'));
   await loadFriends();
