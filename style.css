@@ -1522,3 +1522,6 @@ html.dark .hist-item, html.dark .prof-stat
 .hunter-toast-ico{font-size:1.4rem;filter:drop-shadow(0 0 8px #34d399);flex-shrink:0;}
 .hunter-toast-title{font-size:.65rem;color:#34d399;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:.15rem;}
 .hunter-toast-name{font-size:.82rem;color:var(--ink);font-weight:600;}
+
+.sl-stats-btn{background:none;border:1px solid rgba(52,211,153,.35);color:#34d399;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .75rem;border-radius:.3rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.3rem;margin-top:.4rem;}
+.sl-stats-btn:hover{background:rgba(52,211,153,.1);border-color:#34d399;box-shadow:0 0 10px rgba(52,211,153,.2);}
