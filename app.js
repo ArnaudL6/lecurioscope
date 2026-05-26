@@ -4066,10 +4066,8 @@ function getOrCreateVs100Screen(){
   if(!sc){
     sc=document.createElement('div');
     sc.id='screen-vs100';sc.className='screen';
-    const footer=document.querySelector('footer,#footer,.footer');
-    if(footer&&footer.parentNode===document.body){document.body.insertBefore(sc,footer);}
-    else{const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);
-    ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);}
+    const container=document.querySelector('main')||document.body;
+    container.appendChild(sc);
   }
   return sc;
 }
