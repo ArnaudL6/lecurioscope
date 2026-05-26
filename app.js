@@ -1739,61 +1739,7 @@ async function declineFriend(fid){
 }
 
 // ── Voir le profil d'un autre utilisateur ────────────────────────────────
-async function viewUserProfile(uid,uname){
-  prevScreen=document.querySelector('.screen.on')?.id||'screen-anec';
-  const el=document.getElementById('user-prof-content');
-  el.innerHTML='<div class="empty"><span class="empty-ico">👤</span><p>Chargement…</p></div>';
-  show('screen-user-profile');
-
-  const[{data:profile},{data:reads},{data:quizzes},{data:friendships}]=await Promise.all([
-    sb.from('profiles').select('*').eq('id',uid).single(),
-    sb.from('reads').select('anecdote_id,date').eq('user_id',uid),
-    sb.from('quiz_history').select('pct,date').eq('user_id',uid),
-    sb.from('friendships').select('status').or('requester_id.eq.'+uid+',addressee_id.eq.'+uid).eq('status','accepted')
-  ]);
-
-  const r=reads||[],q=quizzes||[];
-  const streak=computeStreak(r.map(x=>x.date));
-  const avg=q.length?Math.round(q.reduce((a,b)=>a+b.pct,0)/q.length):0;
-  const xp=calcXP(r.length,q.length,streak);
-  const{lvl}=calcLevel(xp);
-  const friends=(friendships||[]).length;
-  const badgeData={reads:r.length,streak,quizzes:q.length,avgQuiz:avg,bestQuiz:q.length?Math.max(...q.map(x=>x.pct)):0,themes:0,friends};
-  const earned=BADGES_DEF.filter(b=>b.check(badgeData));
-  const displayName=profile?.username||uname||'Utilisateur';
-
-  // Check friendship status with me
-  let friendBtn='';
-  if(currentUser&&uid!==currentUser.id){
-    const{data:rel}=await sb.from('friendships').select('id,status,requester_id').or(
-      'and(requester_id.eq.'+currentUser.id+',addressee_id.eq.'+uid+'),and(requester_id.eq.'+uid+',addressee_id.eq.'+currentUser.id+')'
-    ).maybeSingle();
-    if(!rel){
-      friendBtn='<button class="btn-main" style="width:100%;margin-top:.75rem;" onclick="addFriend(\''+uid+'\',\''+displayName+'\');this.disabled=true;this.textContent=\'Demande envoyée ✓\'">+ Ajouter en ami</button>';
-    } else if(rel.status==='pending'&&rel.requester_id===uid){
-      friendBtn='<button class="btn-main" style="width:100%;margin-top:.75rem;background:var(--gr);" onclick="acceptFriend(\''+rel.id+'\');this.disabled=true;this.textContent=\'Ami ✓\'">✓ Accepter la demande</button>';
-    } else if(rel.status==='accepted'){
-      friendBtn='<div style="margin-top:.75rem;text-align:center;font-size:.75rem;color:var(--gr);font-weight:700;">✓ Vous êtes amis</div>';
-    } else {
-      friendBtn='<div style="margin-top:.75rem;text-align:center;font-size:.75rem;color:var(--ink3);">Demande en attente…</div>';
-    }
-  }
-
-  el.innerHTML=
-    '<div class="user-prof-card">'+
-      '<div class="user-prof-av" style="background:'+(PROF_COLORS[displayName.charCodeAt(0)%PROF_COLORS.length]||'var(--a)')+'">'+displayName[0].toUpperCase()+'</div>'+
-      '<div class="user-prof-name">'+displayName+'</div>'+
-      '<div class="user-prof-chip">✦ '+lvl.name+'</div>'+
-      '<div class="user-prof-since">'+xp+' XP total</div>'+
-      '<div class="user-prof-stats">'+
-        '<div class="user-prof-stat"><div class="user-prof-stat-val">'+r.length+'</div><div class="user-prof-stat-lbl">Lus</div></div>'+
-        '<div class="user-prof-stat"><div class="user-prof-stat-val">'+streak+'</div><div class="user-prof-stat-lbl">Série</div></div>'+
-        '<div class="user-prof-stat"><div class="user-prof-stat-val">'+(avg||'—')+(avg?'%':'')+'</div><div class="user-prof-stat-lbl">Quiz moy.</div></div>'+
-      '</div>'+
-      (earned.length?'<div class="user-prof-badges">'+earned.map(b=>'<span class="user-badge-mini" title="'+b.name+'">'+b.icon+'</span>').join('')+'</div>':'')+
-      friendBtn+
-    '</div>';
-}
+// Ancienne version remplacée — viewUserProfile est définie plus bas (modal enrichie)
 
 
 // ── Admin panel ──────────────────────────────────────────────────────────
@@ -2869,26 +2815,35 @@ async function readyForNext(roundId,duelId){
 }
 window.readyForNext=readyForNext;
 
-// --- Extra functions ---
-async function viewUserProfile(uid, fallbackName){
-  const old=document.getElementById('user-modal-bd');if(old)old.remove();
+// --- Profil utilisateur enrichi (modal + URL partageable) ---
+function _closeUserModal(){
+  const bd=document.getElementById('user-modal-bd');
+  if(bd)bd.remove();
+  history.pushState('',document.title,window.location.pathname+window.location.search);
+}
 
-  // Ouvrir la modale de suite avec un loader
+async function viewUserProfile(uid, fallbackName){
+  // URL partageable
+  window.location.hash='#/profil/'+uid;
+
+  const old=document.getElementById('user-modal-bd');if(old)old.remove();
   const bd=document.createElement('div');
   bd.id='user-modal-bd';bd.className='user-modal-backdrop';
-  bd.onclick=e=>{if(e.target===bd)bd.remove();};
+  bd.onclick=e=>{if(e.target===bd)_closeUserModal();};
   bd.innerHTML='<div class="user-modal user-modal-full"><div class="user-modal-loading">⏳ Chargement…</div></div>';
   document.body.appendChild(bd);
 
-  // Fetch toutes les données
-  const[{data:prof},{data:reads},{data:qhist},{data:enigmaR},{data:badges_earned},{data:friendship},{data:userReads}]=await Promise.all([
+  // Fetch toutes les données en parallèle
+  const[{data:prof},{data:reads},{data:qhist},{data:enigmaR},{data:userReads},{data:relData},{data:friendsCount}]=await Promise.all([
     sb.from('profiles').select('*').eq('id',uid).maybeSingle(),
     sb.from('reads').select('anecdote_id,date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
-    sb.from('quiz_history').select('pct').eq('user_id',uid),
-    sb.from('enigma_responses').select('id,correct').eq('user_id',uid),
-    sb.from('quiz_history').select('pct').eq('user_id',uid), // reuse for badge count approx
-    currentUser?sb.from('friendships').select('id,status,requester_id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).filter('requester_id','in','('+[currentUser.id,uid].join(',')+')'):{data:null},
+    sb.from('quiz_history').select('pct,theme').eq('user_id',uid),
+    sb.from('enigma_responses').select('id,is_correct').eq('user_id',uid),
     sb.from('reads').select('date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
+    currentUser&&currentUser.id!==uid
+      ?sb.from('friendships').select('id,status,requester_id').or('and(requester_id.eq.'+currentUser.id+',addressee_id.eq.'+uid+'),and(requester_id.eq.'+uid+',addressee_id.eq.'+currentUser.id+')').maybeSingle()
+      :{data:null},
+    sb.from('friendships').select('id').or('requester_id.eq.'+uid+',addressee_id.eq.'+uid).eq('status','accepted'),
   ]);
 
   const name=prof?.username||fallbackName||'Anonyme';
@@ -2896,6 +2851,7 @@ async function viewUserProfile(uid, fallbackName){
   const level=prof?.level_name||'Novice';
   const xp=prof?.xp||0;
   const bio=prof?.bio||'';
+  const streakRecord=prof?.streak_record||0;
   const joined=prof?.joined||prof?.created_at;
   const since=joined?new Date(joined).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
 
@@ -2903,8 +2859,10 @@ async function viewUserProfile(uid, fallbackName){
   const readCount=(reads||[]).length;
   const quizList=qhist||[];
   const avgQuiz=quizList.length?Math.round(quizList.reduce((s,q)=>s+q.pct,0)/quizList.length):0;
-  const enigmaCount=(enigmaR||[]).length;
-  const enigmaCorrect=(enigmaR||[]).filter(e=>e.correct).length;
+  const bestQuiz=quizList.length?Math.max(...quizList.map(q=>q.pct)):0;
+  const enigmaTotal=(enigmaR||[]).length;
+  const enigmaCorrect=(enigmaR||[]).filter(e=>e.is_correct).length;
+  const totalFriends=(friendsCount||[]).length;
 
   // Streak
   let streak=0;
@@ -2917,27 +2875,39 @@ async function viewUserProfile(uid, fallbackName){
     }
   }
 
-  // Badges approximatifs (compte ceux qui passent les checks de base)
-  const badgeData={reads:readCount,streak,quizzes:quizList.length,avgQuiz,friends:0,duelsPlayed:0,duelsWon:0,favs:0,shares:0,earlyBird:false,nightOwl:false,enigmaTotal:enigmaCount,enigmaCorrect,enigmaCats:0,enigmaChooser:false,enigmaLogique:0,enigmaHistorique:0,enigmaMaths:0,bestQuiz:avgQuiz,perfectQuiz:false,themes:0,themeMap:{},};
-  const badgesCount=typeof BADGES_DEF!=='undefined'?BADGES_DEF.filter(b=>{try{return b.check(badgeData);}catch{return false;}}).length:0;
+  // Badges obtenus
+  const badgeData={reads:readCount,streak,quizzes:quizList.length,avgQuiz,bestQuiz,friends:totalFriends,duelsPlayed:0,duelsWon:0,favs:0,shares:0,earlyBird:false,nightOwl:false,enigmaTotal,enigmaCorrect,enigmaCats:0,enigmaChooser:false,enigmaLogique:0,enigmaHistorique:0,enigmaMaths:0,perfectQuiz:bestQuiz>=100,themes:0,themeMap:{}};
+  const earnedBadges=typeof BADGES_DEF!=='undefined'?BADGES_DEF.filter(b=>{try{return b.check(badgeData);}catch{return false;}}):[];
 
-  // Friendship / duel button
-  const isFriend=friendship&&(friendship.data||[]).some(f=>f.status==='accepted');
+  // Relation d'amitié
+  const rel=relData;
+  const isFriend=rel&&rel.status==='accepted';
+  const isPending=rel&&rel.status==='pending';
+  const theyRequested=rel&&rel.requester_id===uid;
   const canChallenge=currentUser&&isFriend&&currentUser.id!==uid;
+  let friendBtn='';
+  if(currentUser&&currentUser.id!==uid){
+    if(!rel){
+      friendBtn='<button class="btn-main umo-action-btn" onclick="addFriend(\''+uid+'\',\''+name+'\');this.textContent=\'Demande envoyée ✓\';this.disabled=true">👥 Ajouter en ami</button>';
+    } else if(isPending&&theyRequested){
+      friendBtn='<button class="btn-main umo-action-btn" style="background:var(--gr)" onclick="acceptFriend(\''+rel.id+'\');this.textContent=\'Ami ✓\';this.disabled=true">✓ Accepter la demande</button>';
+    } else if(isFriend){
+      friendBtn='<div class="umo-friend-badge">✓ Vous êtes amis</div>';
+    } else {
+      friendBtn='<div class="umo-friend-badge" style="color:var(--ink3)">⏳ Demande en attente</div>';
+    }
+  }
 
-  // Streak card color
   const sColors=['#f97316','#ef4444','#f59e0b','#22c55e'];
   const sColor=streak>0?sColors[Math.min(Math.floor(streak/7),sColors.length-1)]:'#64748b';
+  const shareUrl=window.location.origin+window.location.pathname+'#/profil/'+uid;
 
   const modal=bd.querySelector('.user-modal');
   modal.innerHTML=
-    // Close
-    '<button class="user-modal-close" onclick="document.getElementById(\'user-modal-bd\').remove()">✕</button>'+
-    // Header
+    '<button class="user-modal-close" onclick="_closeUserModal()">✕</button>'+
+    // En-tête
     '<div class="umo-header">'+
-      '<div class="umo-av" style="background:'+color+'22;border-color:'+color+'">'+
-        '<span style="color:'+color+'">'+name[0].toUpperCase()+'</span>'+
-      '</div>'+
+      '<div class="umo-av" style="background:'+color+'22;border-color:'+color+'"><span style="color:'+color+'">'+name[0].toUpperCase()+'</span></div>'+
       '<div class="umo-info">'+
         '<div class="umo-level"><span class="prof-level-chip" style="color:'+color+'">✦ '+level+'</span></div>'+
         '<div class="umo-name">'+name+'</div>'+
@@ -2947,26 +2917,56 @@ async function viewUserProfile(uid, fallbackName){
       '</div>'+
     '</div>'+
     // Streak card
-    (streak>0?'<div class="umo-streak-card" style="background:linear-gradient(135deg,'+sColor+'dd,'+sColor+'88)">'+
-      '<div class="umo-streak-num">'+streak+'</div>'+
-      '<div class="umo-streak-label">JOURS DE SUITE</div>'+
-      '<span style="font-size:2rem;position:absolute;right:1.25rem;top:50%;transform:translateY(-50%)">🔥</span>'+
-    '</div>':'<div class="umo-streak-card" style="background:var(--s1);border:1px solid var(--b1)">'+
-      '<div class="umo-streak-num" style="color:var(--ink3)">—</div>'+
-      '<div class="umo-streak-label" style="color:var(--ink3)">Pas encore de streak</div>'+
-    '</div>')+
-    // Stats grid
+    (streak>0
+      ?'<div class="umo-streak-card" style="background:linear-gradient(135deg,'+sColor+'dd,'+sColor+'88)">'+
+          '<div class="umo-streak-num">'+streak+'</div>'+
+          '<div class="umo-streak-label">JOURS DE SUITE</div>'+
+          (streakRecord>streak?'<div class="umo-streak-sub">Record : '+streakRecord+' 🏆</div>':'')+
+          '<span style="font-size:2rem;position:absolute;right:1.25rem;top:50%;transform:translateY(-50%)">🔥</span>'+
+        '</div>'
+      :'<div class="umo-streak-card" style="background:var(--s1);border:1px solid var(--b1)">'+
+          '<div class="umo-streak-num" style="color:var(--ink3)">—</div>'+
+          '<div class="umo-streak-label" style="color:var(--ink3)">Pas encore de streak</div>'+
+          (streakRecord?'<div class="umo-streak-sub" style="color:var(--ink3)">Record : '+streakRecord+'</div>':'')+
+        '</div>'
+    )+
+    // Grille stats (6 cases)
     '<div class="umo-stats-grid">'+
       '<div class="prof-stat-card stat-cyan"><div class="psc-icon">📖</div><div class="psc-val">'+readCount+'</div><div class="psc-lbl">Anecdotes</div></div>'+
       '<div class="prof-stat-card stat-orange"><div class="psc-icon">🎯</div><div class="psc-val">'+quizList.length+'</div><div class="psc-lbl">Quiz</div></div>'+
-      '<div class="prof-stat-card stat-violet"><div class="psc-icon">🔮</div><div class="psc-val">'+enigmaCount+'</div><div class="psc-lbl">Énigmes</div></div>'+
+      '<div class="prof-stat-card stat-violet"><div class="psc-icon">🔮</div><div class="psc-val">'+enigmaTotal+'</div><div class="psc-lbl">Énigmes</div></div>'+
       '<div class="prof-stat-card stat-green"><div class="psc-icon">⭐</div><div class="psc-val">'+(avgQuiz?avgQuiz+'%':'—')+'</div><div class="psc-lbl">Score moy.</div></div>'+
-      (badgesCount?'<div class="prof-stat-card stat-purple"><div class="psc-icon">🏅</div><div class="psc-val">'+badgesCount+'</div><div class="psc-lbl">Badges</div></div>':'')+
+      '<div class="prof-stat-card stat-purple"><div class="psc-icon">🏅</div><div class="psc-val">'+earnedBadges.length+'</div><div class="psc-lbl">Badges</div></div>'+
+      '<div class="prof-stat-card stat-blue"><div class="psc-icon">👥</div><div class="psc-val">'+totalFriends+'</div><div class="psc-lbl">Amis</div></div>'+
     '</div>'+
-    // Duel button
-    (canChallenge?'<button class="btn-main" style="width:100%;margin-top:.75rem;font-size:.78rem;" onclick="challengeFriend(\''+uid+'\',\''+name+'\');document.getElementById(\'user-modal-bd\').remove()">⚔️ Défier en duel</button>':'')+
-    '';
+    // Badges obtenus
+    (earnedBadges.length
+      ?'<div class="umo-section-title">🏅 Badges obtenus</div>'+
+        '<div class="umo-badges-grid">'+
+          earnedBadges.map(b=>
+            '<div class="umo-badge-item umo-rarity-'+b.rarity+'" title="'+b.desc+'">'+
+              '<span class="umo-badge-icon">'+b.icon+'</span>'+
+              '<span class="umo-badge-name">'+b.name+'</span>'+
+            '</div>'
+          ).join('')+
+        '</div>'
+      :'')+
+    // Actions
+    '<div class="umo-actions">'+
+      friendBtn+
+      (canChallenge?'<button class="btn-main umo-action-btn" onclick="challengeFriend(\''+uid+'\',\''+name+'\');_closeUserModal()">⚔️ Défier en duel</button>':'')+
+      '<button class="umo-share-btn" onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(()=>showToast(\'🔗 Lien copié !\'))">🔗 Partager ce profil</button>'+
+    '</div>';
 }
+
+// ── Hash routing : profil partageable via URL ────────────────────────────────
+function _handleHashRouting(){
+  const m=window.location.hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
+  if(m)viewUserProfile(m[1]);
+}
+window.addEventListener('hashchange',_handleHashRouting);
+// Déclencher au chargement si hash présent (après auth)
+document.addEventListener('DOMContentLoaded',()=>setTimeout(_handleHashRouting,800));
 // ════════════════════════════════════════════════════════════════════════════
 // v2 — DÉCONNEXION + EDIT PSEUDO + NOTIFICATIONS + DUELS ASYNC
 // ════════════════════════════════════════════════════════════════════════════
