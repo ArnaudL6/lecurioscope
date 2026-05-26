@@ -1132,11 +1132,10 @@ function buildQuizHistTab(qhist){
 
 async function buildAmisTab(){
   const el=document.getElementById('tab-amis');if(!el)return;
-  el.innerHTML='<div id="pending-reqs-wrap" class="pending-requests-wrap"></div><div id="weekly-league-wrap" style="margin-bottom:1.25rem;"></div><div id="activity-feed-wrap" style="margin-bottom:1.25rem;"></div><div class="friend-search"><input id="friend-q" placeholder="Rechercher un pseudo\u2026"/><button onclick="searchFriend()">Rechercher</button></div><div id="friend-results"></div><div style="margin-top:1.5rem;"><div class="prev-head">Mes amis</div><div id="friend-list-own"></div></div>';
+  el.innerHTML='<div id="pending-reqs-wrap" class="pending-requests-wrap"></div><div id="weekly-league-wrap" style="margin-bottom:1.25rem;"></div><div class="friend-search"><input id="friend-q" placeholder="Rechercher un pseudo\u2026"/><button onclick="searchFriend()">Rechercher</button></div><div id="friend-results"></div><div style="margin-top:1.5rem;"><div class="prev-head">Mes amis</div><div id="friend-list-own"></div></div>';
   const leagueEl=document.getElementById('weekly-league-wrap');
-  const actEl=document.getElementById('activity-feed-wrap');
   const pendEl=document.getElementById('pending-reqs-wrap');
-  await Promise.all([buildPendingRequests(pendEl),buildWeeklyLeague(leagueEl),buildActivityFeed(actEl),loadFriends()]);
+  await Promise.all([buildPendingRequests(pendEl),buildWeeklyLeague(leagueEl),loadFriends()]);
 }
 
 async function searchFriend(){
