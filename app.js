@@ -33,6 +33,8 @@ let todayEnigme=null,todayEnigmeChoice=null,selEnigmeCat=null,enigmeCurRating=0;
 let curRating=0,quizState=null,cdTimer=null,prevScreen='screen-anec';
 let multiChannel=null,multiState=null;
 let userStreak=0,bingoCompleted=new Set();
+let currentUserXP=0,currentUserRank=null;
+let vs100State=null;
 
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));const el=document.getElementById(id);if(el)el.classList.add('on');}
@@ -527,10 +529,13 @@ function afterLogin(){
   showToast('\u2713 Connect\u00e9 en tant que '+currentUser.username+' !');
   showHub();
 }
-
-// \u2500\u2500 Hub gamifi\u00e9 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ══ SOLO LEVELING — HUB SYSTÈME ══════════════════════════════════════════════
 async function showHub(){
   let readToday=false,enigmaToday=false,quizToday=false;
+  let xp=currentUserXP||0;
+  let rank=currentUserRank||RANKS[0];
+  let nextRank=getNextRank(xp);
+
   if(currentUser){
     const[{data:rd},{data:en},{data:qz}]=await Promise.all([
       sb.from('reads').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
@@ -538,107 +543,273 @@ async function showHub(){
       sb.from('quiz_history').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
     ]);
     readToday=!!rd;enigmaToday=!!en;quizToday=!!qz;
+    if(!currentUserXP&&currentUser){
+      const[{data:allReads},{data:allQuiz},{data:allEnigma}]=await Promise.all([
+        sb.from('reads').select('date').eq('user_id',currentUser.id),
+        sb.from('quiz_history').select('pct').eq('user_id',currentUser.id),
+        sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
+      ]);
+      const streak=computeStreak((allReads||[]).map(x=>x.date));
+      xp=calcSLXP({reads:(allReads||[]).length,quizzes:allQuiz||[],enigmas:allEnigma||[],streak});
+      currentUserXP=xp;currentUserRank=getRank(xp);rank=currentUserRank;nextRank=getNextRank(xp);
+    }
   }
+
   const done=(readToday?1:0)+(enigmaToday?1:0)+(quizToday?1:0);
-  const pct=Math.round(done/3*100);
+  const xpToNext=nextRank?nextRank.minXP:rank.minXP;
+  const xpFrom=rank.minXP;
+  const pctRank=nextRank?Math.round((xp-xpFrom)/(xpToNext-xpFrom)*100):100;
   const dateStr=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
   let hub=document.getElementById('screen-hub');
-  if(!hub){hub=document.createElement('div');hub.id='screen-hub';hub.className='screen';
-    // ins\u00e9rer avant le premier .screen existant
+  if(!hub){
+    hub=document.createElement('div');hub.id='screen-hub';hub.className='screen';
     const first=document.querySelector('.screen');
     if(first)first.parentNode.insertBefore(hub,first);else document.body.appendChild(hub);
   }
 
+  const gateAnec={rank:'E',icon:'💡',name:'Le Saviez-Vous ?',desc:"L'anecdote surprenante du jour",xp:'+50 XP',done:readToday,action:"goAnec()"};
+  const gateEnigma={rank:'B',icon:'🔐',name:'Crack le code !',desc:"Résous l'énigme du jour",xp:'+150 XP',done:enigmaToday,action:"goEnigme()"};
+  const gateQuiz={rank:'C',icon:'🎯',name:'Quiz',desc:"Teste tes connaissances",xp:'+100 XP',done:quizToday,action:"renderPlayChoice();show('screen-play');updateNav('bn-play');"};
+
+  function gateHTML(g){
+    const rk=RANKS.find(r=>r.id===g.rank)||RANKS[0];
+    return `<div class="sl-gate ${g.done?'sl-gate-done':''}" onclick="${g.action}" style="--gate-color:${rk.color};--gate-glow:${rk.glow};">
+      <div class="sl-gate-header">
+        <span class="sl-gate-rank" style="color:${rk.color};border-color:${rk.color};">${g.rank}-RANG</span>
+        <span class="sl-gate-xp">${g.xp}</span>
+      </div>
+      <div class="sl-gate-body">
+        <span class="sl-gate-icon">${g.icon}</span>
+        <div class="sl-gate-info">
+          <div class="sl-gate-name">${g.name}</div>
+          <div class="sl-gate-desc">${g.desc}</div>
+        </div>
+      </div>
+      <div class="sl-gate-action">
+        ${g.done
+          ? '<span class="sl-gate-done-badge">✓ COMPLÉTÉ</span>'
+          : '<span class="sl-gate-enter">▶ ENTRER</span>'}
+      </div>
+    </div>`;
+  }
+
   hub.innerHTML=`
-<div class="hub-wrap">
-  <div class="hub-hero">
-    <div class="hub-hero-date">${cap(dateStr)}</div>
-    ${currentUser?`
-    <div class="hub-hero-greeting">Bonjour, <strong>${currentUser.username}</strong> \ud83d\udc4b</div>
-    <div class="hub-hero-streak"><span class="hub-flame">\ud83d\udd25</span><span>${userStreak} jour${userStreak!==1?'s':''} de streak</span></div>
-    `:`<div class="hub-hero-greeting">Bienvenue sur <strong>Le Curioscope</strong></div>`}
+<div class="sl-hub">
+
+  <div class="sl-system-header">
+    <div class="sl-system-label">⚡ THE SYSTEM</div>
+    <div class="sl-system-date">${cap(dateStr)}</div>
   </div>
 
   ${currentUser?`
-  <div class="hub-progress-block">
-    <div class="hub-progress-header">
-      <span class="hub-progress-label">Missions du jour</span>
-      <span class="hub-progress-count">${done}/3 compl\u00e9t\u00e9es</span>
-    </div>
-    <div class="hub-progress-track"><div class="hub-progress-fill" style="width:${pct}%"></div></div>
-    ${done===3?'<div class="hub-perfect">\ud83c\udfc6 Toutes les missions accomplies !</div>':''}
-  </div>`:''}
-
-  <div class="hub-section-label">Missions du jour</div>
-  <div class="hub-missions">
-
-    <div class="hub-mission ${readToday?'hub-mission-done':'hub-mission-open'}" onclick="goAnec()">
-      <div class="hub-mission-left">
-        <span class="hub-mission-icon">\ud83d\udca1</span>
-        <div class="hub-mission-info">
-          <div class="hub-mission-name">Le Saviez-Vous ?</div>
-          <div class="hub-mission-desc">L'anecdote surprenante du jour</div>
-        </div>
+  <div class="sl-hunter-card" style="--rank-color:${rank.color};--rank-glow:${rank.glow};--rank-bg:${rank.bg};">
+    <div class="sl-hunter-top">
+      <div class="sl-hunter-info">
+        <div class="sl-hunter-label">CHASSEUR</div>
+        <div class="sl-hunter-name">${currentUser.username}</div>
       </div>
-      <div class="hub-mission-right">
-        ${readToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">Nouveau \u2192</span>'}
+      <div class="sl-rank-badge" style="color:${rank.color};border-color:${rank.color};box-shadow:${rank.glow};">
+        <span class="sl-rank-id">${rank.label}</span>
+        <span class="sl-rank-title">${rank.title}</span>
       </div>
     </div>
-
-    <div class="hub-mission ${enigmaToday?'hub-mission-done':'hub-mission-open'}" onclick="goEnigme()">
-      <div class="hub-mission-left">
-        <span class="hub-mission-icon">\ud83d\udd10</span>
-        <div class="hub-mission-info">
-          <div class="hub-mission-name">Crack le code !</div>
-          <div class="hub-mission-desc">R\u00e9sous l'\u00e9nigme du jour</div>
-        </div>
+    <div class="sl-xp-section">
+      <div class="sl-xp-row">
+        <span class="sl-xp-label">XP TOTAL</span>
+        <span class="sl-xp-val" style="color:${rank.color};">${xp.toLocaleString('fr-FR')}</span>
+        ${nextRank?`<span class="sl-xp-next">/ ${nextRank.minXP.toLocaleString('fr-FR')} → ${nextRank.label}</span>`:'<span class="sl-xp-next">⭐ RANG MAXIMUM</span>'}
       </div>
-      <div class="hub-mission-right">
-        ${enigmaToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">R\u00e9soudre \u2192</span>'}
+      <div class="sl-xp-track">
+        <div class="sl-xp-fill" style="width:${pctRank}%;background:${rank.color};box-shadow:0 0 8px ${rank.color}66;"></div>
       </div>
     </div>
-
-    <div class="hub-mission ${quizToday?'hub-mission-done':'hub-mission-open'}" onclick="renderPlayChoice();show('screen-play');updateNav('bn-play');">
-      <div class="hub-mission-left">
-        <span class="hub-mission-icon">\ud83c\udfaf</span>
-        <div class="hub-mission-info">
-          <div class="hub-mission-name">Quiz</div>
-          <div class="hub-mission-desc">Teste tes connaissances</div>
-        </div>
-      </div>
-      <div class="hub-mission-right">
-        ${quizToday?'<span class="hub-badge-done">\u2713 Fait</span>':'<span class="hub-badge-new">Jouer \u2192</span>'}
-      </div>
+    <div class="sl-hunter-streak">
+      <span class="sl-streak-icon">🔥</span>
+      <span>${userStreak} jour${userStreak!==1?'s':''} de streak</span>
+      ${done===3?'<span class="sl-missions-done">⚡ Missions complètes !</span>':'<span class="sl-missions-left">'+(3-done)+' mission'+(3-done>1?'s':'')+' restante'+(3-done>1?'s':'')+'</span>'}
     </div>
+  </div>`:`
+  <div class="sl-guest-card">
+    <div class="sl-system-label">⚡ THE SYSTEM</div>
+    <div style="font-size:.85rem;color:var(--ink3);margin-top:.5rem;">Connecte-toi pour rejoindre le Système.</div>
+    <button class="sl-btn-primary" style="margin-top:1rem;" onclick="show('screen-login')">S'éveiller →</button>
+  </div>`}
 
+  <div class="sl-section-header">
+    <span class="sl-section-icon">⚔</span>
+    <span>QUÊTES JOURNALIÈRES</span>
+    <span class="sl-section-count">${done}/3</span>
+  </div>
+  <div class="sl-gates">
+    ${gateHTML(gateAnec)}
+    ${gateHTML(gateEnigma)}
+    ${gateHTML(gateQuiz)}
   </div>
 
-  <div class="hub-section-label">Bient\u00f4t disponible</div>
-  <div class="hub-wip-grid">
-    <div class="hub-wip-card">
-      <span class="hub-wip-icon">\ud83c\udf99</span>
-      <div class="hub-wip-name">Mais dis moi ?</div>
-      <span class="hub-wip-pill">WIP</span>
-    </div>
-    <div class="hub-wip-card">
-      <span class="hub-wip-icon">\ud83d\udcc5</span>
-      <div class="hub-wip-name">\u00c9ph\u00e9m\u00e9ride</div>
-      <span class="hub-wip-pill">WIP</span>
-    </div>
-    <div class="hub-wip-card">
-      <span class="hub-wip-icon">\ud83d\udcac</span>
-      <div class="hub-wip-name">T'as dit quoi ?!</div>
-      <span class="hub-wip-pill">WIP</span>
+  <div class="sl-section-header sl-section-arena">
+    <span class="sl-section-icon">⚔</span>
+    <span>ARÈNE</span>
+    <span class="sl-section-new">NOUVEAU</span>
+  </div>
+  <div class="sl-arena-section">
+    <div class="sl-arena-gate" onclick="show1vs100Lobby()">
+      <div class="sl-arena-gate-hd">
+        <span class="sl-arena-tag">S-RANG</span>
+        <span class="sl-arena-xp">+500 XP</span>
+      </div>
+      <div class="sl-arena-gate-bd">
+        <span class="sl-arena-ico">⚡</span>
+        <div>
+          <div class="sl-arena-name">1 CONTRE 100</div>
+          <div class="sl-arena-desc">Affronte 100 challengers. Reste le dernier debout.</div>
+        </div>
+      </div>
+      <div class="sl-arena-enter">▶ ENTRER DANS L'ARÈNE</div>
     </div>
   </div>
+
+  <div class="sl-section-header sl-section-locked">
+    <span class="sl-section-icon">🔒</span>
+    <span>PORTAILS FERMÉS</span>
+    <span class="sl-section-count">BIENTÔT</span>
+  </div>
+  <div class="sl-locked-gates">
+    ${[
+      {rank:'S',icon:'🎙',name:'Mais dis moi ?'},
+      {rank:'A',icon:'📅',name:'Éphéméride'},
+      {rank:'S',icon:'💬',name:"T'as dit quoi ?!"},
+    ].map(g=>{
+      const rk=RANKS.find(r=>r.id===g.rank)||RANKS[5];
+      return `<div class="sl-locked-gate">
+        <span class="sl-locked-icon">${g.icon}</span>
+        <span class="sl-locked-name">${g.name}</span>
+        <span class="sl-locked-rank" style="color:${rk.color};">[${g.rank}-RANG]</span>
+      </div>`;
+    }).join('')}
+  </div>
+
 </div>`;
 
-  show('screen-hub');
-  updateNav('');
+  show('screen-hub');updateNav('');
 }
-// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ══════════════════════════════════════════════════════════════════════════════
+
+function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
+  const old=document.getElementById('sl-notif');if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='sl-notif';el.className='sl-notif';
+  const r=rank||currentUserRank||RANKS[0];
+  el.innerHTML=`
+    <div class="sl-notif-inner" style="border-color:${r.color};box-shadow:${r.glow};">
+      <div class="sl-notif-top"><span class="sl-notif-icon">⚡</span><span class="sl-notif-label">QUÊTE ACCOMPLIE</span></div>
+      <div class="sl-notif-title">${title}</div>
+      <div class="sl-notif-xp" style="color:${r.color};">+${xpGain} XP</div>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('sl-notif-in'));
+  setTimeout(()=>{el.classList.remove('sl-notif-in');setTimeout(()=>el.remove(),400);},3200);
+}
+
+function showLevelUp(newRank){
+  const old=document.getElementById('sl-levelup');if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='sl-levelup';el.className='sl-levelup-overlay';
+  el.innerHTML=`
+    <div class="sl-levelup-inner">
+      <div class="sl-levelup-particles">${Array.from({length:20},(_,i)=>`<span class="sl-particle" style="--i:${i};color:${newRank.color};">◆</span>`).join('')}</div>
+      <div class="sl-levelup-content">
+        <div class="sl-levelup-label">RANG SUPÉRIEUR DÉBLOQUÉ</div>
+        <div class="sl-levelup-rank" style="color:${newRank.color};text-shadow:${newRank.glow};">${newRank.label}</div>
+        <div class="sl-levelup-title">${newRank.title}</div>
+        <div class="sl-levelup-sub">Félicitations, Chasseur.</div>
+      </div>
+      <button class="sl-levelup-btn" style="border-color:${newRank.color};color:${newRank.color};" onclick="document.getElementById('sl-levelup').remove()">CONTINUER →</button>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('sl-levelup-in'));
+  setTimeout(()=>{if(document.getElementById('sl-levelup'))document.getElementById('sl-levelup').remove();},8000);
+}
+
+async function awardXP(amount,questTitle){
+  if(!currentUser)return;
+  const prevRank=currentUserRank||RANKS[0];
+  currentUserXP=(currentUserXP||0)+amount;
+  const newRank=getRank(currentUserXP);
+  currentUserRank=newRank;
+  showSystemNotif({title:questTitle,xpGain:amount,rank:newRank});
+  if(newRank.id!==prevRank.id){
+    setTimeout(()=>showLevelUp(newRank),1500);
+  }
+}
+
+async function showStatsWindow(){
+  if(!currentUser){showToast('Connecte-toi pour voir tes stats !');return;}
+  const[{data:reads},{data:quizzes},{data:enigmas},{data:friends}]=await Promise.all([
+    sb.from('reads').select('date').eq('user_id',currentUser.id),
+    sb.from('quiz_history').select('pct,date').eq('user_id',currentUser.id),
+    sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
+    sb.from('friendships').select('id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
+  ]);
+  const r=reads||[],q=quizzes||[],e=enigmas||[],f=friends||[];
+  const streak=computeStreak(r.map(x=>x.date));
+  const avgQuiz=q.length?Math.round(q.reduce((a,b)=>a+b.pct,0)/q.length):0;
+  const enigmaCorrect=e.filter(x=>x.is_correct).length;
+  const xp=calcSLXP({reads:r.length,quizzes:q,enigmas:e,streak});
+  const rank=getRank(xp);
+  const nextRank=getNextRank(xp);
+
+  const INT=Math.min(100,avgQuiz);
+  const SAG=Math.min(100,Math.round(r.length/3.65));
+  const END=Math.min(100,Math.round(streak/3.65));
+  const FOR=Math.min(100,enigmaCorrect*10);
+
+  const old=document.getElementById('sl-stats-bd');if(old)old.remove();
+  const bd=document.createElement('div');bd.id='sl-stats-bd';bd.className='sl-stats-backdrop';
+  bd.onclick=ev=>{if(ev.target===bd)bd.remove();};
+  bd.innerHTML=`
+    <div class="sl-stats-panel" style="--rank-color:${rank.color};--rank-glow:${rank.glow};">
+      <button class="sl-stats-close" onclick="document.getElementById('sl-stats-bd').remove()">✕</button>
+      <div class="sl-stats-header">
+        <div class="sl-stats-title">FENÊTRE DE STATUT</div>
+        <div class="sl-stats-name">${currentUser.username}</div>
+        <div class="sl-stats-rank" style="color:${rank.color};">[ RANG ${rank.label} — ${rank.title} ]</div>
+      </div>
+      <div class="sl-stats-xp">
+        <div class="sl-stats-xp-row">
+          <span>XP</span>
+          <span style="color:${rank.color};">${xp.toLocaleString('fr-FR')} / ${(nextRank?.minXP||xp).toLocaleString('fr-FR')}</span>
+        </div>
+        <div class="sl-xp-track"><div class="sl-xp-fill" style="width:${nextRank?Math.round((xp-rank.minXP)/(nextRank.minXP-rank.minXP)*100):100}%;background:${rank.color};"></div></div>
+      </div>
+      <div class="sl-stats-grid">
+        ${[
+          {key:'INT',label:'Intelligence',val:INT,desc:avgQuiz+'% moy. quiz',color:'#60a5fa'},
+          {key:'SAG',label:'Sagesse',val:SAG,desc:r.length+' anecdotes lues',color:'#34d399'},
+          {key:'END',label:'Endurance',val:END,desc:streak+' jours de streak',color:'#f97316'},
+          {key:'FOR',label:'Force',val:FOR,desc:enigmaCorrect+' énigmes résolues',color:'#a855f7'},
+        ].map(s=>`
+          <div class="sl-stat-item">
+            <div class="sl-stat-key" style="color:${s.color};">${s.key}</div>
+            <div class="sl-stat-label">${s.label}</div>
+            <div class="sl-stat-bar-wrap">
+              <div class="sl-stat-bar"><div class="sl-stat-fill" style="width:${s.val}%;background:${s.color};"></div></div>
+              <span class="sl-stat-num" style="color:${s.color};">${s.val}</span>
+            </div>
+            <div class="sl-stat-desc">${s.desc}</div>
+          </div>`).join('')}
+      </div>
+      <div class="sl-stats-footer">
+        <div class="sl-stats-misc">
+          <span>🤝 ${f.length} ami${f.length!==1?'s':''}</span>
+          <span>🎯 ${q.length} quiz</span>
+          <span>🔐 ${e.length} énigmes</span>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(bd);
+}
 
 async function loadTodayBackground(){
   // Pr\u00e9charge l'anecdote sans naviguer
@@ -724,7 +895,9 @@ function showAnec(typewrite){
 
 async function markRead(){
   if(!currentUser||!todayAnec)return;
+  const{data:existing}=await sb.from('reads').select('id').eq('user_id',currentUser.id).eq('anecdote_id',todayAnec.id).maybeSingle();
   await sb.from('reads').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,date:today(),preview:todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
+  if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
 }
 
 function startCountdown(){
@@ -823,6 +996,8 @@ async function goProfile(){
 
   // XP & niveau
   const xp=calcXP(r.length,q.length,streak);
+  currentUserXP=calcSLXP({reads:r.length,quizzes:q,enigmas:enigmaStats||[],streak});
+  currentUserRank=getRank(currentUserXP);
   const{lvl,next}=calcLevel(xp);
   const chip=document.getElementById('prof-level-chip');
   if(chip)chip.textContent='✦ '+lvl.name;
@@ -1126,6 +1301,31 @@ function calcLevel(xp){
   for(let i=LEVELS.length-1;i>=0;i--){if(xp>=LEVELS[i].min){lvl=LEVELS[i];next=LEVELS[i+1]||null;break;}}
   return{lvl,next};
 }
+
+// ══ SOLO LEVELING — SYSTÈME DE RANGS ════════════════════════════════════════════════
+const RANKS=[
+  {id:'E', label:'E', title:'Néophyte',   minXP:0,      color:'#9ca3af', bg:'rgba(156,163,175,.08)', glow:'0 0 16px rgba(156,163,175,.25)'},
+  {id:'D', label:'D', title:'Apprenti',   minXP:500,    color:'#60a5fa', bg:'rgba(96,165,250,.08)',  glow:'0 0 16px rgba(96,165,250,.3)'},
+  {id:'C', label:'C', title:'Érudit',     minXP:1500,   color:'#34d399', bg:'rgba(52,211,153,.08)',  glow:'0 0 16px rgba(52,211,153,.3)'},
+  {id:'B', label:'B', title:'Chercheur',  minXP:4000,   color:'#fbbf24', bg:'rgba(251,191,36,.08)',  glow:'0 0 16px rgba(251,191,36,.3)'},
+  {id:'A', label:'A', title:'Maître',     minXP:10000,  color:'#f97316', bg:'rgba(249,115,22,.1)',   glow:'0 0 20px rgba(249,115,22,.35)'},
+  {id:'S', label:'S', title:'Archiviste', minXP:25000,  color:'#a855f7', bg:'rgba(168,85,247,.1)',   glow:'0 0 24px rgba(168,85,247,.45)'},
+  {id:'\u2605', label:'\u2605', title:'Légendaire', minXP:75000,  color:'#ec4899', bg:'rgba(236,72,153,.1)',   glow:'0 0 28px rgba(236,72,153,.5)'},
+];
+
+function calcSLXP({reads=0,quizzes=[],enigmas=[],streak=0}){
+  let xp=reads*50;
+  xp+=quizzes.length*80;
+  xp+=quizzes.filter(q=>q.pct===100).length*120;
+  xp+=quizzes.filter(q=>q.pct>=80&&q.pct<100).length*40;
+  xp+=enigmas.filter(e=>e.is_correct).length*150;
+  xp+=enigmas.filter(e=>!e.is_correct).length*20;
+  let mult=1;
+  if(streak>=100)mult=1.5;else if(streak>=30)mult=1.2;else if(streak>=7)mult=1.1;
+  return Math.round(xp*mult);
+}
+function getRank(xp){let r=RANKS[0];for(let i=RANKS.length-1;i>=0;i--){if(xp>=RANKS[i].minXP){r=RANKS[i];break;}}return r;}
+function getNextRank(xp){for(let i=0;i<RANKS.length;i++){if(xp<RANKS[i].minXP)return RANKS[i];}return null;}
 
 function applyProfileColor(color,save=true){
   if(save)localStorage.setItem('adj_prof_color',color);
@@ -3727,4 +3927,309 @@ async function confirmDeleteAccount() {
   showToast('Compte supprimé. À bientôt peut-être 👋');
   currentUser = null;
   goHome();
+}
+
+// ─── 1 CONTRE 100 ─────────────────────────────────────────────────────────────
+
+const BOT_RANKS_DEF=[
+  {id:'E',count:40,successRate:0.38,color:'#9ca3af'},
+  {id:'D',count:25,successRate:0.52,color:'#60a5fa'},
+  {id:'C',count:20,successRate:0.65,color:'#34d399'},
+  {id:'B',count:10,successRate:0.75,color:'#fbbf24'},
+  {id:'A',count:4, successRate:0.85,color:'#f97316'},
+  {id:'S',count:1, successRate:0.93,color:'#a855f7'},
+];
+
+const BOT_NAMES_POOL=[
+  'Théo42','LucasQ','Emma_X','JujuPro','Naomie','Zak99','BirH','KilianK',
+  'Sofia3','MaxDev','Clément','InèsZ','ThibO','CharlyB','Jérémy','NoéM',
+  'AlinaS','Baptiste','Florent','ChloéX','AntoineR','MaevaQ','OlivierT','SarahV',
+  'RemiC','PaulaD','TomG','IsaH','KarimL','ValéryM','DorianN','LauraO',
+  'VincentP','NathalQ','GregR','StephS','AnnikaT','MarcV','JuliettW','CyrilX',
+  'AurelyY','GastonZ','SimonA','MarieB','RafaelC','EloiseD','EdouardE','LeaF',
+  'AlbanG','CamilH','DamienI','FlorJ','GuillK','HenriL','IreneM','JacqN',
+  'KevO','LisaP','MathQ','NinaR','OlgaS','PierrT','RoxanU','SamuelV',
+  'TaniaW','UgoX','ViolaY','WilZ','XavA','YannB','ZoéC','ActD',
+  'BeatE','CedF','DelphG','EtienH','FabI','GenevJ','HugoK','IrinaL',
+  'JoakM','KatiaN','LorenO','MariP','NicoQ','OctavR','PercS','QuinT',
+  'RomU','SylvV','ThierW','UlanX','VictY','WendZ','XimA','YvetB',
+  'ZachC','AbelD'
+];
+
+const FALLBACK_VS100=[
+  {question:"Quelle est la capitale de l'Australie ?",answers:["Sydney","Melbourne","Canberra","Brisbane"],correctIdx:2},
+  {question:"Combien de côtés a un hexagone ?",answers:["5","6","7","8"],correctIdx:1},
+  {question:"Qui a peint la Joconde ?",answers:["Michel-Ange","Raphaël","Léonard de Vinci","Botticelli"],correctIdx:2},
+  {question:"En quelle année a eu lieu la Révolution française ?",answers:["1789","1769","1799","1815"],correctIdx:0},
+  {question:"Quel est l'élément chimique de symbole 'Fe' ?",answers:["Fluor","Fer","Francium","Fermium"],correctIdx:1},
+  {question:"Quelle planète est la plus grande du système solaire ?",answers:["Saturne","Neptune","Jupiter","Uranus"],correctIdx:2},
+  {question:"Combien d'os contient le corps humain adulte ?",answers:["196","206","216","226"],correctIdx:1},
+  {question:"Qui a écrit 'Les Misérables' ?",answers:["Balzac","Zola","Hugo","Flaubert"],correctIdx:2},
+  {question:"Quelle est la vitesse de la lumière (km/s) ?",answers:["100 000","200 000","300 000","400 000"],correctIdx:2},
+  {question:"En quelle année l'Homme a-t-il marché sur la Lune pour la première fois ?",answers:["1965","1967","1969","1971"],correctIdx:2},
+];
+
+function generateVs100Bots(){
+  const bots=[];
+  let nameIdx=0;
+  BOT_RANKS_DEF.forEach(tier=>{
+    for(let i=0;i<tier.count;i++){
+      bots.push({
+        id:bots.length,
+        name:BOT_NAMES_POOL[nameIdx%BOT_NAMES_POOL.length],
+        rank:tier.id,
+        color:tier.color,
+        successRate:tier.successRate,
+        eliminated:false,
+      });
+      nameIdx++;
+    }
+  });
+  return bots;
+}
+
+async function fetchVs100Questions(){
+  try{
+    const{data}=await sb.from('quiz_questions')
+      .select('id,question,correct_answer,wrong_answers')
+      .limit(300);
+    if(data&&data.length>=10){
+      const shuffled=data.sort(()=>Math.random()-.5).slice(0,10);
+      return shuffled.map(q=>{
+        const allAns=[q.correct_answer,...(q.wrong_answers||[])].filter(Boolean).sort(()=>Math.random()-.5);
+        if(allAns.length<2)return null;
+        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer)};
+      }).filter(Boolean);
+    }
+  }catch(e){console.error('fetchVs100',e);}
+  return FALLBACK_VS100;
+}
+
+function getOrCreateVs100Screen(){
+  let sc=document.getElementById('screen-vs100');
+  if(!sc){
+    sc=document.createElement('div');
+    sc.id='screen-vs100';sc.className='screen';
+    document.body.appendChild(sc);
+  }
+  return sc;
+}
+
+function show1vs100Lobby(){
+  const sc=getOrCreateVs100Screen();
+  let previewDots='';
+  BOT_RANKS_DEF.forEach(tier=>{
+    for(let i=0;i<tier.count;i++){
+      previewDots+=`<div class="vs100-dot" style="background:${tier.color};box-shadow:0 0 5px ${tier.color}55;"></div>`;
+    }
+  });
+  sc.innerHTML=`
+<div class="vs100-lobby">
+  <div class="vs100-lobby-header">
+    <button class="vs100-back-btn" onclick="showHub()">← Retour</button>
+    <div class="vs100-logo-wrap">
+      <div class="vs100-logo-1">1</div>
+      <div class="vs100-logo-vs">CONTRE</div>
+      <div class="vs100-logo-100">100</div>
+    </div>
+    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
+  </div>
+  <div class="vs100-rules-grid">
+    <div class="vs100-rule"><span>❓</span><span>10 questions · 4 choix</span></div>
+    <div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S</span></div>
+    <div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>
+    <div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>
+    <div class="vs100-rule"><span>🏆</span><span>Tous éliminés = +500 XP</span></div>
+    <div class="vs100-rule"><span>📈</span><span>Les forts survivent plus longtemps</span></div>
+  </div>
+  <div class="vs100-preview-wrap">
+    <div class="vs100-preview-label">LES 100 CHALLENGERS</div>
+    <div class="vs100-preview-grid">${previewDots}</div>
+    <div class="vs100-preview-legend">
+      ${BOT_RANKS_DEF.map(t=>`<span class="vs100-leg-dot" style="background:${t.color};"></span><span class="vs100-leg-lbl">${t.id} (${t.count})</span>`).join('')}
+    </div>
+  </div>
+  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">⚡ LANCER LA PARTIE</button>
+</div>`;
+  show('screen-vs100');updateNav('');
+}
+
+async function start1vs100(){
+  const btn=document.getElementById('vs100-launch-btn');
+  if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
+  const questions=await fetchVs100Questions();
+  const bots=generateVs100Bots();
+  vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
+  renderVs100Question();
+}
+
+function renderVs100Question(){
+  const s=vs100State;
+  if(!s)return;
+  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
+  const q=s.questions[s.currentQ];
+  const alive=s.bots.filter(b=>!b.eliminated).length;
+  const sc=getOrCreateVs100Screen();
+
+  const botWall=s.bots.map(b=>`<div class="vs100-wall-dot ${b.eliminated?'vs100-dot-dead':''}" id="wbot-${b.id}" style="${b.eliminated?'':'background:'+b.color+'44;border-color:'+b.color+'55;'}" title="${b.name} [${b.rank}]"></div>`).join('');
+
+  sc.innerHTML=`
+<div class="vs100-arena">
+  <div class="vs100-arena-top">
+    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
+    <div class="vs100-arena-info">
+      <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
+      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
+    </div>
+    <div class="vs100-timer-ring" id="vs100-timer">20</div>
+  </div>
+  <div class="vs100-wall" id="vs100-wall">${botWall}</div>
+  <div class="vs100-question-box">
+    <div class="vs100-q-text">${q.question}</div>
+    <div class="vs100-answers-grid" id="vs100-answers">
+      ${q.answers.map((a,i)=>`<button class="vs100-ans-btn" id="vs100-ans-${i}" onclick="pickVs100Answer(${i})">${a}</button>`).join('')}
+    </div>
+  </div>
+</div>`;
+
+  let timeLeft=20;
+  if(s._timer)clearInterval(s._timer);
+  s._timer=setInterval(()=>{
+    timeLeft--;
+    const el=document.getElementById('vs100-timer');
+    if(el){
+      el.textContent=timeLeft;
+      if(timeLeft<=5)el.classList.add('vs100-timer-danger');
+    }
+    if(timeLeft<=0){clearInterval(s._timer);s._timer=null;pickVs100Answer(-1);}
+  },1000);
+}
+
+async function pickVs100Answer(chosen){
+  const s=vs100State;
+  if(!s)return;
+  if(s._timer){clearInterval(s._timer);s._timer=null;}
+  const q=s.questions[s.currentQ];
+  const playerOK=chosen===q.correctIdx;
+
+  // Lock buttons + highlight
+  document.querySelectorAll('.vs100-ans-btn').forEach((btn,i)=>{
+    btn.disabled=true;
+    if(i===q.correctIdx)btn.classList.add('vs100-ans-ok');
+    else if(i===chosen&&!playerOK)btn.classList.add('vs100-ans-ko');
+  });
+
+  // Bots answer
+  const aliveBots=s.bots.filter(b=>!b.eliminated);
+  const eliminated=[];
+  aliveBots.forEach(bot=>{
+    if(Math.random()>bot.successRate){bot.eliminated=true;eliminated.push(bot);}
+  });
+  s.botsAlive=s.bots.filter(b=>!b.eliminated).length;
+
+  // Animate bot eliminations
+  await vs100AnimateElim(eliminated);
+
+  // Update alive counter
+  const aliveEl=document.getElementById('vs100-alive-count');
+  if(aliveEl)aliveEl.textContent=s.botsAlive;
+
+  if(!playerOK){
+    await vs100Delay(700);
+    endVs100Defeat(q,chosen);
+    return;
+  }
+
+  s.currentQ++;
+  if(s.botsAlive===0){await vs100Delay(400);endVs100Victory();return;}
+
+  // Show inter-question panel
+  vs100ShowInterlude(eliminated.length,s.botsAlive,s.currentQ);
+}
+
+function vs100AnimateElim(eliminated){
+  return new Promise(resolve=>{
+    eliminated.forEach(bot=>{
+      const el=document.getElementById('wbot-'+bot.id);
+      if(!el)return;
+      el.classList.add('vs100-dot-elim');
+      setTimeout(()=>{
+        el.classList.remove('vs100-dot-elim');
+        el.classList.add('vs100-dot-dead');
+        el.style.background='';
+        el.style.borderColor='';
+      },500);
+    });
+    setTimeout(resolve,900);
+  });
+}
+
+function vs100Delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function vs100ShowInterlude(elimCount,botsLeft,nextQ){
+  const sc=getOrCreateVs100Screen();
+  const panel=document.createElement('div');
+  panel.className='vs100-interlude';
+  panel.innerHTML=`
+    <div class="vs100-interlude-box">
+      <div class="vs100-interlude-elim">💀 <strong>${elimCount}</strong> challenger${elimCount>1?'s':''} éliminé${elimCount>1?'s':''}</div>
+      <div class="vs100-interlude-remain">
+        <span class="vs100-interlude-count">${botsLeft}</span>
+        <span class="vs100-interlude-lbl">challenger${botsLeft>1?'s':''} encore debout</span>
+      </div>
+      <div class="vs100-interlude-next">Question ${nextQ}/10</div>
+      <button class="vs100-continue-btn" onclick="this.closest('.vs100-interlude').remove();renderVs100Question();">Continuer ▶</button>
+    </div>`;
+  sc.appendChild(panel);
+  requestAnimationFrame(()=>panel.classList.add('vs100-interlude-show'));
+}
+
+function endVs100Defeat(q,chosen){
+  const sc=getOrCreateVs100Screen();
+  const s=vs100State;
+  const correct=q.answers[q.correctIdx];
+  const picked=chosen>=0?q.answers[chosen]:'⏱ Temps écoulé';
+  sc.innerHTML=`
+<div class="vs100-defeat">
+  <div class="vs100-defeat-skull">💀</div>
+  <div class="vs100-defeat-title">ÉLIMINÉ</div>
+  <div class="vs100-defeat-msg">Les challengers ont eu raison de toi !</div>
+  <div class="vs100-defeat-card">
+    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ-1} / 10</span></div>
+    <div class="vs100-dc-row"><span>Ta réponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
+    <div class="vs100-dc-row"><span>Bonne réponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
+    <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
+  </div>
+  <div class="vs100-defeat-btns">
+    <button class="vs100-retry-btn" onclick="show1vs100Lobby()">🔄 Réessayer</button>
+    <button class="vs100-home-btn" onclick="showHub()">← Accueil</button>
+  </div>
+</div>`;
+}
+
+
+async function endVs100Victory(){
+  const xpGain=500;
+  if(currentUser)await awardXP(xpGain,'1 Contre 100 — Victoire !');
+  const sc=getOrCreateVs100Screen();
+  const s=vs100State;
+  const totalQ=s?s.questions.length:10;
+  const pArr=[];
+  for(let i=0;i<20;i++){pArr.push('<div class="vs100-vp" style="--vi:'+i+';"></div>');}
+  const particles=pArr.join('');
+  sc.innerHTML=
+'<div class="vs100-victory">'+
+  particles+
+  '<div class="vs100-victory-inner">'+
+    '<div class="vs100-victory-trophy">🏆</div>'+
+    '<div class="vs100-victory-title">VICTOIRE !</div>'+
+    '<div class="vs100-victory-sub">Tu as éliminé les 100 challengers !</div>'+
+    '<div class="vs100-victory-card">'+
+      '<div class="vs100-vc-row"><span>Réponses parfaites</span><span style="color:#fbbf24;">'+totalQ+' / '+totalQ+'</span></div>'+
+      '<div class="vs100-vc-row"><span>Bots éliminés</span><span style="color:#34d399;">100 / 100</span></div>'+
+      '<div class="vs100-vc-row"><span>XP remporté</span><span style="color:#a855f7;">+'+xpGain+' XP</span></div>'+
+    '</div>'+
+    '<button class="vs100-back-gold" onclick="showHub()">← Retour au Système</button>'+
+  '</div>'+
+'</div>';
 }
