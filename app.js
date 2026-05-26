@@ -4136,7 +4136,11 @@ function generateVs100Bots(){
   return bots;
 }
 
-async function fetchVs100Questions(){try{const{data}=await sb.rpc('get_random_questions',{n:300,p_user_id:uid});if(data&&data.length>=10){return data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);}}catch(e){console.error('fetchVs100',e);}}
+async function fetchVs100Questions(userId){
+  try{const{data}=await sb.rpc('get_random_questions',{n:300,p_user_id:userId??null});
+  if(data&&data.length>=10){const r=data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);if(r.length>=10)return r;}
+  }catch(e){console.error('fetchVs100',e);}return null;
+}
 
 function getOrCreateVs100Screen(){
   let sc=document.getElementById('screen-vs100');
@@ -4193,52 +4197,15 @@ function show1vs100Lobby(){
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
-  const questions=await fetchVs100Questions();
+  let questions=await fetchVs100Questions(uid);
+  if(!questions||!questions.length){
+    alert('⚠️ Vous n\'avez pas lu assez d\'anecdotes pour une partie personnalisée.\nLe jeu utilisera toutes les anecdotes disponibles.');
+    questions=await fetchVs100Questions(null);
+  }
+  if(!questions||!questions.length){if(btn){btn.textContent='⚡ LANCER LA PARTIE';btn.disabled=false;}return;}
   const bots=window._vs100PreviewBots||generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   renderVs100Question();
-}
-
-function renderVs100Question(){
-  const s=vs100State;
-  if(!s)return;
-  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
-  const q=s.questions[s.currentQ];
-  const alive=s.bots.filter(b=>!b.eliminated).length;
-  const sc=getOrCreateVs100Screen();
-
-  const botWall=s.bots.map(b=>`<div class="vs100-wall-dot ${b.eliminated?'vs100-dot-dead':''}" id="wbot-${b.id}" style="${b.eliminated?'':'background:'+b.color+'44;border-color:'+b.color+'55;'}" title="${b.name} [${b.rank}]"></div>`).join('');
-
-  sc.innerHTML=`
-<div class="vs100-arena">
-  <div class="vs100-arena-top">
-    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
-    <div class="vs100-arena-info">
-      <span class="vs100-q-badge">Q${s.currentQ+1}</span>
-      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
-    </div>
-    <div class="vs100-timer-ring" id="vs100-timer">20</div>
-  </div>
-  <div class="vs100-wall" id="vs100-wall">${botWall}</div>
-  <div class="vs100-question-box">
-    <div class="vs100-q-text">${q.question}</div>
-    <div class="vs100-answers-grid" id="vs100-answers">
-      ${q.answers.map((a,i)=>`<button class="vs100-ans-btn" id="vs100-ans-${i}" onclick="pickVs100Answer(${i})">${a}</button>`).join('')}
-    </div>
-  </div>
-</div>`;
-
-  let timeLeft=20;
-  if(s._timer)clearInterval(s._timer);
-  s._timer=setInterval(()=>{
-    timeLeft--;
-    const el=document.getElementById('vs100-timer');
-    if(el){
-      el.textContent=timeLeft;
-      if(timeLeft<=5)el.classList.add('vs100-timer-danger');
-    }
-    if(timeLeft<=0){clearInterval(s._timer);s._timer=null;pickVs100Answer(-1);}
-  },1000);
 }
 
 async function pickVs100Answer(chosen){
