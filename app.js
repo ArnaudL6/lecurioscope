@@ -1436,9 +1436,27 @@ function renderPlayChoice(){
   document.getElementById('multi-sub').textContent='';
   const backBtn=document.querySelector('#screen-multi .btn-back');
   if(backBtn)backBtn.style.display='block';
-  document.getElementById('multi-content').innerHTML='<div class="multi-grid"><div class="multi-card" onclick="goSoloPlay()"><span class="multi-card-icon">\ud83c\udfaf</span><div class="multi-card-title">Solo</div><div class="multi-card-desc">Teste tes connaissances sur l\'anecdote du jour.</div></div><div class="multi-card" onclick="goMultiPlay()"><span class="multi-card-icon">\ud83c\udfae</span><div class="multi-card-title">Partie privée</div><div class="multi-card-desc">Affronte tes amis en temps réel.</div></div><div class="multi-card" onclick="showDuelLobby()"><span class="multi-card-icon">⚔️</span><div class="multi-card-title">Duel Quiz</div><div class="multi-card-desc">Tour par tour — choisis le thème, bats ton adversaire.</div></div></div>';
+  document.getElementById('multi-content').innerHTML='<div class="sl-play-gates">'
+    +'<div class="sl-play-gate" onclick="goSoloPlay()">'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#34d399;border-color:#34d399;">C-RANG</span><span class="sl-arena-xp">+100 XP</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎯</span><span class="sl-arena-name">SOLO</span></div>'
+    +'<div class="sl-arena-desc">Teste tes connaissances sur l'anecdote du jour.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
+    +'</div>'
+    +'<div class="sl-play-gate" onclick="goMultiPlay()">'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#fbbf24;border-color:#fbbf24;">B-RANG</span><span class="sl-arena-xp">+200 XP</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎮</span><span class="sl-arena-name">PARTIE PRIVÉE</span></div>'
+    +'<div class="sl-arena-desc">Affronte tes amis en temps réel.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
+    +'</div>'
+    +'<div class="sl-play-gate" onclick="showDuelLobby()">'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#f97316;border-color:#f97316;">A-RANG</span><span class="sl-arena-xp">+300 XP</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">⚔️</span><span class="sl-arena-name">DUEL QUIZ</span></div>'
+    +'<div class="sl-arena-desc">Tour par tour — choisis le thème, bats ton adversaire.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
+    +'</div>'
+    +'</div>';
 }
-
 async function goSoloPlay(){
   document.getElementById('multi-title-txt').innerHTML='<em>Quiz</em> Solo';
   document.getElementById('multi-sub').textContent='Chargement de tes anecdotes…';
