@@ -919,8 +919,23 @@ async function markRead(){
   const{data:existing}=await sb.from('reads').select('id').eq('user_id',currentUser.id).eq('anecdote_id',todayAnec.id).maybeSingle();
   await sb.from('reads').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,date:today(),preview:todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
   if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
-}
 
+  if(!document.getElementById('btn-historique')){const bh=document.createElement('button');bh.id='btn-historique';bh.className='btn-historique-anec';bh.innerHTML='📚 Historique';bh.onclick=showAnecHistorique;const acts=document.querySelector('.anec-actions');if(acts)acts.appendChild(bh);}}
+
+
+async function showAnecHistorique(){
+  let modal=document.getElementById('hist-modal');
+  if(!modal){modal=document.createElement('div');modal.id='hist-modal';modal.className='hist-modal-overlay';modal.onclick=e=>{if(e.target===modal)modal.style.display='none';};modal.innerHTML='<div class="hist-modal-box"><div class="hist-modal-hd"><span>📚 Vos anecdotes passées</span><button class="hist-close-btn" onclick="document.getElementById(\'hist-modal\').style.display=\'none\'">✕</button></div><div class="hist-modal-body" id="hist-modal-body"><p class="hist-loading">Chargement...</p></div></div>';document.body.appendChild(modal);}
+  modal.style.display='flex';
+  const body=document.getElementById('hist-modal-body');
+  try{
+    const reads=(allReads||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+    if(!reads.length){body.innerHTML='<p class="hist-empty">Aucune lecture enregistrée.</p>';return;}
+    const{data}=await sb.from('anecdotes').select('date,title,content,theme').in('date',reads.map(r=>r.date)).order('date',{ascending:false});
+    if(!data||!data.length){body.innerHTML='<p class="hist-empty">Impossible de charger.</p>';return;}
+    body.innerHTML=data.map(a=>'<div class="hist-item"><div class="hist-item-date">'+a.date+'</div><div class="hist-item-title">'+(a.title||'Anecdote')+'</div><div class="hist-item-excerpt">'+((a.content||'').slice(0,100))+'…</div></div>').join('');
+  }catch(e){body.innerHTML='<p class="hist-empty" style="color:#f97316">Erreur: '+e.message+'</p>';}
+}
 function startCountdown(){
   if(cdTimer)clearInterval(cdTimer);
   function tick(){const now=new Date(),mid=new Date(now);mid.setHours(24,0,0,0);const diff=mid-now;if(diff<=0){clearInterval(cdTimer);location.reload();return;}const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);const el=document.getElementById('countdown');if(el)el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
@@ -2717,7 +2732,7 @@ async function buildWeeklyMystery(el){
   const now=new Date();
   const dow=(now.getDay()+6)%7;
   const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
-  const ws=mon.toISOString().slice(0,10);
+  const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
   const actsVisible=Math.min(dow+1,5);
   const{data,error}=await sb.from('weekly_mysteries').select('*').eq('week_start',ws).single();
   if(error||!data){el.innerHTML='<div class="mys-empty">🔎 Aucune enquête cette semaine — revenez lundi !</div>';return;}
