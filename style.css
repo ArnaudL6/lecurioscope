@@ -1006,16 +1006,16 @@ main{padding-bottom:5.5rem;}
 .umo-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.6rem;}
 
 /* ─── PARAMÈTRES COMPTE (modale complète) ─────────────────────────────────── */
-.acct-modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;}
-.acct-modal-card{width:min(480px,96vw);max-height:88vh;overflow-y:auto;background:var(--bg);border:1px solid var(--b1);border-radius:var(--card-radius);box-shadow:0 20px 70px rgba(0,0,0,.3);animation:modal-in .2s ease;display:flex;flex-direction:column;}
+.acct-modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:68px 1rem 1rem;}
+.acct-modal-card{width:min(480px,96vw);max-height:calc(100vh - 80px);overflow-y:auto;background:var(--bg);border:1px solid var(--b1);border-radius:var(--card-radius);box-shadow:0 20px 70px rgba(0,0,0,.3);animation:modal-in .2s ease;display:flex;flex-direction:column;}
 .acct-modal-head{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.4rem 0.8rem;border-bottom:1px solid var(--b1);position:sticky;top:0;background:var(--bg);z-index:2;}
-.acct-modal-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--ink);}
+.acct-modal-title{font-family:'Space Grotesk',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
 .acct-modal-close{background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--ink3);padding:.3rem .5rem;border-radius:6px;transition:background .15s;}
 .acct-modal-close:hover{background:var(--b1);}
 
 /* Onglets */
 .acct-tabs{display:flex;gap:.3rem;padding:.75rem 1.4rem .5rem;border-bottom:1px solid var(--b1);overflow-x:auto;position:sticky;top:57px;background:var(--bg);z-index:1;}
-.acct-tab{background:none;border:none;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--ink3);padding:.4rem .75rem;border-radius:20px;transition:all .15s;white-space:nowrap;}
+.acct-tab{background:none;border:none;cursor:pointer;font-size:.65rem;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);padding:.4rem .75rem;border-radius:20px;transition:all .15s;white-space:nowrap;}
 .acct-tab:hover{background:var(--b1);color:var(--ink);}
 .acct-tab.active{background:var(--accent);color:#fff;}
 
@@ -1025,7 +1025,7 @@ main{padding-bottom:5.5rem;}
 /* Sections */
 .acct-section{margin-bottom:1.6rem;}
 .acct-section:last-child{margin-bottom:0;}
-.acct-section-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:800;color:var(--ink);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.06em;}
+.acct-section-title{font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:700;color:var(--ink);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.13em;}
 .acct-section-desc{font-size:.75rem;color:var(--ink3);margin-bottom:.7rem;line-height:1.5;}
 .acct-current-label{font-size:.76rem;color:var(--ink2);margin-bottom:.6rem;}
 .acct-current-val{font-weight:700;color:var(--ink);}
@@ -1076,3 +1076,26 @@ main{padding-bottom:5.5rem;}
 
 /* Danger zone */
 .acct-danger-zone{border-top:1px solid var(--err);padding-top:1.2rem;margin-top:1.2rem;}
+
+/* ── Profil ami enrichi ────────────────────────────────────────────────────── */
+.stat-blue{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);}
+.stat-blue .psc-val{color:#3b82f6;}
+
+.umo-streak-sub{font-size:.65rem;font-weight:600;color:rgba(255,255,255,.75);margin-top:.15rem;}
+
+.umo-section-title{font-family:'Space Grotesk',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin:1rem 0 .6rem;padding-top:.75rem;border-top:1px solid var(--b1);}
+
+.umo-badges-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;}
+.umo-badge-item{display:flex;align-items:center;gap:.35rem;padding:.3rem .6rem;border-radius:20px;border:1px solid var(--b1);background:var(--s1);}
+.umo-badge-icon{font-size:.95rem;line-height:1;}
+.umo-badge-name{font-size:.68rem;font-weight:600;color:var(--ink2);}
+.umo-rarity-common{border-color:var(--b1);}
+.umo-rarity-rare{border-color:rgba(59,130,246,.35);background:rgba(59,130,246,.06);}
+.umo-rarity-epic{border-color:rgba(168,85,247,.35);background:rgba(168,85,247,.06);}
+.umo-rarity-legendary{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.07);}
+
+.umo-actions{display:flex;flex-direction:column;gap:.55rem;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--b1);}
+.umo-action-btn{width:100%;font-size:.75rem;}
+.umo-friend-badge{text-align:center;font-size:.75rem;font-weight:700;color:var(--gr);padding:.4rem;}
+.umo-share-btn{width:100%;padding:.55rem;font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:none;border:1px solid var(--b1);border-radius:.65rem;cursor:pointer;transition:all .18s;}
+.umo-share-btn:hover{background:var(--b1);color:var(--ink);}
