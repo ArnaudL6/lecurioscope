@@ -1385,7 +1385,7 @@ main{padding-bottom:5.5rem;}
 .vs100-back-gold{background:linear-gradient(135deg,#fbbf24,#f97316);border:none;border-radius:.75rem;color:#000;font-size:.9rem;font-weight:800;padding:.85rem 2rem;cursor:pointer;box-shadow:0 4px 20px rgba(251,191,36,.35);}
 /* Particles */
 .vs100-vp{position:absolute;width:6px;height:6px;border-radius:50%;background:#fbbf24;animation:vs100-confetti 3s ease-out calc(var(--vi)*0.12s) infinite;top:50%;left:50%;}
-@keyframes
+@keyframes vs100-confetti{0%{opacity:1;transform:translateY(0) scale(1);}50%{opacity:.6;}100%{opacity:0;transform:translateY(-120px) scale(0);}}
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE DESKTOP — Hub 2 colonnes + écrans larges
 ═══════════════════════════════════════════════════════════ */
