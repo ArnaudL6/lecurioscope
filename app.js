@@ -3512,13 +3512,23 @@ async function cancelAsyncDuel(duelId) {
 
 // ─── PARAMÈTRES COMPTE ────────────────────────────────────────────────────────
 
-function openAccountSettings() {
+async function openAccountSettings() {
   const bd = document.getElementById('acct-modal-bd');
   if (!bd) return;
 
-  // Pré-remplir l'email actuel
+  // Pré-remplir l'email actuel — appel frais pour éviter le cache JWT
   const emailEl = document.getElementById('acct-current-email');
-  if (emailEl && currentUser) emailEl.textContent = currentUser.email || '—';
+  if (emailEl) {
+    try {
+      const { data: { user: freshUser } } = await sb.auth.getUser();
+      if (freshUser) {
+        emailEl.textContent = freshUser.email || '—';
+        if (currentUser) currentUser.email = freshUser.email || '';
+      }
+    } catch(e) {
+      if (emailEl && currentUser) emailEl.textContent = currentUser.email || '—';
+    }
+  }
 
   // Pré-remplir le pseudo actuel
   const unEl = document.getElementById('acct-username-input');
@@ -3683,9 +3693,8 @@ async function confirmResetProgress() {
 async function confirmDeleteAccount() {
   const input = prompt('Pour confirmer, tape "SUPPRIMER" en majuscules :');
   if (input !== 'SUPPRIMER') { showToast('Suppression annulée.'); return; }
-  // Supprimer le profil (les données cascadent via FK)
   await sb.from('profiles').delete().eq('id', currentUser.id);
-    await sb.auth.signOut();
+  await sb.auth.signOut();
   showToast('Compte supprimé. À bientôt peut-être 👋');
   currentUser = null;
   goHome();
