@@ -665,8 +665,7 @@ async function showHub(){
       </div>
 
       <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
-      <div id="hub-challenge-wrap" style="margin-top:.5rem;"></div>
-    <div id="hub-mystery-wrap" style="margin-top:.5rem;"></div>
+          <div id="hub-mystery-wrap" style="margin-top:.5rem;"></div>
     </div>
     <div class="sl-hub-right">
 
@@ -709,7 +708,7 @@ async function showHub(){
 </div>`;
 
   show('screen-hub');updateNav('');
-  setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
+  setTimeout(()=>{const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
 }
 
 // ═════════════════════════════
@@ -2673,60 +2672,6 @@ function copyShareText(){
 }
 
 // ── Community challenge ──────────────────────────────────────────────────────
-async function buildCommunityChallenge(el){
-  if(!el)return;
-  // Semaine en cours (lundi)
-  const now=new Date();
-  const dow=(now.getDay()+6)%7;
-  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
-  const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
-
-  const{data:ch}=await sb.from('community_challenges').select('*').eq('week_start',ws).maybeSingle();
-  if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">🎯</span><p style="color:var(--ink3);font-size:.8rem">Défi de la semaine bientôt disponible !</p></div>';return;}
-
-  let userResp=null;
-  if(currentUser){
-    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',currentUser.id).eq('challenge_id',ch.id).maybeSingle();
-    userResp=r;
-  }
-
-  // Compter les réponses globales
-  const{data:allResps}=await sb.from('challenge_responses').select('answer,correct').eq('challenge_id',ch.id);
-  const total=(allResps||[]).length;
-  const nbOk=(allResps||[]).filter(r=>r.correct).length;
-  const pctOk=total?Math.round(nbOk/total*100):0;
-
-  const opts=(ch.options||[]);
-  const answered=!!userResp;
-
-  const optHtml=opts.map((o,i)=>{
-    let cls='challenge-opt';
-    if(answered){
-      if(i===ch.answer)cls+=' reveal-ok';
-      if(userResp&&userResp.answer===i){cls+=(i===ch.answer?' ok':' err');}
-    }
-    return '<button class="'+cls+'" '+(answered?'disabled':'')+' onclick="answerChallenge(\''+ch.id+'\','+i+','+ch.answer+')">'+
-      '<span style="font-weight:700;color:var(--ink3);margin-right:.4rem">'+String.fromCharCode(65+i)+'.</span>'+o+'</button>';
-  }).join('');
-
-  let bottomHtml='';
-  if(answered){
-    const ok=userResp.correct;
-    bottomHtml='<div class="challenge-result"><span>'+(ok?'✅':'❌')+'</span><span>'+(ok?'Bonne réponse ! Bien joué 🎉':'Raté ! La bonne réponse est <strong>'+opts[ch.answer]+'</strong>')+'</span></div>'+
-      (ch.explanation?'<div class="challenge-expl">📖 '+ch.explanation+'</div>':'')+
-      '<div class="challenge-score-bar"><div class="challenge-score-fill" style="width:'+pctOk+'%"></div></div>'+
-      '<div class="challenge-stats">'+nbOk+' / '+total+' joueurs ont trouvé ('+pctOk+'%)</div>';
-  }else if(!currentUser){
-    bottomHtml='<div style="margin-top:.75rem;text-align:center"><button class="btn-main" style="font-size:.75rem;padding:.5rem 1.25rem" onclick="show(\'screen-login\')">Se connecter pour jouer</button></div>';
-  }
-
-  el.innerHTML='<div class="challenge-card">'+
-    '<div class="challenge-week">'+ch.icon+' Défi de la semaine</div>'+
-    '<div class="challenge-q">'+ch.question+'</div>'+
-    '<div class="challenge-opts">'+optHtml+'</div>'+
-    bottomHtml+'</div>';
-}
-
 async function buildWeeklyMystery(el){
   if(!el)return;
   const now=new Date();
