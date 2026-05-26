@@ -2462,6 +2462,22 @@ async function buildIdentityCard(reads,qhist,allAnec){
     '</div>';
 }
 
+function subscribeNewHunters(){
+  sb.channel('new-hunters')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'profiles'},(payload)=>{
+      if(currentUser&&payload.new.id===currentUser.id)return;
+      showHunterToast(payload.new.username||'Chasseur inconnu');
+    })
+    .subscribe();
+}
+function showHunterToast(username){
+  let t=document.getElementById('hunter-toast');
+  if(!t){t=document.createElement('div');t.id='hunter-toast';t.className='hunter-toast';document.body.appendChild(t);}
+  t.innerHTML='<span class="hunter-toast-ico">⚡</span><div><div class="hunter-toast-title">Nouveau chasseur détecté</div><div class="hunter-toast-name">'+username+' a rejoint le Système</div></div>';
+  t.classList.add('on');
+  clearTimeout(t._tmr);
+  t._tmr=setTimeout(()=>t.classList.remove('on'),4500);
+}
 (async function init(){
   document.documentElement.classList.add('dark');
   localStorage.setItem('adj_mode','dark');
@@ -2475,7 +2491,7 @@ async function buildIdentityCard(reads,qhist,allAnec){
   loadTodayBackground();
   if(currentUser){
     showHub();
-    loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();
+    loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
     show('screen-login');
   }
