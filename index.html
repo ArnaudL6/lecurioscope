@@ -322,20 +322,132 @@
     <div class="prof-top-bar">
       <button class="btn-back" onclick="goBack()">← Retour</button>
       <div class="prof-top-actions">
-        <button class="prof-edit-name-btn" onclick="openEditUsername()" title="Modifier le pseudo">✏️ Pseudo</button>
+        <button class="prof-edit-name-btn" onclick="openAccountSettings()">⚙️ Paramètres</button>
         <button class="prof-logout-btn" onclick="doSignOut()">Déconnexion</button>
       </div>
     </div>
-    <!-- Modale edit pseudo -->
-    <div class="edit-name-modal" id="edit-name-modal" style="display:none;">
-      <div class="edit-name-card">
-        <div class="edit-name-title">✏️ Modifier le pseudo</div>
-        <input class="edit-name-input" id="edit-name-input" maxlength="24" placeholder="Nouveau pseudo"/>
-        <div class="edit-name-err" id="edit-name-err"></div>
-        <div class="edit-name-btns">
-          <button class="btn-main" onclick="saveUsername()">Sauvegarder</button>
-          <button class="btn-sec" onclick="closeEditUsername()">Annuler</button>
+
+    <!-- Modale paramètres compte -->
+    <div class="acct-modal-bd" id="acct-modal-bd" style="display:none;" onclick="if(event.target===this)closeAccountSettings()">
+      <div class="acct-modal-card">
+        <div class="acct-modal-head">
+          <span class="acct-modal-title">⚙️ Paramètres</span>
+          <button class="acct-modal-close" onclick="closeAccountSettings()">✕</button>
         </div>
+
+        <!-- Onglets -->
+        <div class="acct-tabs">
+          <button class="acct-tab active" onclick="switchAcctTab('profil',this)">👤 Profil</button>
+          <button class="acct-tab" onclick="switchAcctTab('compte',this)">🔒 Compte</button>
+          <button class="acct-tab" onclick="switchAcctTab('notifs',this)">🔔 Notifs</button>
+          <button class="acct-tab" onclick="switchAcctTab('danger',this)">⚠️ Danger</button>
+        </div>
+
+        <!-- Onglet Profil -->
+        <div class="acct-tab-panel" id="acct-panel-profil">
+          <div class="acct-section">
+            <div class="acct-section-title">Pseudo</div>
+            <div class="acct-section-desc">Visible par tous les autres joueurs.</div>
+            <div class="acct-row">
+              <input class="acct-input" id="acct-username-input" maxlength="24" placeholder="Nouveau pseudo"/>
+              <button class="acct-btn" onclick="saveUsername()">Sauvegarder</button>
+            </div>
+            <div class="acct-err" id="acct-username-err"></div>
+          </div>
+
+          <div class="acct-section">
+            <div class="acct-section-title">Bio</div>
+            <div class="acct-section-desc">Quelques mots sur toi, visible sur ton profil.</div>
+            <div class="acct-row-col">
+              <textarea class="acct-textarea" id="acct-bio-input" maxlength="160" placeholder="Présente-toi en quelques mots…" rows="3"></textarea>
+              <button class="acct-btn" onclick="saveBioSettings()">Sauvegarder</button>
+            </div>
+            <div class="acct-err" id="acct-bio-err"></div>
+          </div>
+
+          <div class="acct-section">
+            <div class="acct-section-title">Photo de profil</div>
+            <div class="acct-section-desc">Clique sur ton avatar depuis le profil pour la changer. Tu peux aussi choisir une couleur.</div>
+            <button class="acct-btn-outline" onclick="closeAccountSettings();triggerAvatarUpload()">📷 Changer la photo</button>
+            <button class="acct-btn-outline" onclick="closeAccountSettings();toggleColorPicker()">🎨 Changer la couleur</button>
+          </div>
+        </div>
+
+        <!-- Onglet Compte -->
+        <div class="acct-tab-panel" id="acct-panel-compte" style="display:none;">
+          <div class="acct-section">
+            <div class="acct-section-title">Adresse e-mail</div>
+            <div class="acct-current-label">Actuelle : <span id="acct-current-email" class="acct-current-val"></span></div>
+            <div class="acct-row">
+              <input class="acct-input" id="acct-email-input" type="email" placeholder="Nouvel e-mail"/>
+              <button class="acct-btn" onclick="saveEmail()">Modifier</button>
+            </div>
+            <div class="acct-err" id="acct-email-err"></div>
+            <div class="acct-info">📧 Un lien de confirmation sera envoyé à la nouvelle adresse. Le changement ne sera effectif qu'après validation.</div>
+          </div>
+
+          <div class="acct-section">
+            <div class="acct-section-title">Mot de passe</div>
+            <div class="acct-section-desc">Choisissez un mot de passe d'au moins 8 caractères.</div>
+            <div class="acct-row-col">
+              <input class="acct-input" id="acct-pw-new" type="password" placeholder="Nouveau mot de passe"/>
+              <input class="acct-input" id="acct-pw-confirm" type="password" placeholder="Confirmer le mot de passe"/>
+              <button class="acct-btn" onclick="savePassword()">Changer le mot de passe</button>
+            </div>
+            <div class="acct-err" id="acct-pw-err"></div>
+          </div>
+
+          <div class="acct-section">
+            <div class="acct-section-title">Connexions</div>
+            <div class="acct-section-desc">Comptes liés à ton profil.</div>
+            <div class="acct-providers" id="acct-providers"></div>
+          </div>
+        </div>
+
+        <!-- Onglet Notifications -->
+        <div class="acct-tab-panel" id="acct-panel-notifs" style="display:none;">
+          <div class="acct-section">
+            <div class="acct-section-title">Préférences de notifications</div>
+            <div class="acct-section-desc">Choisis les notifications que tu veux recevoir.</div>
+            <div class="acct-toggle-list">
+              <label class="acct-toggle-row">
+                <span class="acct-toggle-label">🤝 Demandes d'amis</span>
+                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-friend" checked onchange="saveNotifPref('friend',this.checked)"/>
+                <span class="acct-toggle-slider"></span>
+              </label>
+              <label class="acct-toggle-row">
+                <span class="acct-toggle-label">⚔️ Invitations de duel</span>
+                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-duel" checked onchange="saveNotifPref('duel',this.checked)"/>
+                <span class="acct-toggle-slider"></span>
+              </label>
+              <label class="acct-toggle-row">
+                <span class="acct-toggle-label">🎯 C'est ton tour (duel)</span>
+                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-turn" checked onchange="saveNotifPref('turn',this.checked)"/>
+                <span class="acct-toggle-slider"></span>
+              </label>
+              <label class="acct-toggle-row">
+                <span class="acct-toggle-label">🏆 Résultats de duel</span>
+                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-result" checked onchange="saveNotifPref('result',this.checked)"/>
+                <span class="acct-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet Danger -->
+        <div class="acct-tab-panel" id="acct-panel-danger" style="display:none;">
+          <div class="acct-section">
+            <div class="acct-section-title">Réinitialiser la progression</div>
+            <div class="acct-section-desc">Remet à zéro ton XP, tes badges et ta série. Irréversible.</div>
+            <button class="acct-btn-warn" onclick="confirmResetProgress()">🔄 Réinitialiser ma progression</button>
+          </div>
+          <div class="acct-section acct-danger-zone">
+            <div class="acct-section-title" style="color:var(--err)">Supprimer le compte</div>
+            <div class="acct-section-desc">Toutes tes données seront supprimées définitivement. Cette action est irréversible.</div>
+            <button class="acct-btn-danger" onclick="confirmDeleteAccount()">🗑️ Supprimer mon compte</button>
+          </div>
+        </div>
+
       </div>
     </div>
     <div id="admin-entry" style="display:none;"></div>

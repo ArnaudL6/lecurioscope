@@ -3539,3 +3539,184 @@ async function cancelAsyncDuel(duelId) {
   showToast('Duel annulé');
   showDuelLobby();
 }
+
+// ─── PARAMÈTRES COMPTE ────────────────────────────────────────────────────────
+
+function openAccountSettings() {
+  const bd = document.getElementById('acct-modal-bd');
+  if (!bd) return;
+
+  // Pré-remplir l'email actuel
+  const emailEl = document.getElementById('acct-current-email');
+  if (emailEl && currentUser) emailEl.textContent = currentUser.email || '—';
+
+  // Pré-remplir le pseudo actuel
+  const unEl = document.getElementById('acct-username-input');
+  if (unEl && currentProfile) unEl.value = currentProfile.username || '';
+
+  // Pré-remplir la bio
+  const bioEl = document.getElementById('acct-bio-input');
+  if (bioEl && currentProfile) bioEl.value = currentProfile.bio || '';
+
+  // Afficher les providers connectés
+  _renderProviders();
+
+  // Charger les préfs notifs
+  _loadNotifPrefs();
+
+  // Reset erreurs
+  ['acct-username-err','acct-email-err','acct-pw-err','acct-bio-err'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+
+  bd.style.display = 'flex';
+  // Activer le premier onglet
+  switchAcctTab('profil', document.querySelector('.acct-tab'));
+}
+
+function closeAccountSettings() {
+  const bd = document.getElementById('acct-modal-bd');
+  if (bd) bd.style.display = 'none';
+}
+
+function switchAcctTab(name, btn) {
+  // Masquer tous les panels
+  ['profil','compte','notifs','danger'].forEach(t => {
+    const p = document.getElementById('acct-panel-' + t);
+    if (p) p.style.display = 'none';
+  });
+  // Désactiver tous les onglets
+  document.querySelectorAll('.acct-tab').forEach(b => b.classList.remove('active'));
+  // Afficher le bon panel
+  const panel = document.getElementById('acct-panel-' + name);
+  if (panel) panel.style.display = '';
+  if (btn) btn.classList.add('active');
+}
+
+function _renderProviders() {
+  const el = document.getElementById('acct-providers');
+  if (!el || !currentUser) return;
+  const providers = currentUser.app_metadata?.providers || [currentUser.app_metadata?.provider || 'email'];
+  const icons = { email: '📧', discord: '💬', google: '🔵', github: '⚫' };
+  const names = { email: 'Email / Mot de passe', discord: 'Discord', google: 'Google', github: 'GitHub' };
+  el.innerHTML = providers.map(p =>
+    '<div class="acct-provider-row">' +
+      '<span class="acct-provider-icon">' + (icons[p] || '🔗') + '</span>' +
+      '<span class="acct-provider-name">' + (names[p] || p) + '</span>' +
+      '<span class="acct-provider-badge">Connecté</span>' +
+    '</div>'
+  ).join('');
+}
+
+// ── Sauvegarder le pseudo ────────────────────────────────────────────────────
+async function saveUsername() {
+  const input = document.getElementById('acct-username-input') || document.getElementById('edit-name-input');
+  const errEl = document.getElementById('acct-username-err') || document.getElementById('edit-name-err');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val || val.length < 2) { if (errEl) errEl.textContent = 'Minimum 2 caractères.'; return; }
+
+  // Unicité
+  const { data: existing } = await sb.from('profiles').select('id').eq('username', val).neq('id', currentUser.id).maybeSingle();
+  if (existing) { if (errEl) errEl.textContent = 'Ce pseudo est déjà pris.'; return; }
+
+  const { error } = await sb.from('profiles').update({ username: val }).eq('id', currentUser.id);
+  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
+
+  if (currentProfile) currentProfile.username = val;
+  if (errEl) errEl.textContent = '';
+  showToast('Pseudo mis à jour ! 🎉');
+  // Rafraîchir l'affichage du profil
+  const nameEl = document.getElementById('prof-name');
+  if (nameEl) nameEl.textContent = val;
+}
+
+// ── Sauvegarder la bio ───────────────────────────────────────────────────────
+async function saveBioSettings() {
+  const input = document.getElementById('acct-bio-input');
+  const errEl = document.getElementById('acct-bio-err');
+  if (!input) return;
+  const val = input.value.trim();
+  const { error } = await sb.from('profiles').update({ bio: val }).eq('id', currentUser.id);
+  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
+  if (currentProfile) currentProfile.bio = val;
+  if (errEl) errEl.textContent = '';
+  const bioEl = document.getElementById('prof-bio-text');
+  if (bioEl) bioEl.textContent = val || 'Ajoute une bio...';
+  showToast('Bio mise à jour !');
+}
+
+// ── Changer l'email ──────────────────────────────────────────────────────────
+async function saveEmail() {
+  const input = document.getElementById('acct-email-input');
+  const errEl = document.getElementById('acct-email-err');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val || !val.includes('@')) { if (errEl) errEl.textContent = 'Adresse e-mail invalide.'; return; }
+  if (val === currentUser.email) { if (errEl) errEl.textContent = 'C\'est déjà ton adresse actuelle.'; return; }
+
+  const { error } = await sb.auth.updateUser({ email: val });
+  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
+  if (errEl) errEl.textContent = '';
+  input.value = '';
+  showToast('Confirme le changement dans ta nouvelle boîte mail 📧');
+}
+
+// ── Changer le mot de passe ──────────────────────────────────────────────────
+async function savePassword() {
+  const pwNew = document.getElementById('acct-pw-new');
+  const pwConf = document.getElementById('acct-pw-confirm');
+  const errEl = document.getElementById('acct-pw-err');
+  if (!pwNew || !pwConf) return;
+  const pw = pwNew.value;
+  const conf = pwConf.value;
+  if (pw.length < 8) { if (errEl) errEl.textContent = 'Minimum 8 caractères.'; return; }
+  if (pw !== conf)   { if (errEl) errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
+
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
+  pwNew.value = ''; pwConf.value = '';
+  if (errEl) errEl.textContent = '';
+  showToast('Mot de passe mis à jour ! 🔒');
+}
+
+// ── Préférences notifications ────────────────────────────────────────────────
+function _loadNotifPrefs() {
+  const prefs = JSON.parse(localStorage.getItem('notif_prefs') || '{"friend":true,"duel":true,"turn":true,"result":true}');
+  ['friend','duel','turn','result'].forEach(k => {
+    const el = document.getElementById('notif-pref-' + k);
+    if (el) el.checked = prefs[k] !== false;
+  });
+}
+
+function saveNotifPref(key, val) {
+  const prefs = JSON.parse(localStorage.getItem('notif_prefs') || '{}');
+  prefs[key] = val;
+  localStorage.setItem('notif_prefs', JSON.stringify(prefs));
+  showToast(val ? 'Notification activée' : 'Notification désactivée');
+}
+
+// ── Réinitialiser la progression ─────────────────────────────────────────────
+async function confirmResetProgress() {
+  if (!confirm('Réinitialiser toute ta progression (XP, badges, série) ? Cette action est irréversible.')) return;
+  const { error } = await sb.from('profiles').update({
+    xp: 0, badges: [], streak: 0, longest_streak: 0
+  }).eq('id', currentUser.id);
+  if (error) { showToast('Erreur : ' + error.message); return; }
+  showToast('Progression réinitialisée.');
+  closeAccountSettings();
+  loadProfile();
+}
+
+// ── Supprimer le compte ──────────────────────────────────────────────────────
+async function confirmDeleteAccount() {
+  const input = prompt('Pour confirmer, tape "SUPPRIMER" en majuscules :');
+  if (input !== 'SUPPRIMER') { showToast('Suppression annulée.'); return; }
+  // Supprimer le profil (les données cascadent via FK)
+  await sb.from('profiles').delete().eq('id', currentUser.id);
+  await sb.auth.signOut();
+  showToast('Compte supprimé. À bientôt peut-être 👋');
+  currentUser = null; currentProfile = null;
+  goHome();
+}
