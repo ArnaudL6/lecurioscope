@@ -3945,8 +3945,7 @@ async function openAccountSettings() {
   // Afficher les providers connectés
   _renderProviders();
 
-  // Charger les préfs notifs
-  _loadNotifPrefs();
+
 
   // Reset erreurs
   ['acct-username-err','acct-email-err','acct-pw-err','acct-bio-err'].forEach(id => {
