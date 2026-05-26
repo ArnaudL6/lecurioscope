@@ -492,6 +492,7 @@ async function doLogin(){
   if(error){showErr('lerr','Email ou mot de passe incorrect.');return;}
   currentUser=await getProfile(data.user.id);
   if(!currentUser){showErr('lerr','Profil introuvable.');return;}
+  currentUser.email=data.user.email||'';
   updateHeader();afterLogin();
 }
 
@@ -514,7 +515,7 @@ async function doRegister(){
     showErr('rerr','\ud83d\udce7 V\u00e9rifie ta bo\u00eete mail pour confirmer ton compte !');return;
   }
   await sb.from('profiles').insert({id:data.user.id,username:u,joined:today()});
-  currentUser={id:data.user.id,username:u,joined:today()};
+  currentUser={id:data.user.id,username:u,joined:today(),email:data.user.email||''};
   updateHeader();afterLogin();
 }
 
@@ -2116,7 +2117,7 @@ async function buildIdentityCard(reads,qhist,allAnec){
   const savedColor=localStorage.getItem('adj_prof_color');
   if(savedColor)applyProfileColor(savedColor,false);
   const{data:{session}}=await sb.auth.getSession();
-  if(session){currentUser=await getProfile(session.user.id);}
+  if(session){currentUser=await getProfile(session.user.id);if(currentUser)currentUser.email=session.user.email||'';}
   updateHeader();
   await loadToday();
   if(currentUser){loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();}
@@ -3684,7 +3685,7 @@ async function confirmDeleteAccount() {
   if (input !== 'SUPPRIMER') { showToast('Suppression annulée.'); return; }
   // Supprimer le profil (les données cascadent via FK)
   await sb.from('profiles').delete().eq('id', currentUser.id);
-  await sb.auth.signOut();
+    await sb.auth.signOut();
   showToast('Compte supprimé. À bientôt peut-être 👋');
   currentUser = null;
   goHome();
