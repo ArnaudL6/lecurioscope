@@ -665,6 +665,7 @@ async function showHub(){
 
       <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
       <div id="hub-challenge-wrap" style="margin-top:.5rem;"></div>
+    <div id="hub-mystery-wrap" style="margin-top:.5rem;"></div>
     </div>
     <div class="sl-hub-right">
 
@@ -707,7 +708,7 @@ async function showHub(){
 </div>`;
 
   show('screen-hub');updateNav('');
-  setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);},200);
+  setTimeout(()=>{const hw=document.getElementById('hub-challenge-wrap');if(hw)buildCommunityChallenge(hw);const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
 }
 
 // ═════════════════════════════
@@ -2708,6 +2709,66 @@ async function buildCommunityChallenge(el){
     '<div class="challenge-q">'+ch.question+'</div>'+
     '<div class="challenge-opts">'+optHtml+'</div>'+
     bottomHtml+'</div>';
+}
+
+async function buildWeeklyMystery(el){
+  if(!el)return;
+  const now=new Date();
+  const dow=(now.getDay()+6)%7;
+  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
+  const ws=mon.toISOString().slice(0,10);
+  const actsVisible=Math.min(dow+1,5);
+  const{data,error}=await sb.from('weekly_mysteries').select('*').eq('week_start',ws).single();
+  if(error||!data){el.innerHTML='<div class="mys-empty">🔎 Aucune enquête cette semaine — revenez lundi !</div>';return;}
+  const DAY=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
+  const ICO=['🏰','📜','🔍','⚔️','🎭'];
+  let actsH='';
+  for(let i=0;i<5;i++){
+    if(i<actsVisible){
+      const txt=data.story_days[i].replace(/\n/g,'<br>');
+      actsH+=`<div class="mys-act mys-act--on"><div class="mys-act-hd">${ICO[i]} Acte ${i+1} <span class="mys-act-day">— ${DAY[i]}</span></div><div class="mys-act-body">${txt}</div></div>`;
+    }else{
+      const ud=new Date(mon);ud.setDate(mon.getDate()+i);
+      const h=Math.max(0,Math.ceil((ud-now)/3600000));
+      actsH+=`<div class="mys-act mys-act--off"><span class="mys-act-hd">🔒 Acte ${i+1} — ${DAY[i]}</span><span class="mys-act-lock">Disponible ${h>0?'dans ~'+h+'h':'bientôt'}</span></div>`;
+    }
+  }
+  const sv=localStorage.getItem('mys_v_'+ws);
+  let formH='';
+  if(sv){
+    const v=JSON.parse(sv);
+    if(v.ok){
+      formH=`<div class="mys-verdict mys-v--ok"><div class="mys-vt">✅ Enquête résolue !</div><div class="mys-vd">Le traître était bien <strong>${data.culprit}</strong>.</div><div class="mys-explain">${data.explanation}</div></div>`;
+    }else{
+      formH=`<div class="mys-verdict mys-v--ko" id="mys-ko-${ws}"><div class="mys-vt">❌ Analyse incorrecte</div><div class="mys-vd">Vos indices ne sont pas suffisants. Relisez les actes et réessayez.</div><button class="mys-retry" onclick="document.getElementById('mys-ko-${ws}').remove();document.getElementById('mys-frm-${ws}').style.display='flex'">🔄 Réessayer</button></div><div class="mys-form" id="mys-frm-${ws}" style="display:none">${_mysForm(ws)}</div>`;
+    }
+  }else if(actsVisible>=2){
+    formH=`<div class="mys-form" id="mys-frm-${ws}">${_mysForm(ws)}</div>`;
+  }else{
+    formH='<div class="mys-form-wait">🕐 Le formulaire de verdict sera disponible <strong>dès mardi</strong> — continuez à lire les actes au fil des jours.</div>';
+  }
+  el.innerHTML=`<div class="sl-mystery-card"><div class="sl-section-header"><span class="sl-section-icon">🔎</span><span>L'ENQUÊTE DE LA SEMAINE</span><span class="sl-section-count">${actsVisible}/5</span></div><div class="mys-title">${data.title}</div><div class="mys-acts">${actsH}</div>${formH}</div>`;
+}
+
+function _mysForm(ws){
+  return `<div class="mys-form-t">🔎 Votre verdict</div><div class="mys-fg"><label class="mys-lbl">Nom du suspect</label><input class="mys-inp" id="mys-s-${ws}" type="text" placeholder="Entrez le nom du traître..." autocomplete="off"></div><div class="mys-fg"><label class="mys-lbl">Votre raisonnement</label><textarea class="mys-ta" id="mys-r-${ws}" placeholder="Expliquez les indices qui vous ont guidé..." rows="4"></textarea></div><button class="mys-sub" onclick="submitMystery('${ws}')">⚔️ SOUMETTRE MON VERDICT</button>`;
+}
+
+async function submitMystery(ws){
+  const si=document.getElementById('mys-s-'+ws);
+  const ri=document.getElementById('mys-r-'+ws);
+  if(!si||!ri)return;
+  const suspect=si.value.trim(),reason=ri.value.trim();
+  if(!suspect||reason.length<20){showSystemNotif({title:'Réponse incomplète — nom + raisonnement requis',xpGain:0});return;}
+  const{data}=await sb.from('weekly_mysteries').select('culprit,keywords,explanation').eq('week_start',ws).single();
+  if(!data)return;
+  const nameOk=data.culprit.toLowerCase().includes(suspect.toLowerCase())||suspect.toLowerCase().includes(data.culprit.split(' ').pop().toLowerCase());
+  const kwHits=data.keywords.filter(kw=>reason.toLowerCase().includes(kw.toLowerCase()));
+  const ok=nameOk&&kwHits.length>=2;
+  localStorage.setItem('mys_v_'+ws,JSON.stringify({ok,suspect,reason,at:Date.now()}));
+  if(ok){showSystemNotif({title:'Enquête résolue !',xpGain:50});if(typeof addXP==='function')addXP(50);}
+  const mw=document.getElementById('hub-mystery-wrap');
+  if(mw)buildWeeklyMystery(mw);
 }
 
 async function answerChallenge(challengeId,answer,correct_answer){
