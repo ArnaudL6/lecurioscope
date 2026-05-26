@@ -2121,3 +2121,10 @@ html.dark .hist-item, html.dark .prof-stat
 /* ── SL FIX: anecdote – card plus large, marges réduites ── */
 .anec-card{max-width:min(860px,88vw)!important;margin:1rem auto!important;}
 .anec-wrap{max-width:min(920px,92vw)!important;margin:0 auto!important;padding:.5rem .5rem 2rem!important;}
+
+/* ── SL FIX: anecdote – texte plus grand + padding généreux ── */
+.anec-card{padding:1.8rem 2rem!important;}
+#anec-body{font-size:.97rem!important;line-height:1.7!important;}
+#anec-body p{margin:.6rem 0!important;}
+.anec-title{font-size:1.1rem!important;margin-bottom:.6rem!important;}
+.anec-meta{font-size:.75rem!important;margin-bottom:.7rem!important;}
