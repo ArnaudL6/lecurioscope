@@ -849,11 +849,10 @@ function buildList(){
   const grid=document.getElementById('theme-grid'),btn=document.getElementById('btn-gen');
   if(!grid)return;grid.innerHTML='';
   const _TR={histoire:{r:'D',c:'#60a5fa'},science:{r:'C',c:'#34d399'},nature:{r:'E',c:'#9ca3af'},insolite:{r:'B',c:'#fbbf24'},art:{r:'D',c:'#60a5fa'},espace:{r:'B',c:'#fbbf24'},sport:{r:'C',c:'#34d399'},food:{r:'E',c:'#9ca3af'},legendes:{r:'A',c:'#f97316'}};
-  const _TX={E:'+50 XP',D:'+80 XP',C:'+100 XP',B:'+150 XP',A:'+200 XP'};
-  THEMES.forEach(t=>{
+    THEMES.forEach(t=>{
     const d=document.createElement('div');d.className='t-card';
     const tr=_TR[t.id]||{r:'E',c:'#9ca3af'};
-    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div><div class="sl-txp" style="color:'+tr.c+';">'+_TX[tr.r]+'</div>';
+    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>;
     d.onclick=()=>{document.querySelectorAll('.t-card').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');selThemeId=t.id;if(btn)btn.classList.add('ok');};
     grid.appendChild(d);
   });
@@ -4042,11 +4041,11 @@ function getOrCreateVs100Screen(){
   if(!sc){
     sc=document.createElement('div');
     sc.id='screen-vs100';sc.className='screen';
-    document.body.appendChild(sc);
+    const ref=document.querySelector('.screen');
+    ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);
   }
   return sc;
 }
-
 function show1vs100Lobby(){
   const sc=getOrCreateVs100Screen();
   let previewDots='';
