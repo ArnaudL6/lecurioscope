@@ -4026,24 +4026,44 @@ const FALLBACK_VS100=[
 ];
 
 function generateVs100Bots(){
-  const bots=[];
-  let nameIdx=0;
-  BOT_RANKS_DEF.forEach(tier=>{
-    for(let i=0;i<tier.count;i++){
+  // Fourchettes de rangs (du plus haut au plus bas)
+  const TIERS=[
+    {id:'S',minPct:1, maxPct:4, minRate:0.90,maxRate:0.97,color:'#a855f7'},
+    {id:'A',minPct:2, maxPct:7, minRate:0.82,maxRate:0.92,color:'#f97316'},
+    {id:'B',minPct:5, maxPct:12,minRate:0.72,maxRate:0.85,color:'#fbbf24'},
+    {id:'C',minPct:12,maxPct:25,minRate:0.60,maxRate:0.75,color:'#34d399'},
+    {id:'D',minPct:20,maxPct:35,minRate:0.45,maxRate:0.65,color:'#60a5fa'},
+  ];
+  // Chaque rang tire un count aléatoire dans sa fourchette, E reçoit le reste
+  let rem=100;
+  const counts={};
+  for(let t=0;t<TIERS.length;t++){
+    const tier=TIERS[t];
+    const maxPossible=rem-(TIERS.length-1-t); // garder au moins 1 par rang restant + E
+    const c=Math.max(0,Math.min(maxPossible,Math.round(tier.minPct+Math.random()*(tier.maxPct-tier.minPct))));
+    counts[tier.id]=c;
+    rem-=c;
+  }
+  counts['E']=Math.max(0,rem);
+  TIERS.push({id:'E',minRate:0.30,maxRate:0.50,color:'#9ca3af'});
+
+  const bots=[];let nameIdx=0;
+  for(const tier of TIERS){
+    const count=counts[tier.id]||0;
+    for(let k=0;k<count;k++){
       bots.push({
         id:bots.length,
         name:BOT_NAMES_POOL[nameIdx%BOT_NAMES_POOL.length],
-        rank:tier.id,
-        color:tier.color,
+        rank:tier.id,color:tier.color,
         successRate:tier.minRate+Math.random()*(tier.maxRate-tier.minRate),
-        eliminated:false,
+        eliminated:false
       });
       nameIdx++;
     }
-  });
-  // 0.5% chance: Rang National (quasi-imbattable)
+  }
+  // 0.5% : Rang National (quasi-imbattable)
   if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'NAT',color:'#e2e8f0',successRate:0.99,name:'??? [NAT]'};}
-    return bots;
+  return bots;
 }
 
 async function fetchVs100Questions(){
