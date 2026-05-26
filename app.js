@@ -2981,38 +2981,7 @@ async function doSignOut(){
   goHome();
 }
 
-// ── Modifier le pseudo ────────────────────────────────────────────────────────
-function openEditUsername(){
-  const modal=document.getElementById('edit-name-modal');
-  if(!modal||!currentUser)return;
-  document.getElementById('edit-name-input').value=currentUser.username||'';
-  document.getElementById('edit-name-err').textContent='';
-  modal.style.display='flex';
-  setTimeout(()=>document.getElementById('edit-name-input')?.focus(),50);
-}
-function closeEditUsername(){
-  const modal=document.getElementById('edit-name-modal');
-  if(modal)modal.style.display='none';
-}
-async function saveUsername(){
-  const input=document.getElementById('edit-name-input');
-  const errEl=document.getElementById('edit-name-err');
-  const newName=(input?.value||'').trim();
-  if(!newName||newName.length<2){errEl.textContent='Minimum 2 caractères.';return;}
-  if(newName.length>24){errEl.textContent='Maximum 24 caractères.';return;}
-  if(!currentUser)return;
-  // Vérif unicité
-  const{data:existing}=await sb.from('profiles').select('id').ilike('username',newName).neq('id',currentUser.id).maybeSingle();
-  if(existing){errEl.textContent='Ce pseudo est déjà pris.';return;}
-  const{error}=await sb.from('profiles').update({username:newName}).eq('id',currentUser.id);
-  if(error){errEl.textContent='Erreur : '+error.message;return;}
-  currentUser.username=newName;
-  closeEditUsername();
-  updateHeader();
-  // Rafraîchir le nom affiché dans le profil
-  const el=document.getElementById('prof-name');if(el)el.textContent=newName;
-  showToast('✓ Pseudo mis à jour !');
-}
+// ── Modifier le pseudo (via openAccountSettings) ──────────────────────────────
 
 // ── Système de Notifications ─────────────────────────────────────────────────
 let _notifChannel=null;
