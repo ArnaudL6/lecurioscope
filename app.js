@@ -2463,7 +2463,7 @@ async function buildIdentityCard(reads,qhist,allAnec){
 }
 
 (async function init(){
-  const mode=localStorage.getItem('adj_mode')||'light';
+  const mode=localStorage.getItem('adj_mode')||'dark';
   if(mode==='dark')document.documentElement.classList.add('dark');
   updateToggleIcon();updateHeader();
   const savedColor=localStorage.getItem('adj_prof_color');
