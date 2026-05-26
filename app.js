@@ -3521,11 +3521,11 @@ function openAccountSettings() {
 
   // Pré-remplir le pseudo actuel
   const unEl = document.getElementById('acct-username-input');
-  if (unEl && currentProfile) unEl.value = currentProfile.username || '';
+  if (unEl && currentUser) unEl.value = currentUser.username || '';
 
   // Pré-remplir la bio
   const bioEl = document.getElementById('acct-bio-input');
-  if (bioEl && currentProfile) bioEl.value = currentProfile.bio || '';
+  if (bioEl && currentUser) bioEl.value = currentUser.bio || '';
 
   // Afficher les providers connectés
   _renderProviders();
@@ -3593,7 +3593,7 @@ async function saveUsername() {
   const { error } = await sb.from('profiles').update({ username: val }).eq('id', currentUser.id);
   if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
 
-  if (currentProfile) currentProfile.username = val;
+  if (currentUser) currentUser.username = val;
   if (errEl) errEl.textContent = '';
   showToast('Pseudo mis à jour ! 🎉');
   // Rafraîchir l'affichage du profil
@@ -3609,7 +3609,7 @@ async function saveBioSettings() {
   const val = input.value.trim();
   const { error } = await sb.from('profiles').update({ bio: val }).eq('id', currentUser.id);
   if (error) { if (errEl) errEl.textContent = 'Erreur : ' + error.message; return; }
-  if (currentProfile) currentProfile.bio = val;
+  if (currentUser) currentUser.bio = val;
   if (errEl) errEl.textContent = '';
   const bioEl = document.getElementById('prof-bio-text');
   if (bioEl) bioEl.textContent = val || 'Ajoute une bio...';
@@ -3686,6 +3686,6 @@ async function confirmDeleteAccount() {
   await sb.from('profiles').delete().eq('id', currentUser.id);
   await sb.auth.signOut();
   showToast('Compte supprimé. À bientôt peut-être 👋');
-  currentUser = null; currentProfile = null;
+  currentUser = null;
   goHome();
 }
