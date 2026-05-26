@@ -1008,23 +1008,22 @@ async function goProfile(){
   const xp=calcXP(r.length,q.length,streak);
   currentUserXP=calcSLXP({reads:r.length,quizzes:q,enigmas:enigmaStats||[],streak});
   currentUserRank=getRank(currentUserXP);
-  const{lvl,next}=calcLevel(xp);
+  const nextSlRank=getNextRank(currentUserXP);
   const chip=document.getElementById('prof-level-chip');
-  if(chip)chip.textContent='✦ '+lvl.name;
+  if(chip){chip.textContent=currentUserRank.label+' · '+currentUserRank.title;chip.style.color=currentUserRank.color;chip.style.borderColor=currentUserRank.color;chip.style.background=currentUserRank.bg;chip.style.boxShadow=currentUserRank.glow;}
   const xpCur=document.getElementById('prof-xp-cur');
   const xpNextEl=document.getElementById('prof-xp-next');
-  // Anneau XP circulaire (r=46, circonférence ≈ 289)
   const ring=document.getElementById('xp-ring-prog');
   const circ=289;
-  if(next){
-    const pct=(xp-lvl.min)/(next.min-lvl.min);
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-pct));},100);
-    if(xpCur)xpCur.textContent=xp+' XP';
-    if(xpNextEl)xpNextEl.textContent='→ '+next.name+' '+next.min+' XP';
+  if(nextSlRank){
+    const pct=(currentUserXP-currentUserRank.minXP)/(nextSlRank.minXP-currentUserRank.minXP);
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-Math.min(1,Math.max(0,pct))));ring.style.stroke=currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    if(xpNextEl)xpNextEl.textContent='→ '+nextSlRank.label+' '+nextSlRank.minXP.toLocaleString('fr-FR')+' XP';
   }else{
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';},100);
-    if(xpCur)xpCur.textContent=xp+' XP';
-    if(xpNextEl)xpNextEl.textContent='🏆 Max !';
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';ring.style.stroke=currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    if(xpNextEl)xpNextEl.textContent='🏆 Rang max !';
   }
 
   // Stats
