@@ -512,11 +512,11 @@
     </div>
     <!-- Stats colorées -->
     <div class="prof-stats-grid">
-      <div class="prof-stat-card stat-cyan"><div class="psc-icon">📖</div><div class="psc-val" id="s-reads">0</div><div class="psc-lbl">Anecdotes</div></div>
-      <div class="prof-stat-card stat-orange"><div class="psc-icon">🎯</div><div class="psc-val" id="s-quizz">0</div><div class="psc-lbl">Quiz</div></div>
-      <div class="prof-stat-card stat-violet"><div class="psc-icon">🔮</div><div class="psc-val" id="s-enigmes">0</div><div class="psc-lbl">Énigmes</div></div>
-      <div class="prof-stat-card stat-green"><div class="psc-icon">⭐</div><div class="psc-val" id="s-avg">0%</div><div class="psc-lbl">Score moy.</div></div>
-      <div class="prof-stat-card stat-purple"><div class="psc-icon">🏅</div><div class="psc-val" id="s-badges-count">0</div><div class="psc-lbl">Badges</div></div>
+      <div class="prof-stat-card sl-stat"><div class="psc-icon">📖</div><div class="psc-val" id="s-reads">0</div><div class="psc-lbl">Anecdotes</div></div>
+      <div class="prof-stat-card sl-stat"><div class="psc-icon">🎯</div><div class="psc-val" id="s-quizz">0</div><div class="psc-lbl">Quiz</div></div>
+      <div class="prof-stat-card sl-stat"><div class="psc-icon">🔮</div><div class="psc-val" id="s-enigmes">0</div><div class="psc-lbl">Énigmes</div></div>
+      <div class="prof-stat-card sl-stat"><div class="psc-icon">⭐</div><div class="psc-val" id="s-avg">0%</div><div class="psc-lbl">Score moy.</div></div>
+      <div class="prof-stat-card sl-stat"><div class="psc-icon">🏅</div><div class="psc-val" id="s-badges-count">0</div><div class="psc-lbl">Badges</div></div>
     </div>
 
     <!-- Carte Identité -->
@@ -572,99 +572,4 @@
     <div id="user-prof-content"><div class="empty"><span class="empty-ico">👤</span><p>Chargement…</p></div></div>
   </div>
 
-  <!-- ── Écran Admin ────────────────────────────────────────────────────── -->
-  <div class="screen" id="screen-admin">
-    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
-      <button class="btn-back" onclick="goBack()">← Retour</button>
-      <div class="admin-title" style="margin:0;">⚡ Admin</div>
-    </div>
-    <div class="admin-tabs" id="admin-tabs">
-      <button class="admin-tab active" onclick="adminSwitchTab('stats',this)">📊 Stats</button>
-      <button class="admin-tab" onclick="adminSwitchTab('anecdotes',this)">📅 Anecdotes</button>
-      <button class="admin-tab" onclick="adminSwitchTab('users',this)">👥 Utilisateurs</button>
-      <button class="admin-tab" onclick="adminSwitchTab('comments',this)">💬 Commentaires</button>
-    </div>
-    <div id="admin-content"></div>
-  </div>
-</main>
-<nav class="bottom-nav" id="bottom-nav">
-  <button class="bn-item active" id="bn-anec" onclick="goHome()">
-    <span class="bn-icon">📖</span><span class="bn-label">Anecdote</span>
-  </button>
-  <button class="bn-item" id="bn-hist" onclick="goHistoire()">
-    <span class="bn-icon">📚</span><span class="bn-label">Historique</span>
-  </button>
-  <button class="bn-item" id="bn-play" onclick="goPlay()">
-    <span class="bn-icon">🎮</span><span class="bn-label">Jouer</span>
-  </button>
-  <button class="bn-item" id="bn-league" onclick="goLigue()">
-    <span class="bn-icon">🏆</span><span class="bn-label">Ligue</span>
-  </button>
-  <button class="bn-item" id="bn-profil" onclick="goProfile()">
-    <span class="bn-icon">👤</span><span class="bn-label">Profil</span><span class="notif-badge" id="friend-req-badge" style="display:none;"></span>
-  </button>
-</nav>
-<footer class="legal-footer">
-  &copy; 2026 <strong>Licour Arnaud</strong> &mdash; <a href="mailto:nymeraroman@gmail.com">nymeraroman@gmail.com</a><br>
-  Anecdote du Jour est un projet personnel. Les anecdotes sont g&eacute;n&eacute;r&eacute;es par intelligence artificielle &agrave; titre informatif et culturel.<br>
-  Aucune donn&eacute;e personnelle n&rsquo;est revendue &agrave; des tiers. &mdash; <a href="mailto:nymeraroman@gmail.com">Nous contacter</a><br>
-  <a href="https://discord.gg/lmco" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.3rem;margin-top:.3rem;"><svg width="14" height="11" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>Rejoindre le Discord</a>
-</footer>
-<div class="toast" id="toast"></div>
-
-<!-- ── Panel Notifications ──────────────────────────────────────────── -->
-<div class="notif-bd" id="notif-bd" onclick="if(event.target===this)closeNotifPanel()">
-  <div class="notif-panel">
-    <div class="notif-panel-head">
-      <div class="notif-panel-title">🔔 Notifications</div>
-      <button class="notif-mark-all" onclick="markAllNotifsRead()">Tout marquer lu</button>
-    </div>
-    <div class="notif-list" id="notif-list"><div class="notif-empty">Aucune notification</div></div>
-  </div>
-</div>
-
-<script src="app.js"></script>
-
-  <!-- ── Share modal ──────────────────────────────────────────────────────── -->
-  <div class="share-bd" id="share-bd" onclick="if(event.target===this)closeShare()">
-    <div class="share-modal">
-      <div class="share-modal-title">✈︎ Partager l'anecdote</div>
-      <div class="share-preview-box">
-        <div class="share-preview-theme" id="share-preview-theme"></div>
-        <div class="share-preview-txt" id="share-preview-txt"></div>
-      </div>
-      <div class="share-btns">
-        <button class="share-btn share-btn-wa" onclick="shareViaWhatsApp()">💬 WhatsApp</button>
-        <button class="share-btn share-btn-discord" onclick="shareViaDiscord()">🎮 Discord</button>
-        <button class="share-btn share-btn-copy" onclick="copyShareText()">📋 Copier le texte</button>
-        <button class="share-btn" style="background:var(--a);color:#000;font-weight:700" onclick="downloadShareImage()">📸 Image PNG</button>
-        <button class="share-btn share-btn-close" onclick="closeShare()">✕ Fermer</button>
-      </div>
-      <div class="share-hint" id="share-hint"></div>
-    </div>
-  </div>
-
-  <!-- ── Bingo de l'été ───────────────────────────────────────────────────── -->
-  <button class="bingo-fab" id="bingo-fab" onclick="openBingo()">
-    🎯 Bingo été <span class="bingo-fab-badge" id="bingo-fab-badge">0/25</span>
-  </button>
-  <div class="bingo-bd" id="bingo-bd" onclick="if(event.target===this)closeBingo()">
-    <div class="bingo-modal">
-      <div class="bingo-header">
-        <div class="bingo-title">🌞 Bingo de l'été</div>
-        <div class="bingo-subtitle">Coche toutes les cases avant la rentrée !</div>
-        <div class="bingo-dates">21 juin → 21 septembre 2026</div>
-      </div>
-      <div class="bingo-progress-bar"><div class="bingo-progress-fill" id="bingo-prog-fill" style="width:0%"></div></div>
-      <div class="bingo-progress-txt" id="bingo-prog-txt">0 / 25 cases cochées</div>
-      <div class="bingo-grid" id="bingo-grid"></div>
-      <button class="bingo-close" onclick="closeBingo()">Fermer</button>
-    </div>
-  </div>
-
-  <div class="streak-pop" id="streak-pop">
-    <span class="sp-num" id="sp-num">🔥</span>
-    <span id="sp-msg">jours de suite !</span>
-  </div>
-</body>
-</html>
+  <!-- ── Écran Admin ─────────────────────────�

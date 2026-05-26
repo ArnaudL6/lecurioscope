@@ -1419,13 +1419,11 @@ async function buildLeagueDashboard(){
     '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Partie privée</button>'+
     '</div>'+
     '<div id="ldash-ranking" style="margin-bottom:1.5rem;"></div>'+
-    '<div id="ldash-act" style="margin-bottom:1.5rem;"></div>'+
     '<div id="ldash-pending" style="margin-bottom:.5rem;"></div>'+
     '<div class="friend-search" style="margin-bottom:.75rem;"><input id="friend-q" placeholder="Rechercher un pseudo…"/><button onclick="searchFriend()">Rechercher</button></div>'+
     '<div id="friend-results"></div>'+
     '<div style="margin-top:1rem;"><div class="prev-head">Mes amis</div><div id="friend-list-own"></div></div>';
   await buildWeeklyLeague(document.getElementById('ldash-ranking'));
-  await buildActivityFeed(document.getElementById('ldash-act'));
   await buildPendingRequests(document.getElementById('ldash-pending'));
   await loadFriends();
 }
