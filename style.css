@@ -1515,3 +1515,21 @@ html.dark .sl-stats-panel{background:var(--s0);}
 }
 .sl-stats-btn:hover{background:rgba(168,85,247,.18);box-shadow:0 0 12px rgba(168,85,247,.2);}
 
+
+
+@media(min-width:768px){
+    main{padding:2rem 2.5rem;}
+    .screen{max-width:100%;}
+    .auth-panel{max-width:420px;}
+    .sl-hub{max-width:980px;padding:1.5rem 0 3rem;}
+    .sl-hub-cols{display:flex;flex-direction:row;gap:1.5rem;align-items:flex-start;}
+    .sl-hub-left{width:340px;flex-shrink:0;position:sticky;top:70px;}
+    .sl-hub-right{flex:1;min-width:0;}
+    .sl-gates{display:flex;flex-direction:column;gap:.75rem;}
+    .prof-hero-card{max-width:700px;}
+    .prof-stats-grid{grid-template-columns:repeat(4,1fr);}
+}
+@media(min-width:1100px){
+    .sl-hub{max-width:1100px;}
+    .sl-hub-left{width:380px;}
+}
