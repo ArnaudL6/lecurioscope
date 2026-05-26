@@ -4066,22 +4066,7 @@ function generateVs100Bots(){
   return bots;
 }
 
-async function fetchVs100Questions(){
-  try{
-    const{data}=await sb.from('quiz_questions')
-      .select('id,question,correct_answer,wrong_answers,explanation')
-      .limit(300);
-    if(data&&data.length>=10){
-      const shuffled=data.sort(()=>Math.random()-.5);
-      return shuffled.map(q=>{
-        const allAns=[q.correct_answer,...(q.wrong_answers||[])].filter(Boolean).sort(()=>Math.random()-.5);
-        if(allAns.length<2)return null;
-        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer),explanation:q.explanation||''};
-      }).filter(Boolean);
-    }
-  }catch(e){console.error('fetchVs100',e);}
-  return FALLBACK_VS100;
-}
+async function fetchVs100Questions(){try{const{data}=await sb.rpc('get_random_questions',{n:300});if(data&&data.length>=10){return data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);}}catch(e){console.error('fetchVs100',e);}}
 
 function getOrCreateVs100Screen(){
   let sc=document.getElementById('screen-vs100');
