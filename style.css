@@ -2209,6 +2209,7 @@ html.dark .hist-item, html.dark .prof-stat
 .wm-act{border-radius:8px;overflow:hidden;}
 .wm-act-open{background:rgba(0,200,255,.06);border:1px solid rgba(0,200,255,.18);}
 .wm-act-locked{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);}
+.wm-act-soon{color:rgba(255,255,255,.35);font-style:italic;font-size:.85rem;letter-spacing:.02em;}
 .wm-act-hd{display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem;gap:.5rem;}
 .wm-act-num{font-size:.65rem;font-weight:800;letter-spacing:.1em;color:#00c8ff;text-transform:uppercase;}
 .wm-act-date{font-size:.65rem;color:rgba(0,200,255,.6);}
