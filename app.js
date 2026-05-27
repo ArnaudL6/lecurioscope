@@ -4209,12 +4209,9 @@ function generateVs100Bots(){
       nameIdx++;
     }
   }
-  // 0.5% : Rang National (quasi-imbattable)
-  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'NAT',color:'#e2e8f0',successRate:0.99,name:'??? [NAT]'};}
-  
-// Nation: 0.5% chance, 99% accuracy
-bots.forEach(b=>{if(Math.random()<0.005){b.rank='Nation';b.color='#ff007f';b.successRate=0.99;}});
-return bots;
+  // Nation : 0.5% de chance qu'un bot soit promu (difficile mais pas imbattable)
+  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'Nation',color:'#ff007f',successRate:0.80};}
+  return bots;
 }
 
 async function fetchVs100Questions(){
@@ -4316,7 +4313,7 @@ async function start1vs100(){
   if(btn){btn.textContent='&#9203; Pr&#233;paration...';btn.disabled=true;}
   const questions=await fetchVs100Questions();
   if(!questions){if(btn){btn.textContent='&#9889; Lancer la partie';btn.disabled=false;}return;}
-  const bots=(vs100State&&vs100State.bots)||generateVs100Bots();
+  const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   getOrCreateVs100Screen();
   show('screen-vs100');updateNav('');renderVs100Question();
