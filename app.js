@@ -712,52 +712,95 @@ async function showHub(){
 }
 
 // ── Weekly Mystery ────────────────────────────────────────────────────────────────────────────────
+// ââ Weekly Mystery (hub card compact) ââââââââââââââââââââââââââââââââââââââââ
 async function buildWeeklyMystery(el){
   if(!el)return;
   const now=new Date();
   const dow=(now.getDay()+6)%7;
   const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
   const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
-  const{data:mystery}=await sb.from('weekly_mysteries').select('*').eq('week_start',ws).maybeSingle();
-  if(!mystery){el.innerHTML='<div class="wm-empty">🔒 Nouvelle énigme disponible lundi !</div>';return;}
-  const days=['lundi','mardi','mercredi','jeudi','vendredi'];
+  const{data:mystery}=await sb.from('weekly_mysteries').select('id,title,story_days,week_start').eq('week_start',ws).maybeSingle();
+  if(!mystery){el.innerHTML='<div class="wm-empty">ð Nouvelle Ã©nigme disponible lundi !</div>';return;}
+  const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
+  const actIdx=Math.min(dow,4);
+  const todayAct=(mystery.story_days||[])[actIdx]||'';
+  const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} â ${days[actIdx]}`;
+  const preview=todayAct.length>0?todayAct.slice(0,130)+'â¦':'';
+  window._weeklyMystery={...mystery,ws,dow,monIso:mon.toISOString()};
+  el.innerHTML<`<div class="wm-card wm-hub-card" onclick="showMysteryDetail()">
+  <div class="wm-header">
+    <span class="wm-badge">ðµï¸ DÃFI DE LA SEMAINE</span>
+    <div class="wm-title">${mystery.title}</div>
+    <div class="wm-week">${actLabel}</div>
+  </div>
+  <div class="wm-hub-preview">${preview}</div>
+  <div class="wm-hub-cta">Lire l'enquÃªte complÃ¨te â</div>
+</div>`;
+}
+
+// ââ Mystery Detail Page âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function showMysteryDetail(){
+  const m=window._weeklyMystery;
+  if(!m){showHub();return;}
+  const mon=new Date(m.monIso);
+  const dow=m.dow;
+  const{data:mystery}=await sb.from('weekly_mysteries').select('*').eq('id',m.id).maybeSingle();
+  if(!mystery){showHub();return;}
+  const todayDate=new Date().toISOString().slice(0,10);
+  let todayGuess=null;
+  if(currentUser){
+    const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',currentUser.id).eq('mystery_id',mystery.id).eq('guess_date',todayDate).maybeSingle();
+    todayGuess=g;
+  }
+  const{data:guesses}=await sb.from('mystery_guesses_lb').select('*').eq('mystery_id',mystery.id).order('is_correct',{ascending:false}).order('created_at',{ascending:true});
+  const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actNames=['I','II','III','IV','V'];
   const unlockedCount=Math.min(dow+1,5);
-  const acts=(mystery.story_days||[]).map((day,i)=>{
-    const unlocked=i<unlockedCount;
+  const actsHtml=(mystery.story_days||[]).slice(0,unlockedCount).map((day,i)=>{
     const actDate=new Date(mon);actDate.setDate(mon.getDate()+i);
     const dateStr=actDate.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
-    if(unlocked)return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${day}</div></div>`;
-    return`<div class="wm-act wm-act-locked"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-lock">🔒 Disponible ${days[i]} ${dateStr}</span></div></div>`;
+    return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${day}</div></div>`;
   }).join('');
-  let userGuess=null;
-  if(currentUser){const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',currentUser.id).eq('mystery_id',mystery.id).maybeSingle();userGuess=g;}
-  const canGuess=dow>=4;
-  const daysLeft=Math.max(0,4-dow);
   let guessHtml='';
-  if(canGuess){
-    if(userGuess){
-      const correct=mystery.culprit&&userGuess.culprit&&mystery.culprit.toLowerCase().split(' ').some(w=>userGuess.culprit.toLowerCase().includes(w));
-      guessHtml=`<div class="wm-verdict ${correct?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${correct?'✅ Bonne déduction !':'❌ Mauvaise piste…'}</div><div class="wm-verdict-culprit">Le coupable : <strong>${mystery.culprit}</strong></div>${mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}</div>`;
-    }else{
-      guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">🔍 Votre déduction</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}')">Soumettre ma déduction →</button></div>`;
-    }
+  if(!currentUser){
+    guessHtml=`<div class="wm-guess-pending">ð <span style="cursor:pointer;color:#00c8ff" onclick="show('screen-login')">Connecte-toi</span> pour soumettre ta dÃ©duction.</div>`;
+  }else if(todayGuess){
+    const isOk=todayGuess.is_correct;
+    guessHtml=`<div class="wm-verdict ${isOk?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${isOk?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦'}</div><div class="wm-verdict-culprit">Ta rÃ©ponse : <em>${todayGuess.culprit}</em></div>${isOk&&mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}<div class="wm-verdict-sub">Reviens demain pour une nouvelle tentative.</div></div>`;
   }else{
-    guessHtml=`<div class="wm-guess-pending">🔍 Déduction disponible vendredi après le dernier acte — encore ${daysLeft} jour${daysLeft>1?'s':''}.</div>`;
+    guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">ð Ton accusation du jour</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}','${mystery.culprit}')">Soumettre â</button></div>`;
   }
-  const weekLabel=mon.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-  el.innerHTML=`<div class="wm-card"><div class="wm-header"><span class="wm-badge">🕵️ DÉFI DE LA SEMAINE</span><div class="wm-title">${mystery.title}</div><div class="wm-week">Semaine du ${weekLabel}</div></div><div class="wm-acts">${acts}</div>${guessHtml}</div>`;
+  const lbRows=(guesses||[]).map((g,i)=>{
+    const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${g.pseudo||'?'}[0].toUpperCase()}</div>`;
+    const d=new Date(g.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${g.pseudo||'Anonyme'}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
+  }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
+  let sc=document.getElementById('screen-mystery');
+  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';document.body.appendChild(sc);}
+  window._mysteryShareText=`ðµï¸ DÃ©fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\nâ² https://lecurioscope.fr`;
+  sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">â Hub</button><div class="mystery-hd-title">ðµï¸ ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">â Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">ð Classement des enquÃªteurs</div>${lbRows}</div></div>`;
+  show('screen-mystery');updateNav('');
 }
-async function submitMysteryGuess(mysteryId){
-  if(!currentUser){showToast('⚠️ Connecte-toi pour soumettre !');return;}
+
+async function submitMysteryGuess(mysteryId,culpritAnswer){
+  if(!currentUser){showToast('â ï¸ Connecte-toi pour soumettre !');return;}
   const input=document.getElementById('wm-culprit-input');
-  if(!input||!input.value.trim()){showToast('⚠️ Entre ta déduction !');return;}
-  const{error}=await sb.from('mystery_guesses').insert({user_id:currentUser.id,mystery_id:mysteryId,culprit:input.value.trim()});
-  if(error){showToast('Erreur : '+error.message);return;}
-  showToast('✓ Déduction soumise !');
-  const mw=document.getElementById('hub-mystery-wrap');
-  if(mw)buildWeeklyMystery(mw);
+  if(!input||!input.value.trim()){showToast('â ï¸ Entre ta dÃ©duction !');return;}
+  const culprit=input.value.trim();
+  const todayDate=new Date().toISOString().slice(0,10);
+  const is_correct=!!(culpritAnswer&&culprit&&culpritAnswer.toLowerCase().split(' ').some(w=>w.length>2&&culprit.toLowerCase().includes(w)));
+  const{error}=await sb.from('mystery_guesses').upsert({user_id:currentUser.id,mystery_id:mysteryId,culprit,is_correct,guess_date:todayDate},{onConflict:'user_id,mystery_id,guess_date'});
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast(is_correct?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦');
+  showMysteryDetail();
 }
+
+function shareMystery(){
+  const text=window._mysteryShareText||'ðµï¸ DÃ©fi de la semaine â https://lecurioscope.fr';
+  if(navigator.share){navigator.share({text,url:'https://lecurioscope.fr'}).catch(()=>{});}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('â Lien copiÃ© !')).catch(()=>showToast('Copie non supportÃ©e'));}
+}
+
 // ═════════════════════════════
 
 function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
@@ -966,7 +1009,6 @@ async function markRead(){
   await sb.from('reads').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,date:today(),preview:todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
   if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
 
-  if(!document.getElementById('btn-historique')){const bh=document.createElement('button');bh.id='btn-historique';bh.className='btn-historique-anec';bh.innerHTML='📚 Historique';bh.onclick=showAnecHistorique;const acts=document.querySelector('.anec-actions');if(acts)acts.appendChild(bh);}}
 
 
 async function showAnecHistorique(){
@@ -4164,7 +4206,7 @@ function show1vs100Lobby(){
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
-  let questions=await fetchVs100Questions(uid);
+  let questions=await fetchVs100Questions(currentUser?.id);
   if(!questions||!questions.length){
     alert('⚠️ Vous n\'avez pas lu assez d\'anecdotes pour une partie personnalisée.\nLe jeu utilisera toutes les anecdotes disponibles.');
     questions=await fetchVs100Questions(null);
