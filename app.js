@@ -4232,7 +4232,7 @@ async function start1vs100(){
   const questions=await fetchVs100Questions();
   const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
-  renderVs100Question();
+  getOrCreateVs100Screen();show('screen-vs100');updateNav('');renderVs100Question();
 }
 
 async function pickVs100Answer(chosen){
