@@ -4227,6 +4227,48 @@ async function fetchVs100Questions(){
 }
 function show1vs100Lobby(){start1vs100();}
 function getOrCreateVs100Screen(){let sc=document.getElementById('screen-vs100');if(!sc){sc=document.createElement('div');sc.id='screen-vs100';sc.className='screen';(document.querySelector('main')||document.body).appendChild(sc);}return sc;}
+function renderVs100Question(){
+  const s=vs100State;
+  if(!s)return;
+  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
+  const q=s.questions[s.currentQ];
+  const alive=s.bots.filter(b=>!b.eliminated).length;
+  const sc=getOrCreateVs100Screen();
+
+  const botWall=s.bots.map(b=>`<div class="vs100-wall-dot ${b.eliminated?'vs100-dot-dead':''}" id="wbot-${b.id}" style="${b.eliminated?'':'background:'+b.color+'44;border-color:'+b.color+'55;'}" title="${b.name} [${b.rank}]"></div>`).join('');
+
+  sc.innerHTML=`
+<div class="vs100-arena">
+  <div class="vs100-arena-top">
+    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
+    <div class="vs100-arena-info">
+      <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
+      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
+    </div>
+    <div class="vs100-timer-ring" id="vs100-timer">20</div>
+  </div>
+  <div class="vs100-wall" id="vs100-wall">${botWall}</div>
+  <div class="vs100-question-box">
+    <div class="vs100-q-text">${q.question}</div>
+    <div class="vs100-answers-grid" id="vs100-answers">
+      ${q.answers.map((a,i)=>`<button class="vs100-ans-btn" id="vs100-ans-${i}" onclick="pickVs100Answer(${i})">${a}</button>`).join('')}
+    </div>
+  </div>
+</div>`;
+
+  let timeLeft=20;
+  if(s._timer)clearInterval(s._timer);
+  s._timer=setInterval(()=>{
+    timeLeft--;
+    const el=document.getElementById('vs100-timer');
+    if(el){
+      el.textContent=timeLeft;
+      if(timeLeft<=5)el.classList.add('vs100-timer-danger');
+    }
+    if(timeLeft<=0){clearInterval(s._timer);s._timer=null;pickVs100Answer(-1);}
+  },1000);
+}
+
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
