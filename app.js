@@ -724,17 +724,17 @@ async function buildWeeklyMystery(el){
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actIdx=Math.min(dow,4);
   const todayAct=(mystery.story_days||[])[actIdx]||'';
-  const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} â ${days[actIdx]}`;
-  const preview=todayAct.length>0?todayAct.slice(0,130)+'â¦':'';
+  const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} \u2014 ${days[actIdx]}`;
+  const preview=todayAct.length>0?todayAct.slice(0,130)+'\u2026':'';
   window._weeklyMystery={...mystery,ws,dow,monIso:mon.toISOString()};
   el.innerHTML=`<div class="wm-card wm-hub-card" onclick="showMysteryDetail()">
   <div class="wm-header">
-    <span class="wm-badge">ðµï¸ DÃFI DE LA SEMAINE</span>
+    <span class="wm-badge">\uD83D\uDD75\uFE0F D\u00C9FI DE LA SEMAINE</span>
     <div class="wm-title">${mystery.title}</div>
     <div class="wm-week">${actLabel}</div>
   </div>
   <div class="wm-hub-preview">${preview}</div>
-  <div class="wm-hub-cta">Lire l'enquÃªte complÃ¨te â</div>
+  <div class="wm-hub-cta">Lire l'enqu\u00EAte compl\u00E8te \u2192</div>
 </div>`;
 }
 
