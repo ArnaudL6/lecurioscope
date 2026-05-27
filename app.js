@@ -783,8 +783,8 @@ async function showMysteryDetail(){
   }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
   if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);}
-  window._mysteryShareText=`ðµï¸ DÃ©fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\nâ² https://lecurioscope.fr`;
-  sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">â Hub</button><div class="mystery-hd-title">ðµï¸ ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">â Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">ð Classement des enquÃªteurs</div>${lbRows}</div></div>`;
+  window._mysteryShareText=`\uD83D\uDD75\uFE0F D\u00E9fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\n\u2192 https://lecurioscope.fr`;
+  sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">\u2190 Hub</button><div class="mystery-hd-title">\uD83D\uDD75\uFE0F ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">\u2197 Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">\uD83D\uDCCA Classement des enqu\u00EAteurs</div>${lbRows}</div></div>`;
   show('screen-mystery');updateNav('');
 }
 
@@ -4224,6 +4224,18 @@ async function fetchVs100Questions(){
   }catch(e){console.error('fetchVs100',e);}
   return null;
 }
+function show1vs100Lobby(){
+  const sc=getOrCreateVs100Screen();
+  let previewDots='';
+  BOT_RANKS_DEF.forEach(tier=>{
+    for(let i=0;i<tier.count;i++){
+      previewDots+=`<div class="vs100-dot" style="background:${tier.color};box-shadow:0 0 5px ${tier.color}55;"></div>`;
+    }
+  });
+  sc.innerHTML=`\n<div class="vs100-lobby">\n  <div class="vs100-lobby-header">\n    <button class="vs100-back-btn" onclick="showHub()">\u2190 Retour</button>\n    <div class="vs100-logo-wrap">\n      <div class="vs100-logo-1">1</div>\n      <div class="vs100-logo-vs">CONTRE</div>\n      <div class="vs100-logo-100">100</div>\n    </div>\n    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>\n  </div>\n  <div class="vs100-rules-grid">\n    <div class="vs100-rule"><span>\u2753</span><span>10 questions \u00B7 4 choix</span></div>\n    <div class="vs100-rule"><span>\uD83E\uDD16</span><span>100 bots rangs E \u2192 S</span></div>\n    <div class="vs100-rule"><span>\u23F1</span><span>20 secondes par question</span></div>\n    <div class="vs100-rule"><span>\uD83D\uDC80</span><span>1 erreur = fin de partie</span></div>\n    <div class="vs100-rule"><span>\uD83C\uDFC6</span><span>Tous \u00E9limin\u00E9s = +500 XP</span></div>\n    <div class="vs100-rule"><span>\uD83D\uDCC8</span><span>Les forts survivent plus longtemps</span></div>\n  </div>\n  <div class="vs100-preview-wrap">\n    <div class="vs100-preview-label">LES 100 CHALLENGERS</div>\n    <div class="vs100-preview-grid">${previewDots}</div>\n    <div class="vs100-preview-legend">\n      ${BOT_RANKS_DEF.map(t=>`<span class="vs100-leg-dot" style="background:${t.color};"></span><span class="vs100-leg-lbl">${t.id} (${t.count})</span>`).join('')}\n    </div>\n  </div>\n  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">\u26A1 LANCER LA PARTIE</button>\n</div>`;
+  show('screen-vs100');updateNav('');
+}
+
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
