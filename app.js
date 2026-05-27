@@ -1008,6 +1008,7 @@ async function markRead(){
   const{data:existing}=await sb.from('reads').select('id').eq('user_id',currentUser.id).eq('anecdote_id',todayAnec.id).maybeSingle();
   await sb.from('reads').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,date:today(),preview:todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
   if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
+}
 
 
 
