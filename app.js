@@ -4211,7 +4211,10 @@ function generateVs100Bots(){
   }
   // 0.5% : Rang National (quasi-imbattable)
   if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'NAT',color:'#e2e8f0',successRate:0.99,name:'??? [NAT]'};}
-  return bots;
+  
+// Nation: 0.5% chance, 99% accuracy
+bots.forEach(b=>{if(Math.random()<0.005){b.rank='Nation';b.color='#ff007f';b.successRate=0.99;}});
+return bots;
 }
 
 async function fetchVs100Questions(){
@@ -4221,7 +4224,7 @@ async function fetchVs100Questions(){
     const _q=sb.rpc('get_random_questions',{n:50,p_user_id:uid});
     const{data,error}=await Promise.race([_q,_t]);
     if(error||!data||data.length<10){console.error('fetchVs100',error);return null;}
-    return data.sort(()=>Math.random()-.5).slice(0,10).map(q=>({question:q.question,answers:q.options,correctIdx:q.answer}));
+    return data.sort(()=>Math.random()-.5).map(q=>({question:q.question,answers:q.options,correctIdx:q.answer}));
   }catch(e){console.error('fetchVs100',e);}
   return null;
 }
@@ -4230,12 +4233,10 @@ function show1vs100Lobby(){
   const sc=getOrCreateVs100Screen();
   const previewBots=generateVs100Bots();
   vs100State={bots:previewBots,questions:null,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
-  const botRows=previewBots.map(b=>
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:.3rem .5rem;border-radius:.35rem;border-left:3px solid '+b.color+';margin-bottom:.2rem;background:rgba(255,255,255,.02)">'+
-    '<span style="font-size:.8rem;font-weight:500">'+b.name+'</span>'+
-    '<span style="font-size:.7rem;font-weight:700;color:'+b.color+';text-shadow:0 0 8px '+b.color+'88">'+b.rank+'</span>'+
-    '</div>'
-  ).join('');
+  const _rc={Nation:'#ff007f',S:'#a855f7',A:'#f97316',B:'#fbbf24',C:'#34d399',D:'#60a5fa',E:'#6b7280'};
+const _rk={};previewBots.forEach(b=>{_rk[b.rank]=(_rk[b.rank]||0)+1;});
+const dotWall=previewBots.map(b=>`<div class="vs100-wall-dot" style="background:${b.color}44;border:1.5px solid ${b.color}77;width:.9rem;height:.9rem;margin:.15rem;border-radius:50%;flex-shrink:0;" title="${b.rank}"></div>`).join('');
+const legend=['Nation','S','A','B','C','D','E'].filter(r=>_rk[r]).map(r=>`<span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#aaa"><span style="width:.6rem;height:.6rem;border-radius:50%;background:${_rc[r]};display:inline-block"></span>${r} (${_rk[r]})</span>`).join('');;
   sc.innerHTML=`
 <div class="vs100-lobby">
   <div class="vs100-lobby-header">
@@ -4248,8 +4249,8 @@ function show1vs100Lobby(){
     <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
   </div>
   <div class="vs100-rules-grid">
-    <div class="vs100-rule"><span>&#10067;</span><span>10 questions &#183; 4 choix</span></div>
-    <div class="vs100-rule"><span>&#129302;</span><span>100 bots rangs E &#8594; S</span></div>
+    <div class="vs100-rule"><span>&#10067;</span><span>Questions illimitées &#183; 4 choix</span></div>
+    <div class="vs100-rule"><span>&#129302;</span><span>Bots rangs E &#8594; Nation</span></div>
     <div class="vs100-rule"><span>&#9201;</span><span>20 secondes par question</span></div>
     <div class="vs100-rule"><span>&#128128;</span><span>1 erreur &#61; fin de partie</span></div>
     <div class="vs100-rule"><span>&#127942;</span><span>Tous &#233;limin&#233;s &#61; +500 XP</span></div>
@@ -4260,7 +4261,7 @@ function show1vs100Lobby(){
       &#9876;&#65039; LES 100 CHALLENGERS
       <span style="background:rgba(255,255,255,.07);padding:.2rem .5rem;border-radius:.3rem;font-size:.7rem">100 participants</span>
     </div>
-    <div style="max-height:220px;overflow-y:auto;padding:.5rem" id="vs100-part-list">${botRows}</div>
+    <div id="vs100-part-list" style="display:flex;flex-wrap:wrap;justify-content:center;padding:.5rem">${dotWall}</div><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;padding:.3rem .5rem .5rem">${legend}</div>
   </div>
   <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">&#9889; LANCER LA PARTIE</button>
 </div>`;
@@ -4268,10 +4269,10 @@ function show1vs100Lobby(){
 }
 
 function getOrCreateVs100Screen(){let sc=document.getElementById('screen-vs100');if(!sc){sc=document.createElement('div');sc.id='screen-vs100';sc.className='screen';(document.querySelector('main')||document.body).appendChild(sc);}return sc;}
-function renderVs100Question(){
+async function renderVs100Question(){
   const s=vs100State;
   if(!s)return;
-  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
+  if(s.currentQ>=s.questions.length){const more=await fetchVs100Questions();if(more&&more.length>0){s.questions=[...s.questions,...more];}else{endVs100Victory();return;}}
   const q=s.questions[s.currentQ];
   const alive=s.bots.filter(b=>!b.eliminated).length;
   const sc=getOrCreateVs100Screen();
