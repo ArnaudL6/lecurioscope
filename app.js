@@ -604,6 +604,8 @@ async function showHub(){
     <div class="sl-system-date">${cap(dateStr)}</div>
   </div>
 
+  <div id="hub-mystery-wrap" style="margin-bottom:1.2rem;"></div>
+
   <div class="sl-hub-cols">
     <div class="sl-hub-left">
 
@@ -680,11 +682,6 @@ async function showHub(){
         ${gateHTML(gateQuiz)}
       </div>
 
-      <div class="sl-section-header" style="margin-top:1rem;">
-        <span class="sl-section-icon">🕵</span>
-        <span>DÉFI DE LA SEMAINE</span>
-      </div>
-      <div id="hub-mystery-wrap"></div>
       <div class="sl-section-header sl-section-locked">
         <span class="sl-section-icon">🔒</span>
         <span>PORTAILS FERMÉS</span>
