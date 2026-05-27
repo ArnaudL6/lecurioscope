@@ -727,7 +727,7 @@ async function buildWeeklyMystery(el){
   const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} â ${days[actIdx]}`;
   const preview=todayAct.length>0?todayAct.slice(0,130)+'â¦':'';
   window._weeklyMystery={...mystery,ws,dow,monIso:mon.toISOString()};
-  el.innerHTML<`<div class="wm-card wm-hub-card" onclick="showMysteryDetail()">
+  el.innerHTML=`<div class="wm-card wm-hub-card" onclick="showMysteryDetail()">
   <div class="wm-header">
     <span class="wm-badge">ðµï¸ DÃFI DE LA SEMAINE</span>
     <div class="wm-title">${mystery.title}</div>
@@ -4144,76 +4144,27 @@ function generateVs100Bots(){
   return bots;
 }
 
-async function fetchVs100Questions(userId){
-  try{const _rq=sb.rpc('get_random_questions',{n:300,p_user_id:userId??null});
+async function fetchVs100Questions(){
+  try{
+    const _q=sb.from('quiz_questions').select('id,question,correct_answer,wrong_answers').limit(300);
     const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000));
-    const{data}=await Promise.race([_rq,_t]);
-  if(data&&data.length>=10){const r=data.map(q=>{const opts=Array.isArray(q.options)?q.options:[];if(opts.length<2)return null;const correct=opts[q.answer];const shuffled=[...opts].sort(()=>Math.random()-.5);return{question:q.question,answers:shuffled,correctIdx:shuffled.indexOf(correct),explanation:q.explanation||''};}).filter(Boolean);if(r.length>=10)return r;}
-  }catch(e){console.error('fetchVs100',e);}return null;
+    const{data}=await Promise.race([_q,_t]);
+    if(data){
+      const r=data.map(q=>{
+        const allAns=[q.correct_answer,...(q.wrong_answers||[])].sort(()=>Math.random()-.5);
+        if(allAns.length<2)return null;
+        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer)};
+      }).filter(Boolean);
+      if(r.length>=10)return r;
+    }
+  }catch(e){console.error('fetchVs100',e);}
+  return null;
 }
-
-function getOrCreateVs100Screen(){
-  let sc=document.getElementById('screen-vs100');
-  if(!sc){
-    sc=document.createElement('div');
-    sc.id='screen-vs100';sc.className='screen';
-    const container=document.querySelector('main')||document.body;
-    container.appendChild(sc);
-  }
-  return sc;
-}
-function show1vs100Lobby(){
-  const sc=getOrCreateVs100Screen();
-  const previewBots=generateVs100Bots();
-  const rankColors={E:"#9ca3af",D:"#60a5fa",C:"#34d399",B:"#fbbf24",A:"#f97316",S:"#a855f7",NAT:"#e2e8f0"};
-  const counts={};
-  previewBots.forEach(b=>{counts[b.rank]=(counts[b.rank]||0)+1;});
-  const previewDots=previewBots.map(b=>'<div class="vs100-dot" style="background:'+b.color+';box-shadow:0 0 5px '+b.color+'55;" title="'+b.rank+'"></div>').join('');
-  const rankOrder=['NAT','S','A','B','C','D','E'];
-  const legendItems=Object.entries(counts).sort((a,b)=>rankOrder.indexOf(a[0])-rankOrder.indexOf(b[0])).map(([rank,cnt])=>{
-    const color=rankColors[rank]||"#fff";
-    const lbl=rank==="NAT"?"<b style='color:#e2e8f0'>★ NAT</b> ("+cnt+")":rank+" ("+cnt+")";
-    return '<span class="vs100-leg-dot" style="background:'+color+';"></span><span class="vs100-leg-lbl">'+lbl+'</span>';
-  }).join('');
-  const hasNat=previewBots.some(b=>b.rank==='NAT');
-  const natBadge=hasNat
-    ?'<div class="vs100-nat-badge">⚠️ Rang National détecté dans cette session !</div>'
-    :'<div class="vs100-nat-hint">★ Rang National : 0,5% de chance · 99% de précision</div>';
-  window._vs100PreviewBots=previewBots;
-  sc.innerHTML='<div class="vs100-lobby">'
-    +'<div class="vs100-lobby-header">'
-    +'<button class="vs100-back-btn" onclick="showHub()">← Retour</button>'
-    +'<div class="vs100-logo-wrap"><div class="vs100-logo-1">1</div><div class="vs100-logo-vs">CONTRE</div><div class="vs100-logo-100">100</div></div>'
-    +'<p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p></div>'
-    +'<div class="vs100-rules-grid">'
-    +'<div class="vs100-rule"><span>❓</span><span>4 choix · questions des anecdotes</span></div>'
-    +'<div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S (voire NAT)</span></div>'
-    +'<div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>'
-    +'<div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>'
-    +'<div class="vs100-rule"><span>🏆</span><span>Victoire = +500 XP (bonus survie)</span></div>'
-    +'<div class="vs100-rule"><span>🎲</span><span>Composition du panel aléatoire à chaque partie</span></div>'
-    +'</div>'
-    +'<div class="vs100-preview-wrap">'
-    +'<div class="vs100-preview-label">LES 100 CHALLENGERS</div>'
-    +natBadge
-    +'<div class="vs100-preview-grid">'+previewDots+'</div>'
-    +'<div class="vs100-preview-legend">'+legendItems+'</div>'
-    +'</div>'
-    +'<button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">⚡ LANCER LA PARTIE</button>'
-    +'</div>';
-  show('screen-vs100');updateNav('');
-}
-
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
-  let questions=await fetchVs100Questions(currentUser?.id);
-  if(!questions||!questions.length){
-    alert('⚠️ Vous n\'avez pas lu assez d\'anecdotes pour une partie personnalisée.\nLe jeu utilisera toutes les anecdotes disponibles.');
-    questions=await fetchVs100Questions(null);
-  }
-  if(!questions||!questions.length){if(btn){btn.textContent='⚡ LANCER LA PARTIE';btn.disabled=false;}return;}
-  const bots=window._vs100PreviewBots||generateVs100Bots();
+  const questions=await fetchVs100Questions();
+  const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   renderVs100Question();
 }
