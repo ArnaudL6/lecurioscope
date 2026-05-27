@@ -4226,13 +4226,14 @@ async function fetchVs100Questions(){
   return null;
 }
 function show1vs100Lobby(){start1vs100();}
+function getOrCreateVs100Screen(){let sc=document.getElementById('screen-vs100');if(!sc){sc=document.createElement('div');sc.id='screen-vs100';sc.className='screen';(document.querySelector('main')||document.body).appendChild(sc);}return sc;}
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
   const questions=await fetchVs100Questions();
   const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
-  getOrCreateVs100Screen();show('screen-vs100');updateNav('');renderVs100Question();
+  show('screen-vs100');updateNav('');renderVs100Question();
 }
 
 async function pickVs100Answer(chosen){
