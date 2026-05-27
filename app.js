@@ -604,8 +604,7 @@ async function showHub(){
     <div class="sl-system-date">${cap(dateStr)}</div>
   </div>
 
-  <div id="hub-mystery-wrap" style="margin-bottom:1.2rem;"></div>
-
+  
   <div class="sl-hub-cols">
     <div class="sl-hub-left">
 
@@ -655,6 +654,7 @@ async function showHub(){
             <span class="sl-arena-tag">S-RANG</span>
             <span class="sl-arena-xp">+500 XP</span>
           </div>
+      <div id="hub-mystery-wrap" style="margin-top:1rem;"></div>
           <div class="sl-arena-gate-bd">
             <span class="sl-arena-ico">⚡</span>
             <div>
