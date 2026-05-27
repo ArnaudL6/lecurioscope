@@ -40,6 +40,7 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));const el=document.getElementById(id);if(el)el.classList.add('on');}
 function updateNav(active){['bn-anec','bn-hist','bn-play','bn-league','bn-profil'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',id===active);});}
 function goAnec(){
+  setRoute('anecdote');
   document.getElementById('top-tab-anec')?.classList.add('active');
   document.getElementById('top-tab-enigme')?.classList.remove('active');
   document.getElementById('top-tab-sondage')?.classList.remove('active');
@@ -50,6 +51,7 @@ function goHome(){showHub();}
 function showEnigmeWIP(){goEnigme();}
 
 async function goEnigme(){
+  setRoute('enigme');
   document.getElementById('top-tab-enigme')?.classList.add('active');
   document.getElementById('top-tab-anec')?.classList.remove('active');
   document.getElementById('top-tab-sondage')?.classList.remove('active');
@@ -361,6 +363,7 @@ function showSondageWIP(){
 let _histAllAnec=[],_histReads=new Set(),_histFavs=new Set(),_histFilter='all';
 
 async function goHistoire(){
+  setRoute('hist');
   if(!currentUser){showToast('⚠ Connecte-toi pour voir ton historique !');show('screen-login');return;}
   updateNav('bn-hist');
   prevScreen=document.querySelector('.screen.on')?.id||'screen-anec';
@@ -531,6 +534,7 @@ function afterLogin(){
 }
 // ══ SOLO LEVELING — HUB SYSTÈME ══════════════════════════════════════════════
 async function showHub(){
+  setRoute('hub');
   let readToday=false,enigmaToday=false,quizToday=false;
   let xp=currentUserXP||0;
   let rank=currentUserRank||RANKS[0];
@@ -649,7 +653,7 @@ async function showHub(){
         <span class="sl-section-new">NOUVEAU</span>
       </div>
       <div class="sl-arena-section">
-        <div class="sl-arena-gate" onclick="start1vs100()">
+        <div class="sl-arena-gate" onclick="show1vs100Lobby()">
           <div class="sl-arena-gate-hd">
             <span class="sl-arena-tag">S-RANG</span>
             <span class="sl-arena-xp">+500 XP</span>
@@ -741,6 +745,7 @@ async function buildWeeklyMystery(el){
 
 // ââ Mystery Detail Page âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function showMysteryDetail(){
+  setRoute('mystere');
   const m=window._weeklyMystery;
   if(!m){showHub();return;}
   const mon=new Date(m.monIso);
@@ -4220,56 +4225,54 @@ async function fetchVs100Questions(){
   }catch(e){console.error('fetchVs100',e);}
   return null;
 }
-function show1vs100Lobby(){start1vs100();}
-function getOrCreateVs100Screen(){let sc=document.getElementById('screen-vs100');if(!sc){sc=document.createElement('div');sc.id='screen-vs100';sc.className='screen';(document.querySelector('main')||document.body).appendChild(sc);}return sc;}
-function renderVs100Question(){
-  const s=vs100State;
-  if(!s)return;
-  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
-  const q=s.questions[s.currentQ];
-  const alive=s.bots.filter(b=>!b.eliminated).length;
+function show1vs100Lobby(){
+  setRoute('vs100');
   const sc=getOrCreateVs100Screen();
-
-  const botWall=s.bots.map(b=>`<div class="vs100-wall-dot ${b.eliminated?'vs100-dot-dead':''}" id="wbot-${b.id}" style="${b.eliminated?'':'background:'+b.color+'44;border-color:'+b.color+'55;'}" title="${b.name} [${b.rank}]"></div>`).join('');
-
+  const previewBots=generateVs100Bots();
+  vs100State={bots:previewBots,questions:null,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
+  const botRows=previewBots.map(b=>
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:.3rem .5rem;border-radius:.35rem;border-left:3px solid '+b.color+';margin-bottom:.2rem;background:rgba(255,255,255,.02)">'+
+    '<span style="font-size:.8rem;font-weight:500">'+b.name+'</span>'+
+    '<span style="font-size:.7rem;font-weight:700;color:'+b.color+';text-shadow:0 0 8px '+b.color+'88">'+b.rank+'</span>'+
+    '</div>'
+  ).join('');
   sc.innerHTML=`
-<div class="vs100-arena">
-  <div class="vs100-arena-top">
-    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
-    <div class="vs100-arena-info">
-      <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
-      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
+<div class="vs100-lobby">
+  <div class="vs100-lobby-header">
+    <button class="vs100-back-btn" onclick="showHub()">&#8592; Retour</button>
+    <div class="vs100-logo-wrap">
+      <div class="vs100-logo-1">1</div>
+      <div class="vs100-logo-vs">CONTRE</div>
+      <div class="vs100-logo-100">100</div>
     </div>
-    <div class="vs100-timer-ring" id="vs100-timer">20</div>
+    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
   </div>
-  <div class="vs100-wall" id="vs100-wall">${botWall}</div>
-  <div class="vs100-question-box">
-    <div class="vs100-q-text">${q.question}</div>
-    <div class="vs100-answers-grid" id="vs100-answers">
-      ${q.answers.map((a,i)=>`<button class="vs100-ans-btn" id="vs100-ans-${i}" onclick="pickVs100Answer(${i})">${a}</button>`).join('')}
+  <div class="vs100-rules-grid">
+    <div class="vs100-rule"><span>&#10067;</span><span>10 questions &#183; 4 choix</span></div>
+    <div class="vs100-rule"><span>&#129302;</span><span>100 bots rangs E &#8594; S</span></div>
+    <div class="vs100-rule"><span>&#9201;</span><span>20 secondes par question</span></div>
+    <div class="vs100-rule"><span>&#128128;</span><span>1 erreur &#61; fin de partie</span></div>
+    <div class="vs100-rule"><span>&#127942;</span><span>Tous &#233;limin&#233;s &#61; +500 XP</span></div>
+    <div class="vs100-rule"><span>&#128200;</span><span>Les forts survivent plus longtemps</span></div>
+  </div>
+  <div style="margin:1rem 0;background:rgba(255,255,255,.03);border-radius:.75rem;border:1px solid rgba(255,255,255,.08);overflow:hidden">
+    <div style="padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3)">
+      &#9876;&#65039; LES 100 CHALLENGERS
+      <span style="background:rgba(255,255,255,.07);padding:.2rem .5rem;border-radius:.3rem;font-size:.7rem">100 participants</span>
     </div>
+    <div style="max-height:220px;overflow-y:auto;padding:.5rem" id="vs100-part-list">${botRows}</div>
   </div>
+  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">&#9889; LANCER LA PARTIE</button>
 </div>`;
-
-  let timeLeft=20;
-  if(s._timer)clearInterval(s._timer);
-  s._timer=setInterval(()=>{
-    timeLeft--;
-    const el=document.getElementById('vs100-timer');
-    if(el){
-      el.textContent=timeLeft;
-      if(timeLeft<=5)el.classList.add('vs100-timer-danger');
-    }
-    if(timeLeft<=0){clearInterval(s._timer);s._timer=null;pickVs100Answer(-1);}
-  },1000);
+  show('screen-vs100');updateNav('');
 }
 
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
-  if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
+  if(btn){btn.textContent='&#9203; Pr&#233;paration...';btn.disabled=true;}
   const questions=await fetchVs100Questions();
-  if(!questions){if(btn){btn.textContent='Lancer';btn.disabled=false;}return;}
-  const bots=generateVs100Bots();
+  if(!questions){if(btn){btn.textContent='&#9889; Lancer la partie';btn.disabled=false;}return;}
+  const bots=(vs100State&&vs100State.bots)||generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   getOrCreateVs100Screen();
   show('screen-vs100');updateNav('');renderVs100Question();
@@ -4421,3 +4424,14 @@ async function endVs100Victory(){
 // deploy trigger 2
 
 // deploy trigger 3
+
+function setRoute(hash){try{history.replaceState(null,'','#'+hash);}catch(e){location.hash='#'+hash;}}
+window.addEventListener('hashchange',()=>{
+  const h=location.hash.slice(1);
+  if(h==='hub')showHub();
+  else if(h==='anecdote')goAnec();
+  else if(h==='enigme')goEnigme();
+  else if(h==='mystere')showMysteryDetail();
+  else if(h==='vs100')show1vs100Lobby();
+  else if(h==='hist')goHistoire();
+});
