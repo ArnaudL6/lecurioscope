@@ -649,7 +649,7 @@ async function showHub(){
         <span class="sl-section-new">NOUVEAU</span>
       </div>
       <div class="sl-arena-section">
-        <div class="sl-arena-gate" onclick="show1vs100Lobby()">
+        <div class="sl-arena-gate" onclick="start1vs100()">
           <div class="sl-arena-gate-hd">
             <span class="sl-arena-tag">S-RANG</span>
             <span class="sl-arena-xp">+500 XP</span>
@@ -721,7 +721,7 @@ async function buildWeeklyMystery(el){
   const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
   const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
   const{data:mystery}=await sb.from('weekly_mysteries').select('id,title,story_days,week_start').eq('week_start',ws).maybeSingle();
-  if(!mystery){el.innerHTML='<div class="wm-empty">ð Nouvelle Ã©nigme disponible lundi !</div>';return;}
+  if(!mystery){el.innerHTML='<div class="wm-empty">ð Nouvelle \u00E9nigme disponible lundi !</div>';return;}
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actIdx=Math.min(dow,4);
   const todayAct=(mystery.story_days||[])[actIdx]||'';
@@ -769,10 +769,10 @@ async function showMysteryDetail(){
   }).join('');
   let guessHtml='';
   if(!currentUser){
-    guessHtml=`<div class="wm-guess-pending">ð <span style="cursor:pointer;color:#00c8ff" onclick="show('screen-login')">Connecte-toi</span> pour soumettre ta dÃ©duction.</div>`;
+    guessHtml=`<div class="wm-guess-pending">ð <span style="cursor:pointer;color:#00c8ff" onclick="show('screen-login')">Connecte-toi</span> pour soumettre ta d\u00E9duction.</div>`;
   }else if(todayGuess){
     const isOk=todayGuess.is_correct;
-    guessHtml=`<div class="wm-verdict ${isOk?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${isOk?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦'}</div><div class="wm-verdict-culprit">Ta rÃ©ponse : <em>${todayGuess.culprit}</em></div>${isOk&&mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}<div class="wm-verdict-sub">Reviens demain pour une nouvelle tentative.</div></div>`;
+    guessHtml=`<div class="wm-verdict ${isOk?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${isOk?'\u2705 Bonne d\u00E9duction !':'\u274C Mauvaise piste\u2026'}</div><div class="wm-verdict-culprit">Ta r\u00E9ponse : <em>${todayGuess.culprit}</em></div>${isOk&&mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}<div class="wm-verdict-sub">Reviens demain pour une nouvelle tentative.</div></div>`;
   }else{
     guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">ð Ton accusation du jour</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}','${mystery.culprit}')">Soumettre â</button></div>`;
   }
@@ -780,8 +780,8 @@ async function showMysteryDetail(){
     const name=g.username||'Anonyme';
     const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${name[0].toUpperCase()}</div>`;
     const d=new Date(g.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
-  }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
+    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">\u2705</span>':''}<span class="wm-lb-date">${d}</span></div>`;
+  }).join('')||'<div class="wm-lb-empty">Aucune d\u00E9duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
   if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):(document.querySelector('main')||document.body).appendChild(sc);}
   window._mysteryShareText=`\uD83D\uDD75\uFE0F D\u00E9fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\n\u2192 https://lecurioscope.fr`;
@@ -792,20 +792,20 @@ async function showMysteryDetail(){
 async function submitMysteryGuess(mysteryId,culpritAnswer){
   if(!currentUser){showToast('â ï¸ Connecte-toi pour soumettre !');return;}
   const input=document.getElementById('wm-culprit-input');
-  if(!input||!input.value.trim()){showToast('â ï¸ Entre ta dÃ©duction !');return;}
+  if(!input||!input.value.trim()){showToast('â ï¸ Entre ta d\u00E9duction !');return;}
   const culprit=input.value.trim();
   const todayDate=new Date().toISOString().slice(0,10);
   const is_correct=!!(culpritAnswer&&culprit&&culpritAnswer.toLowerCase().split(' ').some(w=>w.length>2&&culprit.toLowerCase().includes(w)));
   const{error}=await sb.from('mystery_guesses').upsert({user_id:currentUser.id,mystery_id:mysteryId,culprit,is_correct,guess_date:todayDate},{onConflict:'user_id,mystery_id,guess_date'});
   if(error){showToast('Erreur : '+error.message);return;}
-  showToast(is_correct?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦');
+  showToast(is_correct?'\u2705 Bonne d\u00E9duction !':'\u274C Mauvaise piste\u2026');
   showMysteryDetail();
 }
 
 function shareMystery(){
-  const text=window._mysteryShareText||'ðµï¸ DÃ©fi de la semaine â https://lecurioscope.fr';
+  const text=window._mysteryShareText||'ðµï¸ D\u00E9fi de la semaine â https://lecurioscope.fr';
   if(navigator.share){navigator.share({text,url:'https://lecurioscope.fr'}).catch(()=>{});}
-  else{navigator.clipboard.writeText(text).then(()=>showToast('â Lien copiÃ© !')).catch(()=>showToast('Copie non supportÃ©e'));}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('â Lien copi\u00E9 !')).catch(()=>showToast('Copie non support\u00E9e'));}
 }
 
 // ═════════════════════════════
@@ -4225,29 +4225,7 @@ async function fetchVs100Questions(){
   }catch(e){console.error('fetchVs100',e);}
   return null;
 }
-function show1vs100Lobby(){
-  const sc=getOrCreateVs100Screen();
-  let previewDots='';
-  BOT_RANKS_DEF.forEach(tier=>{
-    for(let i=0;i<tier.count;i++){
-      previewDots+=`<div class="vs100-dot" style="background:${tier.color};box-shadow:0 0 5px ${tier.color}55;"></div>`;
-    }
-  });
-  sc.innerHTML=`\n<div class="vs100-lobby">\n  <div class="vs100-lobby-header">\n    <button class="vs100-back-btn" onclick="showHub()">\u2190 Retour</button>\n    <div class="vs100-logo-wrap">\n      <div class="vs100-logo-1">1</div>\n      <div class="vs100-logo-vs">CONTRE</div>\n      <div class="vs100-logo-100">100</div>\n    </div>\n    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>\n  </div>\n  <div class="vs100-rules-grid">\n    <div class="vs100-rule"><span>\u2753</span><span>10 questions \u00B7 4 choix</span></div>\n    <div class="vs100-rule"><span>\uD83E\uDD16</span><span>100 bots rangs E \u2192 S</span></div>\n    <div class="vs100-rule"><span>\u23F1</span><span>20 secondes par question</span></div>\n    <div class="vs100-rule"><span>\uD83D\uDC80</span><span>1 erreur = fin de partie</span></div>\n    <div class="vs100-rule"><span>\uD83C\uDFC6</span><span>Tous \u00E9limin\u00E9s = +500 XP</span></div>\n    <div class="vs100-rule"><span>\uD83D\uDCC8</span><span>Les forts survivent plus longtemps</span></div>\n  </div>\n  <div class="vs100-preview-wrap">\n    <div class="vs100-preview-label">LES 100 CHALLENGERS</div>\n    <div class="vs100-preview-grid">${previewDots}</div>\n    <div class="vs100-preview-legend">\n      ${BOT_RANKS_DEF.map(t=>`<span class="vs100-leg-dot" style="background:${t.color};"></span><span class="vs100-leg-lbl">${t.id} (${t.count})</span>`).join('')}\n    </div>\n  </div>\n  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">\u26A1 LANCER LA PARTIE</button>\n</div>`;
-  show('screen-vs100');updateNav('');
-}
-
-function getOrCreateVs100Screen(){
-  let sc=document.getElementById('screen-vs100');
-  if(!sc){
-    sc=document.createElement('div');
-    sc.id='screen-vs100';sc.className='screen';
-    // Insert before footer so screen appears above nav bar
-    (document.querySelector('main')||document.body).appendChild(sc);
-  }
-  return sc;
-}
-
+function show1vs100Lobby(){start1vs100();}
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
@@ -4366,7 +4344,7 @@ function endVs100Defeat(q,chosen){
     <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
   </div>
   <div class="vs100-defeat-btns">
-    <button class="vs100-retry-btn" onclick="show1vs100Lobby()">🔄 Réessayer</button>
+    <button class="vs100-retry-btn" onclick="start1vs100()">🔄 Réessayer</button>
     <button class="vs100-home-btn" onclick="showHub()">← Accueil</button>
   </div>
 </div>`;
