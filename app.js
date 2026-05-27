@@ -550,6 +550,7 @@ async function showHub(){
         sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
       ]);
       const streak=computeStreak((allReads||[]).map(x=>x.date));
+      userStreak=streak;
       xp=calcSLXP({reads:(allReads||[]).length,quizzes:allQuiz||[],enigmas:allEnigma||[],streak});
       currentUserXP=xp;currentUserRank=getRank(xp);rank=currentUserRank;nextRank=getNextRank(xp);
     }
@@ -663,6 +664,8 @@ async function showHub(){
         </div>
       </div>
 
+      <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
+          <div id="hub-mystery-wrap" style="margin-top:.5rem;"></div>
     </div>
     <div class="sl-hub-right">
 
@@ -697,17 +700,19 @@ async function showHub(){
         }).join('')}
       </div>
 
+
+
     </div>
   </div>
-
-  <div id="hub-mystery-wrap" style="margin-top:1.5rem;"></div>
 
 </div>`;
 
   show('screen-hub');updateNav('');
   setTimeout(()=>{const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
 }
-// ── Weekly Mystery (hub card compact) ────────────────────────────────────────
+
+// ── Weekly Mystery ────────────────────────────────────────────────────────────────────────────────
+// ââ Weekly Mystery (hub card compact) ââââââââââââââââââââââââââââââââââââââââ
 async function buildWeeklyMystery(el){
   if(!el)return;
   const now=new Date();
@@ -715,25 +720,25 @@ async function buildWeeklyMystery(el){
   const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
   const ws=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
   const{data:mystery}=await sb.from('weekly_mysteries').select('id,title,story_days,week_start').eq('week_start',ws).maybeSingle();
-  if(!mystery){el.innerHTML='<div class="wm-empty">🔒 Nouvelle énigme disponible lundi !</div>';return;}
+  if(!mystery){el.innerHTML='<div class="wm-empty">ð Nouvelle Ã©nigme disponible lundi !</div>';return;}
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actIdx=Math.min(dow,4);
   const todayAct=(mystery.story_days||[])[actIdx]||'';
-  const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} — ${days[actIdx]}`;
-  const preview=todayAct.length>0?todayAct.slice(0,130)+'…':'';
+  const actLabel=`Acte ${['I','II','III','IV','V'][actIdx]} â ${days[actIdx]}`;
+  const preview=todayAct.length>0?todayAct.slice(0,130)+'â¦':'';
   window._weeklyMystery={...mystery,ws,dow,monIso:mon.toISOString()};
   el.innerHTML=`<div class="wm-card wm-hub-card" onclick="showMysteryDetail()">
   <div class="wm-header">
-    <span class="wm-badge">🕵️ DÉFI DE LA SEMAINE</span>
+    <span class="wm-badge">ðµï¸ DÃFI DE LA SEMAINE</span>
     <div class="wm-title">${mystery.title}</div>
     <div class="wm-week">${actLabel}</div>
   </div>
   <div class="wm-hub-preview">${preview}</div>
-  <div class="wm-hub-cta">Lire l'enquête complète →</div>
+  <div class="wm-hub-cta">Lire l'enquÃªte complÃ¨te â</div>
 </div>`;
 }
 
-// ── Mystery Detail Page ───────────────────────────────────────────────────────
+// ââ Mystery Detail Page âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function showMysteryDetail(){
   const m=window._weeklyMystery;
   if(!m){showHub();return;}
@@ -751,57 +756,52 @@ async function showMysteryDetail(){
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actNames=['I','II','III','IV','V'];
   const unlockedCount=Math.min(dow+1,5);
-  const allActs=(mystery.story_days||[]);
-  const actsHtml=actNames.map((name,i)=>{
+  const actsHtml=(mystery.story_days||[]).slice(0,unlockedCount).map((day,i)=>{
     const actDate=new Date(mon);actDate.setDate(mon.getDate()+i);
     const dateStr=actDate.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
-    if(i<unlockedCount&&allActs[i]){
-      return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${name}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${allActs[i]}</div></div>`;
-    }else{
-      return`<div class="wm-act wm-act-locked"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${name}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body wm-act-soon">🔒 Disponible ${days[i]}</div></div>`;
-    }
+    return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${day}</div></div>`;
   }).join('');
   let guessHtml='';
   if(!currentUser){
-    guessHtml=`<div class="wm-guess-pending">🔒 <span style="cursor:pointer;color:#00c8ff" onclick="show('screen-login')">Connecte-toi</span> pour soumettre ta déduction.</div>`;
+    guessHtml=`<div class="wm-guess-pending">ð <span style="cursor:pointer;color:#00c8ff" onclick="show('screen-login')">Connecte-toi</span> pour soumettre ta dÃ©duction.</div>`;
   }else if(todayGuess){
     const isOk=todayGuess.is_correct;
-    guessHtml=`<div class="wm-verdict ${isOk?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${isOk?'✅ Bonne déduction !':'❌ Mauvaise piste…'}</div><div class="wm-verdict-culprit">Ta réponse : <em>${todayGuess.culprit}</em></div>${isOk&&mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}<div class="wm-verdict-sub">Reviens demain pour une nouvelle tentative.</div></div>`;
+    guessHtml=`<div class="wm-verdict ${isOk?'wm-correct':'wm-wrong'}"><div class="wm-verdict-title">${isOk?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦'}</div><div class="wm-verdict-culprit">Ta rÃ©ponse : <em>${todayGuess.culprit}</em></div>${isOk&&mystery.explanation?`<div class="wm-verdict-expl">${mystery.explanation}</div>`:''}<div class="wm-verdict-sub">Reviens demain pour une nouvelle tentative.</div></div>`;
   }else{
-    guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">🔍 Ton accusation du jour</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}','${mystery.culprit}')">Soumettre →</button></div>`;
+    guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">ð Ton accusation du jour</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}','${mystery.culprit}')">Soumettre â</button></div>`;
   }
   const lbRows=(guesses||[]).map((g,i)=>{
-    const name=g.username||'Anonyme';
-    const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${name[0].toUpperCase()}</div>`;
+    const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${g.pseudo||'?'}[0].toUpperCase()}</div>`;
     const d=new Date(g.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">✅</span>':''}<span class="wm-lb-date">${d}</span></div>`;
-  }).join('')||'<div class="wm-lb-empty">Aucune déduction pour le moment.</div>';
+    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${g.pseudo||'Anonyme'}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
+  }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
-  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);}
-  window._mysteryShareText=`🕵️ Défi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\n→ https://lecurioscope.fr`;
-  sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">← Hub</button><div class="mystery-hd-title">🕵️ ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">↗ Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">📊 Classement des enquêteurs</div>${lbRows}</div></div>`;
+  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';document.body.appendChild(sc);}
+  window._mysteryShareText=`ðµï¸ DÃ©fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\nâ² https://lecurioscope.fr`;
+  sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">â Hub</button><div class="mystery-hd-title">ðµï¸ ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">â Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">ð Classement des enquÃªteurs</div>${lbRows}</div></div>`;
   show('screen-mystery');updateNav('');
 }
 
 async function submitMysteryGuess(mysteryId,culpritAnswer){
-  if(!currentUser){showToast('⚠️ Connecte-toi pour soumettre !');return;}
+  if(!currentUser){showToast('â ï¸ Connecte-toi pour soumettre !');return;}
   const input=document.getElementById('wm-culprit-input');
-  if(!input||!input.value.trim()){showToast('⚠️ Entre ta déduction !');return;}
+  if(!input||!input.value.trim()){showToast('â ï¸ Entre ta dÃ©duction !');return;}
   const culprit=input.value.trim();
   const todayDate=new Date().toISOString().slice(0,10);
   const is_correct=!!(culpritAnswer&&culprit&&culpritAnswer.toLowerCase().split(' ').some(w=>w.length>2&&culprit.toLowerCase().includes(w)));
   const{error}=await sb.from('mystery_guesses').upsert({user_id:currentUser.id,mystery_id:mysteryId,culprit,is_correct,guess_date:todayDate},{onConflict:'user_id,mystery_id,guess_date'});
   if(error){showToast('Erreur : '+error.message);return;}
-  showToast(is_correct?'✅ Bonne déduction !':'❌ Mauvaise piste…');
+  showToast(is_correct?'â Bonne dÃ©duction !':'â Mauvaise pisteâ¦');
   showMysteryDetail();
 }
 
 function shareMystery(){
-  const text=window._mysteryShareText||'🕵️ Défi de la semaine → https://lecurioscope.fr';
+  const text=window._mysteryShareText||'ðµï¸ DÃ©fi de la semaine â https://lecurioscope.fr';
   if(navigator.share){navigator.share({text,url:'https://lecurioscope.fr'}).catch(()=>{});}
-  else{navigator.clipboard.writeText(text).then(()=>showToast('✓ Lien copié !')).catch(()=>showToast('Copie non supportée'));}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('â Lien copiÃ© !')).catch(()=>showToast('Copie non supportÃ©e'));}
 }
-// ══════════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════
 
 function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
   const old=document.getElementById('sl-notif');if(old)old.remove();
@@ -849,6 +849,7 @@ async function awardXP(amount,questTitle){
   if(newRank.id!==prevRank.id){
     setTimeout(()=>showLevelUp(newRank),1500);
   }
+  sb.from('profiles').update({xp:currentUserXP}).eq('id',currentUser.id);
 }
 
 async function showStatsWindow(){
@@ -945,9 +946,11 @@ function buildList(){
   if(dayBadge)dayBadge.textContent='Jour '+dayOfYear()+' / '+daysInYear();
   const grid=document.getElementById('theme-grid'),btn=document.getElementById('btn-gen');
   if(!grid)return;grid.innerHTML='';
-  THEMES.forEach(t=>{
+  const _TR={histoire:{r:'D',c:'#60a5fa'},science:{r:'C',c:'#34d399'},nature:{r:'E',c:'#9ca3af'},insolite:{r:'B',c:'#fbbf24'},art:{r:'D',c:'#60a5fa'},espace:{r:'B',c:'#fbbf24'},sport:{r:'C',c:'#34d399'},food:{r:'E',c:'#9ca3af'},legendes:{r:'A',c:'#f97316'}};
+    THEMES.forEach(t=>{
     const d=document.createElement('div');d.className='t-card';
-    d.innerHTML='<div class="t-dot"></div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>';
+    const tr=_TR[t.id]||{r:'E',c:'#9ca3af'};
+    d.innerHTML='<div class="sl-trank" style="color:'+tr.c+';border-color:'+tr.c+';">'+tr.r+'</div><div class="t-icon">'+t.icon+'</div><div class="t-info"><div class="t-name">'+t.label+'</div><div class="t-tag">'+t.tag+'</div></div>';
     d.onclick=()=>{document.querySelectorAll('.t-card').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');selThemeId=t.id;if(btn)btn.classList.add('ok');};
     grid.appendChild(d);
   });
@@ -1007,6 +1010,21 @@ async function markRead(){
   if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
 }
 
+
+
+async function showAnecHistorique(){
+  let modal=document.getElementById('hist-modal');
+  if(!modal){modal=document.createElement('div');modal.id='hist-modal';modal.className='hist-modal-overlay';modal.onclick=e=>{if(e.target===modal)modal.style.display='none';};modal.innerHTML='<div class="hist-modal-box"><div class="hist-modal-hd"><span>📚 Vos anecdotes passées</span><button class="hist-close-btn" onclick="document.getElementById(\'hist-modal\').style.display=\'none\'">✕</button></div><div class="hist-modal-body" id="hist-modal-body"><p class="hist-loading">Chargement...</p></div></div>';document.body.appendChild(modal);}
+  modal.style.display='flex';
+  const body=document.getElementById('hist-modal-body');
+  try{
+    const reads=(allReads||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+    if(!reads.length){body.innerHTML='<p class="hist-empty">Aucune lecture enregistrée.</p>';return;}
+    const{data}=await sb.from('anecdotes').select('date,title,content,theme').in('date',reads.map(r=>r.date)).order('date',{ascending:false});
+    if(!data||!data.length){body.innerHTML='<p class="hist-empty">Impossible de charger.</p>';return;}
+    body.innerHTML=data.map(a=>'<div class="hist-item"><div class="hist-item-date">'+a.date+'</div><div class="hist-item-title">'+(a.title||'Anecdote')+'</div><div class="hist-item-excerpt">'+((a.content||'').slice(0,100))+'…</div></div>').join('');
+  }catch(e){body.innerHTML='<p class="hist-empty" style="color:#f97316">Erreur: '+e.message+'</p>';}
+}
 function startCountdown(){
   if(cdTimer)clearInterval(cdTimer);
   function tick(){const now=new Date(),mid=new Date(now);mid.setHours(24,0,0,0);const diff=mid-now;if(diff<=0){clearInterval(cdTimer);location.reload();return;}const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);const el=document.getElementById('countdown');if(el)el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
@@ -1104,24 +1122,24 @@ async function goProfile(){
   // XP & niveau
   const xp=calcXP(r.length,q.length,streak);
   currentUserXP=calcSLXP({reads:r.length,quizzes:q,enigmas:enigmaStats||[],streak});
+if(currentUser?.xp&&currentUser.xp>currentUserXP)currentUserXP=currentUser.xp;
   currentUserRank=getRank(currentUserXP);
-  const{lvl,next}=calcLevel(xp);
+  const nextSlRank=getNextRank(currentUserXP);
   const chip=document.getElementById('prof-level-chip');
-  if(chip)chip.textContent='✦ '+lvl.name;
+  if(chip){chip.textContent=currentUserRank.label+' · '+currentUserRank.title;chip.style.color=currentUserRank.color;chip.style.borderColor=currentUserRank.color;chip.style.background=currentUserRank.bg;chip.style.boxShadow=currentUserRank.glow;}
   const xpCur=document.getElementById('prof-xp-cur');
   const xpNextEl=document.getElementById('prof-xp-next');
-  // Anneau XP circulaire (r=46, circonférence ≈ 289)
   const ring=document.getElementById('xp-ring-prog');
   const circ=289;
-  if(next){
-    const pct=(xp-lvl.min)/(next.min-lvl.min);
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-pct));},100);
-    if(xpCur)xpCur.textContent=xp+' XP';
-    if(xpNextEl)xpNextEl.textContent='→ '+next.name+' '+next.min+' XP';
+  if(nextSlRank){
+    const pct=(currentUserXP-currentUserRank.minXP)/(nextSlRank.minXP-currentUserRank.minXP);
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-Math.min(1,Math.max(0,pct))));ring.style.stroke=currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    if(xpNextEl)xpNextEl.textContent='→ '+nextSlRank.label+' '+nextSlRank.minXP.toLocaleString('fr-FR')+' XP';
   }else{
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';},100);
-    if(xpCur)xpCur.textContent=xp+' XP';
-    if(xpNextEl)xpNextEl.textContent='🏆 Max !';
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';ring.style.stroke=currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    if(xpNextEl)xpNextEl.textContent='🏆 Rang max !';
   }
 
   // Stats
@@ -1511,15 +1529,16 @@ async function buildLeagueDashboard(){
     return;
   }
   document.getElementById('multi-content').innerHTML=
+    '<div class="sl-section-header" style="margin-bottom:1rem;"><span class="sl-section-icon">⚔</span><span>LIGUE HEBDOMADAIRE</span></div>'+
     '<div style="display:flex;gap:.6rem;margin-bottom:1.25rem;">'+
-    '<button class="btn-main" style="flex:1;" onclick="goLeaguePlay()">🏆 Jouer en Ligue</button>'+
-    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Partie privée</button>'+
+    '<button class="sl-btn-primary" style="flex:1;" onclick="goLeaguePlay()">⚡ Jouer en Ligue</button>'+
+    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Privée</button>'+
     '</div>'+
     '<div id="ldash-ranking" style="margin-bottom:1.5rem;"></div>'+
     '<div id="ldash-pending" style="margin-bottom:.5rem;"></div>'+
     '<div class="friend-search" style="margin-bottom:.75rem;"><input id="friend-q" placeholder="Rechercher un pseudo…"/><button onclick="searchFriend()">Rechercher</button></div>'+
     '<div id="friend-results"></div>'+
-    '<div style="margin-top:1rem;"><div class="prev-head">Mes amis</div><div id="friend-list-own"></div></div>';
+    '<div style="margin-top:1rem;"><div class="sl-section-header" style="margin-bottom:.75rem;"><span class="sl-section-icon">👥</span><span>ALLIÉS</span></div><div id="friend-list-own"></div></div>';
   await buildWeeklyLeague(document.getElementById('ldash-ranking'));
   await buildPendingRequests(document.getElementById('ldash-pending'));
   await loadFriends();
@@ -1530,28 +1549,28 @@ function renderPlayChoice(){
   document.getElementById('multi-sub').textContent='';
   const backBtn=document.querySelector('#screen-multi .btn-back');
   if(backBtn)backBtn.style.display='block';
-  document.getElementById('multi-content').innerHTML='<div class="sl-play-gates">'
+  document.getElementById('multi-content').innerHTML=''
+    +'<div class="sl-play-gates">'
     +'<div class="sl-play-gate" onclick="goSoloPlay()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#34d399;border-color:#34d399;">C-RANG</span><span class="sl-arena-xp">+100 XP</span></div>'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#34d399;border-color:#34d399;">C-RANG</span></div>'
     +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎯</span><span class="sl-arena-name">SOLO</span></div>'
-    +'<div class="sl-arena-desc">Teste tes connaissances sur l\'anecdote du jour.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">▶ ENTRER</span></div>'
+    +'<div class="sl-arena-desc">Teste tes connaissances sur les anecdotes.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'<div class="sl-play-gate" onclick="goMultiPlay()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#fbbf24;border-color:#fbbf24;">B-RANG</span><span class="sl-arena-xp">+200 XP</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎮</span><span class="sl-arena-name">PARTIE PRIVÉE</span></div>'
-    +'<div class="sl-arena-desc">Affronte tes amis en temps réel.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">▶ ENTRER</span></div>'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#fbbf24;border-color:#fbbf24;">B-RANG</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎮</span><span class="sl-arena-name">PARTIE PRIV\u00c9E</span></div>'
+    +'<div class="sl-arena-desc">Affronte tes amis en temps r\u00e9el.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'<div class="sl-play-gate" onclick="showDuelLobby()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#f97316;border-color:#f97316;">A-RANG</span><span class="sl-arena-xp">+300 XP</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">⚔️</span><span class="sl-arena-name">DUEL QUIZ</span></div>'
-    +'<div class="sl-arena-desc">Tour par tour — choisis le thème, bats ton adversaire.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">▶ ENTRER</span></div>'
+    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#f97316;border-color:#f97316;">A-RANG</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">\u2694\ufe0f</span><span class="sl-arena-name">DUEL QUIZ</span></div>'
+    +'<div class="sl-arena-desc">Tour par tour, choisis le th\u00e8me, bats ton adversaire.</div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'</div>';
 }
-
 async function goSoloPlay(){
   document.getElementById('multi-title-txt').innerHTML='<em>Quiz</em> Solo';
   document.getElementById('multi-sub').textContent='Chargement de tes anecdotes…';
@@ -2580,7 +2599,17 @@ function showHunterToast(username){
   const savedColor=localStorage.getItem('adj_prof_color');
   if(savedColor)applyProfileColor(savedColor,false);
   const{data:{session}}=await sb.auth.getSession();
-  if(session){currentUser=await getProfile(session.user.id);if(currentUser)currentUser.email=session.user.email||'';}
+  if(session){
+    currentUser=await getProfile(session.user.id);
+    if(!currentUser){
+      const meta=session.user.user_metadata||{};
+      let uname=(meta.user_name||meta.full_name||meta.name||'chasseur'+Math.floor(Math.random()*9999)).replace(/[^a-zA-Z0-9_\-]/g,'_').slice(0,20);
+      const{data:ex}=await sb.from('profiles').select('id').eq('username',uname).maybeSingle();
+      if(ex)uname=uname.slice(0,15)+'_'+Math.floor(Math.random()*999);
+      await sb.from('profiles').insert({id:session.user.id,username:uname,joined:today()});
+      currentUser={id:session.user.id,username:uname,joined:today(),email:session.user.email||''};
+    } else {currentUser.email=session.user.email||'';}
+  }
   updateHeader();
   // Précharger l'anecdote en arrière-plan sans l'afficher
   loadTodayBackground();
@@ -2732,59 +2761,23 @@ function copyShareText(){
   });
 }
 
-// ── Community challenge ──────────────────────────────────────────────────────
-async function buildCommunityChallenge(el){
-  if(!el)return;
-  // Semaine en cours (lundi)
-  const now=new Date();
-  const dow=(now.getDay()+6)%7;
-  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
-  const ws=mon.toISOString().slice(0,10);
 
-  const{data:ch}=await sb.from('community_challenges').select('*').eq('week_start',ws).maybeSingle();
-  if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">🎯</span><p style="color:var(--ink3);font-size:.8rem">Défi de la semaine bientôt disponible !</p></div>';return;}
 
-  let userResp=null;
-  if(currentUser){
-    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',currentUser.id).eq('challenge_id',ch.id).maybeSingle();
-    userResp=r;
-  }
-
-  // Compter les réponses globales
-  const{data:allResps}=await sb.from('challenge_responses').select('answer,correct').eq('challenge_id',ch.id);
-  const total=(allResps||[]).length;
-  const nbOk=(allResps||[]).filter(r=>r.correct).length;
-  const pctOk=total?Math.round(nbOk/total*100):0;
-
-  const opts=(ch.options||[]);
-  const answered=!!userResp;
-
-  const optHtml=opts.map((o,i)=>{
-    let cls='challenge-opt';
-    if(answered){
-      if(i===ch.answer)cls+=' reveal-ok';
-      if(userResp&&userResp.answer===i){cls+=(i===ch.answer?' ok':' err');}
-    }
-    return '<button class="'+cls+'" '+(answered?'disabled':'')+' onclick="answerChallenge(\''+ch.id+'\','+i+','+ch.answer+')">'+
-      '<span style="font-weight:700;color:var(--ink3);margin-right:.4rem">'+String.fromCharCode(65+i)+'.</span>'+o+'</button>';
-  }).join('');
-
-  let bottomHtml='';
-  if(answered){
-    const ok=userResp.correct;
-    bottomHtml='<div class="challenge-result"><span>'+(ok?'✅':'❌')+'</span><span>'+(ok?'Bonne réponse ! Bien joué 🎉':'Raté ! La bonne réponse est <strong>'+opts[ch.answer]+'</strong>')+'</span></div>'+
-      (ch.explanation?'<div class="challenge-expl">📖 '+ch.explanation+'</div>':'')+
-      '<div class="challenge-score-bar"><div class="challenge-score-fill" style="width:'+pctOk+'%"></div></div>'+
-      '<div class="challenge-stats">'+nbOk+' / '+total+' joueurs ont trouvé ('+pctOk+'%)</div>';
-  }else if(!currentUser){
-    bottomHtml='<div style="margin-top:.75rem;text-align:center"><button class="btn-main" style="font-size:.75rem;padding:.5rem 1.25rem" onclick="show(\'screen-login\')">Se connecter pour jouer</button></div>';
-  }
-
-  el.innerHTML='<div class="challenge-card">'+
-    '<div class="challenge-week">'+ch.icon+' Défi de la semaine</div>'+
-    '<div class="challenge-q">'+ch.question+'</div>'+
-    '<div class="challenge-opts">'+optHtml+'</div>'+
-    bottomHtml+'</div>';
+async function submitMystery(ws){
+  const si=document.getElementById('mys-s-'+ws);
+  const ri=document.getElementById('mys-r-'+ws);
+  if(!si||!ri)return;
+  const suspect=si.value.trim(),reason=ri.value.trim();
+  if(!suspect||reason.length<20){showSystemNotif({title:'Réponse incomplète — nom + raisonnement requis',xpGain:0});return;}
+  const{data}=await sb.from('weekly_mysteries').select('culprit,keywords,explanation').eq('week_start',ws).single();
+  if(!data)return;
+  const nameOk=data.culprit.toLowerCase().includes(suspect.toLowerCase())||suspect.toLowerCase().includes(data.culprit.split(' ').pop().toLowerCase());
+  const kwHits=data.keywords.filter(kw=>reason.toLowerCase().includes(kw.toLowerCase()));
+  const ok=nameOk&&kwHits.length>=2;
+  localStorage.setItem('mys_v_'+ws,JSON.stringify({ok,suspect,reason,at:Date.now()}));
+  if(ok){showSystemNotif({title:'Enquête résolue !',xpGain:50});if(typeof addXP==='function')addXP(50);}
+  const mw=document.getElementById('hub-mystery-wrap');
+  if(mw)buildWeeklyMystery(mw);
 }
 
 async function answerChallenge(challengeId,answer,correct_answer){
@@ -4013,8 +4006,7 @@ async function openAccountSettings() {
   // Afficher les providers connectés
   _renderProviders();
 
-  // Charger les préfs notifs
-  _loadNotifPrefs();
+
 
   // Reset erreurs
   ['acct-username-err','acct-email-err','acct-pw-err','acct-bio-err'].forEach(id => {
@@ -4074,12 +4066,12 @@ async function confirmDeleteAccount() {
 // ─── 1 CONTRE 100 ─────────────────────────────────────────────────────────────
 
 const BOT_RANKS_DEF=[
-  {id:'E',count:40,successRate:0.38,color:'#9ca3af'},
-  {id:'D',count:25,successRate:0.52,color:'#60a5fa'},
-  {id:'C',count:20,successRate:0.65,color:'#34d399'},
-  {id:'B',count:10,successRate:0.75,color:'#fbbf24'},
-  {id:'A',count:4, successRate:0.85,color:'#f97316'},
-  {id:'S',count:1, successRate:0.93,color:'#a855f7'},
+  {id:'E',count:40,minRate:0.30,maxRate:0.50,color:'#9ca3af'},
+  {id:'D',count:25,minRate:0.45,maxRate:0.65,color:'#60a5fa'},
+  {id:'C',count:20,minRate:0.60,maxRate:0.75,color:'#34d399'},
+  {id:'B',count:10,minRate:0.72,maxRate:0.85,color:'#fbbf24'},
+  {id:'A',count:4, minRate:0.82,maxRate:0.92,color:'#f97316'},
+  {id:'S',count:1, minRate:0.90,maxRate:0.97,color:'#a855f7'},
 ];
 
 const BOT_NAMES_POOL=[
@@ -4112,21 +4104,43 @@ const FALLBACK_VS100=[
 ];
 
 function generateVs100Bots(){
-  const bots=[];
-  let nameIdx=0;
-  BOT_RANKS_DEF.forEach(tier=>{
-    for(let i=0;i<tier.count;i++){
+  // Fourchettes de rangs (du plus haut au plus bas)
+  const TIERS=[
+    {id:'S',minPct:1, maxPct:4, minRate:0.90,maxRate:0.97,color:'#a855f7'},
+    {id:'A',minPct:2, maxPct:7, minRate:0.82,maxRate:0.92,color:'#f97316'},
+    {id:'B',minPct:5, maxPct:12,minRate:0.72,maxRate:0.85,color:'#fbbf24'},
+    {id:'C',minPct:12,maxPct:25,minRate:0.60,maxRate:0.75,color:'#34d399'},
+    {id:'D',minPct:20,maxPct:35,minRate:0.45,maxRate:0.65,color:'#60a5fa'},
+  ];
+  // Chaque rang tire un count aléatoire dans sa fourchette, E reçoit le reste
+  let rem=100;
+  const counts={};
+  for(let t=0;t<TIERS.length;t++){
+    const tier=TIERS[t];
+    const maxPossible=rem-(TIERS.length-1-t); // garder au moins 1 par rang restant + E
+    const c=Math.max(0,Math.min(maxPossible,Math.round(tier.minPct+Math.random()*(tier.maxPct-tier.minPct))));
+    counts[tier.id]=c;
+    rem-=c;
+  }
+  counts['E']=Math.max(0,rem);
+  TIERS.push({id:'E',minRate:0.30,maxRate:0.50,color:'#9ca3af'});
+
+  const bots=[];let nameIdx=0;
+  for(const tier of TIERS){
+    const count=counts[tier.id]||0;
+    for(let k=0;k<count;k++){
       bots.push({
         id:bots.length,
         name:BOT_NAMES_POOL[nameIdx%BOT_NAMES_POOL.length],
-        rank:tier.id,
-        color:tier.color,
-        successRate:tier.successRate,
-        eliminated:false,
+        rank:tier.id,color:tier.color,
+        successRate:tier.minRate+Math.random()*(tier.maxRate-tier.minRate),
+        eliminated:false
       });
       nameIdx++;
     }
-  });
+  }
+  // 0.5% : Rang National (quasi-imbattable)
+  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'NAT',color:'#e2e8f0',successRate:0.99,name:'??? [NAT]'};}
   return bots;
 }
 
@@ -4135,68 +4149,17 @@ async function fetchVs100Questions(){
     const _q=sb.from('quiz_questions').select('id,question,correct_answer,wrong_answers').limit(300);
     const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000));
     const{data}=await Promise.race([_q,_t]);
-    if(data&&data.length>=10){
-      const shuffled=data.sort(()=>Math.random()-.5).slice(0,10);
-      return shuffled.map(q=>{
-        const allAns=[q.correct_answer,...(q.wrong_answers||[])].filter(Boolean).sort(()=>Math.random()-.5);
+    if(data){
+      const r=data.map(q=>{
+        const allAns=[q.correct_answer,...(q.wrong_answers||[])].sort(()=>Math.random()-.5);
         if(allAns.length<2)return null;
         return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer)};
       }).filter(Boolean);
+      if(r.length>=10)return r;
     }
   }catch(e){console.error('fetchVs100',e);}
-  return FALLBACK_VS100;
+  return null;
 }
-
-function getOrCreateVs100Screen(){
-  let sc=document.getElementById('screen-vs100');
-  if(!sc){
-    sc=document.createElement('div');
-    sc.id='screen-vs100';sc.className='screen';
-    const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);
-    ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);
-  }
-  return sc;
-}
-
-function show1vs100Lobby(){
-  const sc=getOrCreateVs100Screen();
-  let previewDots='';
-  BOT_RANKS_DEF.forEach(tier=>{
-    for(let i=0;i<tier.count;i++){
-      previewDots+=`<div class="vs100-dot" style="background:${tier.color};box-shadow:0 0 5px ${tier.color}55;"></div>`;
-    }
-  });
-  sc.innerHTML=`
-<div class="vs100-lobby">
-  <div class="vs100-lobby-header">
-    <button class="vs100-back-btn" onclick="showHub()">← Retour</button>
-    <div class="vs100-logo-wrap">
-      <div class="vs100-logo-1">1</div>
-      <div class="vs100-logo-vs">CONTRE</div>
-      <div class="vs100-logo-100">100</div>
-    </div>
-    <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
-  </div>
-  <div class="vs100-rules-grid">
-    <div class="vs100-rule"><span>❓</span><span>10 questions · 4 choix</span></div>
-    <div class="vs100-rule"><span>🤖</span><span>100 bots rangs E → S</span></div>
-    <div class="vs100-rule"><span>⏱</span><span>20 secondes par question</span></div>
-    <div class="vs100-rule"><span>💀</span><span>1 erreur = fin de partie</span></div>
-    <div class="vs100-rule"><span>🏆</span><span>Tous éliminés = +500 XP</span></div>
-    <div class="vs100-rule"><span>📈</span><span>Les forts survivent plus longtemps</span></div>
-  </div>
-  <div class="vs100-preview-wrap">
-    <div class="vs100-preview-label">LES 100 CHALLENGERS</div>
-    <div class="vs100-preview-grid">${previewDots}</div>
-    <div class="vs100-preview-legend">
-      ${BOT_RANKS_DEF.map(t=>`<span class="vs100-leg-dot" style="background:${t.color};"></span><span class="vs100-leg-lbl">${t.id} (${t.count})</span>`).join('')}
-    </div>
-  </div>
-  <button class="vs100-launch-btn" id="vs100-launch-btn" onclick="start1vs100()">⚡ LANCER LA PARTIE</button>
-</div>`;
-  show('screen-vs100');updateNav('');
-}
-
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
@@ -4204,48 +4167,6 @@ async function start1vs100(){
   const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
   renderVs100Question();
-}
-
-function renderVs100Question(){
-  const s=vs100State;
-  if(!s)return;
-  if(s.currentQ>=s.questions.length){endVs100Victory();return;}
-  const q=s.questions[s.currentQ];
-  const alive=s.bots.filter(b=>!b.eliminated).length;
-  const sc=getOrCreateVs100Screen();
-
-  const botWall=s.bots.map(b=>`<div class="vs100-wall-dot ${b.eliminated?'vs100-dot-dead':''}" id="wbot-${b.id}" style="${b.eliminated?'':'background:'+b.color+'44;border-color:'+b.color+'55;'}" title="${b.name} [${b.rank}]"></div>`).join('');
-
-  sc.innerHTML=`
-<div class="vs100-arena">
-  <div class="vs100-arena-top">
-    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
-    <div class="vs100-arena-info">
-      <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
-      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
-    </div>
-    <div class="vs100-timer-ring" id="vs100-timer">20</div>
-  </div>
-  <div class="vs100-wall" id="vs100-wall">${botWall}</div>
-  <div class="vs100-question-box">
-    <div class="vs100-q-text">${q.question}</div>
-    <div class="vs100-answers-grid" id="vs100-answers">
-      ${q.answers.map((a,i)=>`<button class="vs100-ans-btn" id="vs100-ans-${i}" onclick="pickVs100Answer(${i})">${a}</button>`).join('')}
-    </div>
-  </div>
-</div>`;
-
-  let timeLeft=20;
-  if(s._timer)clearInterval(s._timer);
-  s._timer=setInterval(()=>{
-    timeLeft--;
-    const el=document.getElementById('vs100-timer');
-    if(el){
-      el.textContent=timeLeft;
-      if(timeLeft<=5)el.classList.add('vs100-timer-danger');
-    }
-    if(timeLeft<=0){clearInterval(s._timer);s._timer=null;pickVs100Answer(-1);}
-  },1000);
 }
 
 async function pickVs100Answer(chosen){
@@ -4273,6 +4194,18 @@ async function pickVs100Answer(chosen){
   // Animate bot eliminations
   await vs100AnimateElim(eliminated);
 
+  // Show explanation
+  const expl = q.explanation||'';
+  if(expl){
+    const qBox=document.querySelector('.vs100-question-box');
+    if(qBox){
+      const explDiv=document.createElement('div');
+      explDiv.className='vs100-expl';
+      explDiv.innerHTML='💡 '+expl;
+      qBox.appendChild(explDiv);
+    }
+  }
+
   // Update alive counter
   const aliveEl=document.getElementById('vs100-alive-count');
   if(aliveEl)aliveEl.textContent=s.botsAlive;
@@ -4287,6 +4220,7 @@ async function pickVs100Answer(chosen){
   if(s.botsAlive===0){await vs100Delay(400);endVs100Victory();return;}
 
   // Show inter-question panel
+  await new Promise(res=>{const btn=document.createElement('button');btn.className='sl-btn vs100-continue-btn';btn.textContent='Continuer →';btn.onclick=()=>{btn.remove();res();};const qb=document.getElementById('vs100-qbox');if(qb)qb.appendChild(btn);else res();});
   vs100ShowInterlude(eliminated.length,s.botsAlive,s.currentQ);
 }
 
@@ -4315,4 +4249,64 @@ function vs100ShowInterlude(elimCount,botsLeft,nextQ){
   panel.className='vs100-interlude';
   panel.innerHTML=`
     <div class="vs100-interlude-box">
-      <div class="vs100-interlude-elim">💀 <strong>${elimCount}</strong> challenger${elimCount>1?'s':''} éliminé${elimCoun
+      <div class="vs100-interlude-elim">💀 <strong>${elimCount}</strong> challenger${elimCount>1?'s':''} éliminé${elimCount>1?'s':''}</div>
+      <div class="vs100-interlude-remain">
+        <span class="vs100-interlude-count">${botsLeft}</span>
+        <span class="vs100-interlude-lbl">challenger${botsLeft>1?'s':''} encore debout</span>
+      </div>
+      <div class="vs100-interlude-next">Question ${nextQ}</div>
+      <button class="vs100-continue-btn" onclick="this.closest('.vs100-interlude').remove();renderVs100Question();">Continuer ▶</button>
+    </div>`;
+  sc.appendChild(panel);
+  requestAnimationFrame(()=>panel.classList.add('vs100-interlude-show'));
+}
+
+function endVs100Defeat(q,chosen){
+  const sc=getOrCreateVs100Screen();
+  const s=vs100State;
+  const correct=q.answers[q.correctIdx];
+  const picked=chosen>=0?q.answers[chosen]:'⏱ Temps écoulé';
+  sc.innerHTML=`
+<div class="vs100-defeat">
+  <div class="vs100-defeat-skull">💀</div>
+  <div class="vs100-defeat-title">ÉLIMINÉ</div>
+  <div class="vs100-defeat-msg">Les challengers ont eu raison de toi !</div>
+  <div class="vs100-defeat-card">
+    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ-1}</span></div>
+    <div class="vs100-dc-row"><span>Ta réponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
+    <div class="vs100-dc-row"><span>Bonne réponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
+    <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
+  </div>
+  <div class="vs100-defeat-btns">
+    <button class="vs100-retry-btn" onclick="show1vs100Lobby()">🔄 Réessayer</button>
+    <button class="vs100-home-btn" onclick="showHub()">← Accueil</button>
+  </div>
+</div>`;
+}
+
+
+async function endVs100Victory(){
+  const xpGain=500;
+  if(currentUser)await awardXP(xpGain,'1 Contre 100 — Victoire !');
+  const sc=getOrCreateVs100Screen();
+  const s=vs100State;
+  const totalQ=s?s.questions.length:10;
+  const pArr=[];
+  for(let i=0;i<20;i++){pArr.push('<div class="vs100-vp" style="--vi:'+i+';"></div>');}
+  const particles=pArr.join('');
+  sc.innerHTML=
+'<div class="vs100-victory">'+
+  particles+
+  '<div class="vs100-victory-inner">'+
+    '<div class="vs100-victory-trophy">🏆</div>'+
+    '<div class="vs100-victory-title">VICTOIRE !</div>'+
+    '<div class="vs100-victory-sub">Tu as éliminé les 100 challengers !</div>'+
+    '<div class="vs100-victory-card">'+
+      '<div class="vs100-vc-row"><span>Réponses parfaites</span><span style="color:#fbbf24;">'+totalQ+' / '+totalQ+'</span></div>'+
+      '<div class="vs100-vc-row"><span>Bots éliminés</span><span style="color:#34d399;">100 / 100</span></div>'+
+      '<div class="vs100-vc-row"><span>XP remporté</span><span style="color:#a855f7;">+'+xpGain+' XP</span></div>'+
+    '</div>'+
+    '<button class="vs100-back-gold" onclick="showHub()">← Retour au Système</button>'+
+   '</div>'+
+'</div>';
+}
