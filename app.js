@@ -665,7 +665,7 @@ async function showHub(){
       </div>
 
       <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
-          <div id="hub-mystery-wrap" style="margin-top:.5rem;"></div>
+          
     </div>
     <div class="sl-hub-right">
 
@@ -680,6 +680,11 @@ async function showHub(){
         ${gateHTML(gateQuiz)}
       </div>
 
+      <div class="sl-section-header" style="margin-top:1rem;">
+        <span class="sl-section-icon">🕵</span>
+        <span>DÉFI DE LA SEMAINE</span>
+      </div>
+      <div id="hub-mystery-wrap"></div>
       <div class="sl-section-header sl-section-locked">
         <span class="sl-section-icon">🔒</span>
         <span>PORTAILS FERMÉS</span>
