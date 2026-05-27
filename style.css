@@ -683,7 +683,7 @@ main{padding-bottom:5.5rem;}
 .streak-badge:hover{transform:scale(1.06);}
 .streak-badge .streak-fire{font-size:.9rem;animation:fire-pulse 1.2s ease-in-out infinite;}
 @keyframes fire-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
-.streak-badge .streak-num{font-size:.8rem;}
+.streak-badge .streak-num{font-size:.85rem;font-weight:800;color:#fff;}
 .streak-badge .streak-lbl{opacity:.85;font-size:.6rem;}
 
 /* Streak milestone pop */
