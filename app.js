@@ -4243,12 +4243,7 @@ function getOrCreateVs100Screen(){
     sc=document.createElement('div');
     sc.id='screen-vs100';sc.className='screen';
     // Insert before footer so screen appears above nav bar
-    const footer=document.getElementById('chat-footer')||document.querySelector('footer,nav');
     (document.querySelector('main')||document.body).appendChild(sc);
-    else{
-      const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);
-      ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);
-    }
   }
   return sc;
 }
