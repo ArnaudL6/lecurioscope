@@ -654,8 +654,7 @@ async function showHub(){
             <span class="sl-arena-tag">S-RANG</span>
             <span class="sl-arena-xp">+500 XP</span>
           </div>
-      <div id="hub-mystery-wrap" style="margin-top:1rem;"></div>
-          <div class="sl-arena-gate-bd">
+                <div class="sl-arena-gate-bd">
             <span class="sl-arena-ico">⚡</span>
             <div>
               <div class="sl-arena-name">1 CONTRE 100</div>
@@ -665,9 +664,9 @@ async function showHub(){
           <div class="sl-arena-enter">▶ ENTRER DANS L'ARÈNE</div>
         </div>
       </div>
+      <div id="hub-mystery-wrap" style="margin-top:1rem;"></div>
 
-      <div class="sl-section-header" style="margin-top:1.2rem;"><span class="sl-section-icon">🏆</span><span>DÉFI DE LA SEMAINE</span></div>
-          
+               
     </div>
     <div class="sl-hub-right">
 
