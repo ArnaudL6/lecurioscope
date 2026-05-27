@@ -2925,6 +2925,200 @@ function openBingo(){
 }
 function closeBingo(){document.getElementById('bingo-bd').classList.remove('on');}
 
+// ── Community challenge ──────────────────────────────────────────────────────
+async function buildCommunityChallenge(el){
+  if(!el)return;
+  // Semaine en cours (lundi)
+  const now=new Date();
+  const dow=(now.getDay()+6)%7;
+  const mon=new Date(now);mon.setDate(now.getDate()-dow);mon.setHours(0,0,0,0);
+  const ws=mon.toISOString().slice(0,10);
+
+  const{data:ch}=await sb.from('community_challenges').select('*').eq('week_start',ws).maybeSingle();
+  if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">🎯</span><p style="color:var(--ink3);font-size:.8rem">Défi de la semaine bientôt disponible !</p></div>';return;}
+
+  let userResp=null;
+  if(currentUser){
+    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',currentUser.id).eq('challenge_id',ch.id).maybeSingle();
+    userResp=r;
+  }
+
+  // Compter les réponses globales
+  const{data:allResps}=await sb.from('challenge_responses').select('answer,correct').eq('challenge_id',ch.id);
+  const total=(allResps||[]).length;
+  const nbOk=(allResps||[]).filter(r=>r.correct).length;
+  const pctOk=total?Math.round(nbOk/total*100):0;
+
+  const opts=(ch.options||[]);
+  const answered=!!userResp;
+
+  const optHtml=opts.map((o,i)=>{
+    let cls='challenge-opt';
+    if(answered){
+      if(i===ch.answer)cls+=' reveal-ok';
+      if(userResp&&userResp.answer===i){cls+=(i===ch.answer?' ok':' err');}
+    }
+    return '<button class="'+cls+'" '+(answered?'disabled':'')+' onclick="answerChallenge(\''+ch.id+'\','+i+','+ch.answer+')">'+
+      '<span style="font-weight:700;color:var(--ink3);margin-right:.4rem">'+String.fromCharCode(65+i)+'.</span>'+o+'</button>';
+  }).join('');
+
+  let bottomHtml='';
+  if(answered){
+    const ok=userResp.correct;
+    bottomHtml='<div class="challenge-result"><span>'+(ok?'✅':'❌')+'</span><span>'+(ok?'Bonne réponse ! Bien joué 🎉':'Raté ! La bonne réponse est <strong>'+opts[ch.answer]+'</strong>')+'</span></div>'+
+      (ch.explanation?'<div class="challenge-expl">📖 '+ch.explanation+'</div>':'')+
+      '<div class="challenge-score-bar"><div class="challenge-score-fill" style="width:'+pctOk+'%"></div></div>'+
+      '<div class="challenge-stats">'+nbOk+' / '+total+' joueurs ont trouvé ('+pctOk+'%)</div>';
+  }else if(!currentUser){
+    bottomHtml='<div style="margin-top:.75rem;text-align:center"><button class="btn-main" style="font-size:.75rem;padding:.5rem 1.25rem" onclick="show(\'screen-login\')">Se connecter pour jouer</button></div>';
+  }
+
+  el.innerHTML='<div class="challenge-card">'+
+    '<div class="challenge-week">'+ch.icon+' Défi de la semaine</div>'+
+    '<div class="challenge-q">'+ch.question+'</div>'+
+    '<div class="challenge-opts">'+optHtml+'</div>'+
+    bottomHtml+'</div>';
+}
+
+async function answerChallenge(challengeId,answer,correct_answer){
+  if(!currentUser){showToast('⚠️ Connecte-toi pour jouer !');return;}
+  const correct=(answer===correct_answer);
+  const{error}=await sb.from('challenge_responses').upsert({user_id:currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
+  if(error){showToast('Erreur : '+error.message);return;}
+  if(correct)showToast('🎉 Bonne réponse !');else showToast('❌ Raté ! Retente la semaine prochaine.');
+  // Bingo: marquer "défi communautaire fait"
+  completeBingoCell(14);
+  // Recharger le challenge pour afficher résultats
+  const el=document.querySelector('.challenge-card')?.parentElement;
+  if(el)buildCommunityChallenge(el);
+}
+
+// ── Bingo de l'été ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+const BINGO_START=new Date('2026-06-21');
+const BINGO_END  =new Date('2026-09-21T23:59:59');
+const BINGO_CELLS=[
+  {id:0, e:'📖', t:'Lis ta première anecdote'},
+  {id:1, e:'⭐', t:'Fais un quiz à 100%'},
+  {id:2, e:'🏆', t:'Joue en Ligue'},
+  {id:3, e:'👥', t:'Ajoute un ami'},
+  {id:4, e:'📚', t:'Lis 5 anecdotes'},
+  {id:5, e:'💬', t:'Commente une anecdote'},
+  {id:6, e:'🔬', t:'Lis une anecdote Science'},
+  {id:7, e:'🏛️', t:"Lis une anecdote Histoire"},
+  {id:8, e:'🎨', t:"Lis une anecdote Art"},
+  {id:9, e:'🔥', t:'3 jours de suite'},
+  {id:10,e:'📤', t:"Partage une anecdote"},
+  {id:11,e:'🎖️', t:"Obtiens un badge"},
+  {id:12,e:'🚀', t:"Lis une anecdote Espace"},
+  {id:13,e:'🍽️', t:"Lis une anecdote Gastro"},
+  {id:14,e:'🎯', t:"Fais le défi communautaire"},
+  {id:15,e:'🧠', t:"Fais un quiz"},
+  {id:16,e:'📖', t:"Lis 10 anecdotes"},
+  {id:17,e:'⚡', t:"Lis une anecdote Sport"},
+  {id:18,e:'✨', t:"Case libre !", free:true},
+  {id:19,e:'🌟', t:"Note une anecdote"},
+  {id:20,e:'🔥', t:"7 jours de suite"},
+  {id:21,e:'🤔', t:"Lis une anecdote Insolite"},
+  {id:22,e:'🎮', t:"Joue une partie privée"},
+  {id:23,e:'📅', t:"Lis 20 anecdotes"},
+  {id:24,e:'🏆', t:"Lis 30 anecdotes"},
+];
+
+// bingoCompleted declared at top
+
+function isEte(){const n=new Date();return n>=BINGO_START&&n<=BINGO_END;}
+
+async function loadBingo(){
+  if(!currentUser)return;
+  // Case libre (18) toujours cochée
+  completeBingoCell(18,false);
+  const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',currentUser.id).maybeSingle();
+  if(data&&data.cells){data.cells.forEach(c=>bingoCompleted.add(c));}
+  // Auto-check depuis les données
+  await autocheckBingo();
+  updateBingoFab();
+}
+
+async function autocheckBingo(){
+  if(!currentUser)return;
+  const[{data:reads},{data:qhist},{data:friends},{data:lgScores},{data:ratings},{data:themeReads}]=await Promise.all([
+    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
+    sb.from('quiz_history').select('pct').eq('user_id',currentUser.id),
+    sb.from('friendships').select('id',{count:'exact',head:true}).or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
+    sb.from('league_scores').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
+    sb.from('ratings').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
+    sb.from('reads').select('anecdotes(theme)').eq('user_id',currentUser.id).limit(200),
+  ]);
+  const rc=reads?.length||0;
+  const qlist=qhist||[];
+  const fc=friends?.length||0;
+  const lc=lgScores?.length||0;
+  const ratc=ratings?.length||0;
+  const themes=(themeReads||[]).map(r=>r.anecdotes?.theme||'').map(t=>t.toLowerCase());
+
+  const checks={
+    0:rc>=1, 1:qlist.some(q=>q.pct===100), 2:lc>=1, 3:fc>=1, 4:rc>=5,
+    6:themes.some(t=>t.includes('science')), 7:themes.some(t=>t.includes('histoire')||t.includes('histor')),
+    8:themes.some(t=>t.includes('art')), 9:userStreak>=3,
+    10:localStorage.getItem('bingo_shared')==='1',
+    12:themes.some(t=>t.includes('espace')), 13:themes.some(t=>t.includes('food')||t.includes('gastro')),
+    15:qlist.length>=1, 16:rc>=10, 17:themes.some(t=>t.includes('sport')),
+    19:ratc>=1, 20:userStreak>=7, 21:themes.some(t=>t.includes('insolite')),
+    22:localStorage.getItem('bingo_multi')==='1',
+    23:rc>=20, 24:rc>=30,
+  };
+  const prev=bingoCompleted.size;
+  Object.entries(checks).forEach(([id,ok])=>{if(ok)bingoCompleted.add(Number(id));});
+  bingoCompleted.add(18); // case libre
+  if(bingoCompleted.size!==prev)saveBingo();
+}
+
+function completeBingoCell(id,save=true){
+  if(bingoCompleted.has(id))return;
+  bingoCompleted.add(id);
+  updateBingoFab();
+  if(save)saveBingo();
+  // Re-render grid if modal open
+  if(document.getElementById('bingo-bd').classList.contains('on'))renderBingoGrid();
+}
+
+async function saveBingo(){
+  if(!currentUser)return;
+  const cells=[...bingoCompleted];
+  await sb.from('bingo_progress').upsert({user_id:currentUser.id,cells,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+}
+
+function updateBingoFab(){
+  const n=bingoCompleted.size;
+  const badge=document.getElementById('bingo-fab-badge');
+  if(badge)badge.textContent=n+'/25';
+  const prog=document.getElementById('bingo-prog-fill');
+  if(prog)prog.style.width=(n/25*100)+'%';
+  const ptxt=document.getElementById('bingo-prog-txt');
+  if(ptxt)ptxt.textContent=n+' / 25 cases cochées';
+}
+
+function renderBingoGrid(){
+  const grid=document.getElementById('bingo-grid');
+  if(!grid)return;
+  grid.innerHTML=BINGO_CELLS.map(c=>{
+    const done=bingoCompleted.has(c.id);
+    return '<div class="bingo-cell'+(done?' done':'')+(c.free?' free':'')+'">'+
+      (done?'<div class="bingo-check">✓</div>':'')+
+      '<div class="bingo-cell-emoji">'+c.e+'</div>'+
+      '<div class="bingo-cell-txt">'+c.t+'</div>'+
+    '</div>';
+  }).join('');
+  updateBingoFab();
+}
+
+function openBingo(){
+  if(!isEte()){showToast('🌞 Le bingo commence le 21 juin !');return;}
+  renderBingoGrid();
+  document.getElementById('bingo-bd').classList.add('on');
+}
+function closeBingo(){document.getElementById('bingo-bd').classList.remove('on');}
+
 // ── XP pop animation ─────────────────────────────────────────────────────────
 function popXP(amount,anchorEl){
   const pop=document.createElement('div');
