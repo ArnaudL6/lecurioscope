@@ -4510,3 +4510,5 @@ async function endVs100Victory(){
    '</div>'+
 '</div>';
 }
+
+// deploy trigger
