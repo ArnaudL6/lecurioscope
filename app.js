@@ -4377,7 +4377,7 @@ function endVs100Defeat(q,chosen){
   <div class="vs100-defeat-title">ÉLIMINÉ</div>
   <div class="vs100-defeat-msg">Les challengers ont eu raison de toi !</div>
   <div class="vs100-defeat-card">
-    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ-1}</span></div>
+    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ}</span></div>
     <div class="vs100-dc-row"><span>Ta réponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
     <div class="vs100-dc-row"><span>Bonne réponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
     <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
