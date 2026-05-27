@@ -756,10 +756,15 @@ async function showMysteryDetail(){
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actNames=['I','II','III','IV','V'];
   const unlockedCount=Math.min(dow+1,5);
-  const actsHtml=(mystery.story_days||[]).slice(0,unlockedCount).map((day,i)=>{
+  const allActs=(mystery.story_days||[]);
+  const actsHtml=actNames.map((name,i)=>{
     const actDate=new Date(mon);actDate.setDate(mon.getDate()+i);
     const dateStr=actDate.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
-    return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${actNames[i]}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${day}</div></div>`;
+    if(i<unlockedCount&&allActs[i]){
+      return`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${name}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body">${allActs[i]}</div></div>`;
+    }else{
+      return`<div class="wm-act wm-act-locked"><div class="wm-act-hd"><span class="wm-act-num">ACTE ${name}</span><span class="wm-act-date">${days[i]} ${dateStr}</span></div><div class="wm-act-body wm-act-soon">🔒 Disponible ${days[i]}</div></div>`;
+    }
   }).join('');
   let guessHtml='';
   if(!currentUser){
@@ -771,12 +776,13 @@ async function showMysteryDetail(){
     guessHtml=`<div class="wm-guess-form"><div class="wm-guess-title">ð Ton accusation du jour</div><input class="wm-guess-input" id="wm-culprit-input" placeholder="Qui est le coupable ?" maxlength="80"/><button class="wm-guess-btn" onclick="submitMysteryGuess('${mystery.id}','${mystery.culprit}')">Soumettre â</button></div>`;
   }
   const lbRows=(guesses||[]).map((g,i)=>{
-    const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${g.pseudo||'?'}[0].toUpperCase()}</div>`;
+    const name=g.username||'Anonyme';
+    const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${name[0].toUpperCase()}</div>`;
     const d=new Date(g.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${g.pseudo||'Anonyme'}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
+    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
   }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
-  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';document.body.appendChild(sc);}
+  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);}
   window._mysteryShareText=`ðµï¸ DÃ©fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\nâ² https://lecurioscope.fr`;
   sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">â Hub</button><div class="mystery-hd-title">ðµï¸ ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">â Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">ð Classement des enquÃªteurs</div>${lbRows}</div></div>`;
   show('screen-mystery');updateNav('');
