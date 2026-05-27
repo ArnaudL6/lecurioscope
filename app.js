@@ -783,7 +783,7 @@ async function showMysteryDetail(){
     return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">â</span>':''}<span class="wm-lb-date">${d}</span></div>`;
   }).join('')||'<div class="wm-lb-empty">Aucune dÃ©duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
-  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):(window._mfx=document.querySelector('body>footer,body>nav,body>bottom-nav'))?window._mfx.parentNode.insertBefore(sc,window._mfx):document.body.appendChild(sc);}
+  if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):(document.querySelector('main')||document.body).appendChild(sc);}
   window._mysteryShareText=`\uD83D\uDD75\uFE0F D\u00E9fi de la semaine sur lecurioscope.fr\n"${mystery.title}"\nSauras-tu trouver le coupable ?\n\u2192 https://lecurioscope.fr`;
   sc.innerHTML=`<div class="mystery-detail"><div class="mystery-hd"><button class="btn-back" onclick="showHub()">\u2190 Hub</button><div class="mystery-hd-title">\uD83D\uDD75\uFE0F ${mystery.title}</div><button class="wm-share-btn" onclick="shareMystery()">\u2197 Partager</button></div><div class="mystery-acts">${actsHtml}</div>${guessHtml}<div class="wm-lb"><div class="wm-lb-title">\uD83D\uDCCA Classement des enqu\u00EAteurs</div>${lbRows}</div></div>`;
   show('screen-mystery');updateNav('');
@@ -4244,7 +4244,7 @@ function getOrCreateVs100Screen(){
     sc.id='screen-vs100';sc.className='screen';
     // Insert before footer so screen appears above nav bar
     const footer=document.getElementById('chat-footer')||document.querySelector('footer,nav');
-    if(footer)footer.parentNode.insertBefore(sc,footer);
+    (document.querySelector('main')||document.body).appendChild(sc);
     else{
       const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);
       ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);
