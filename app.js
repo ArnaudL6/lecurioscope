@@ -758,12 +758,13 @@ async function showMysteryDetail(){
     const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',currentUser.id).eq('mystery_id',mystery.id).eq('guess_date',todayDate).maybeSingle();
     todayGuess=g;
   }
-  const{data:guesses}=await sb.from('mystery_guesses_lb').select('*').eq('mystery_id',mystery.id).order('is_correct',{ascending:false}).order('created_at',{ascending:true});
+  const{data:guesses}=await sb.from('mystery_guesses_lb').select('*').eq('mystery_id',mystery.id).eq('is_correct',true).order('created_at',{ascending:true});
   const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
   const actNames=['I','II','III','IV','V'];
   const unlockedCount=Math.min(dow+1,5);
   const allActs=(mystery.story_days||[]);
-  const actsHtml=actNames.map((name,i)=>{
+  const introCard=`<div class="wm-act wm-act-open"><div class="wm-act-hd"><span class="wm-act-label">INTRO</span></div><div class="wm-act-body"><p style="color:rgba(255,255,255,.8);line-height:1.6;margin:0 0 .75rem">${mystery.title}</p><p style="color:rgba(255,255,255,.6);font-size:.85rem;line-height:1.5;margin:0">Chaque jour, un nouvel acte révèle un indice. Analysez les indices et soumettez votre déduction — une seule tentative par jour. Qui est le responsable ?</p></div></div>`;
+  const actsHtml=introCard+actNames.map((name,i)=>{
     const actDate=new Date(mon);actDate.setDate(mon.getDate()+i);
     const dateStr=actDate.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
     if(i<unlockedCount&&allActs[i]){
@@ -785,7 +786,7 @@ async function showMysteryDetail(){
     const name=g.username||'Anonyme';
     const av=g.avatar_url?`<img src="${g.avatar_url}" class="wm-lb-av">`:`<div class="wm-lb-av-ph">${name[0].toUpperCase()}</div>`;
     const d=new Date(g.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-ans">${g.culprit}</span>${g.is_correct?'<span class="wm-lb-check">\u2705</span>':''}<span class="wm-lb-date">${d}</span></div>`;
+    return`<div class="wm-lb-row${g.is_correct?' wm-lb-ok':''}"><span class="wm-lb-rank">#${i+1}</span>${av}<span class="wm-lb-name">${name}</span><span class="wm-lb-date">${d}</span></div>`;
   }).join('')||'<div class="wm-lb-empty">Aucune d\u00E9duction pour le moment.</div>';
   let sc=document.getElementById('screen-mystery');
   if(!sc){sc=document.createElement('div');sc.id='screen-mystery';sc.className='screen';const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);ref?document.body.insertBefore(sc,ref):(document.querySelector('main')||document.body).appendChild(sc);}
