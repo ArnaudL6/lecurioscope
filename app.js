@@ -4211,17 +4211,12 @@ function generateVs100Bots(){
 
 async function fetchVs100Questions(){
   try{
-    const _q=sb.from('quiz_questions').select('id,question,correct_answer,wrong_answers').limit(300);
-    const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000));
-    const{data}=await Promise.race([_q,_t]);
-    if(data){
-      const r=data.map(q=>{
-        const allAns=[q.correct_answer,...(q.wrong_answers||[])].sort(()=>Math.random()-.5);
-        if(allAns.length<2)return null;
-        return{question:q.question,answers:allAns,correctIdx:allAns.indexOf(q.correct_answer)};
-      }).filter(Boolean);
-      if(r.length>=10)return r;
-    }
+    const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+    const uid=currentUser?.id||null;
+    const _q=sb.rpc('get_random_questions',{n:50,p_user_id:uid});
+    const{data,error}=await Promise.race([_q,_t]);
+    if(error||!data||data.length<10){console.error('fetchVs100',error);return null;}
+    return data.sort(()=>Math.random()-.5).slice(0,10).map(q=>({question:q.question,answers:q.options,correctIdx:q.answer}));
   }catch(e){console.error('fetchVs100',e);}
   return null;
 }
@@ -4273,11 +4268,12 @@ async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
   const questions=await fetchVs100Questions();
+  if(!questions){if(btn){btn.textContent='Lancer';btn.disabled=false;}return;}
   const bots=generateVs100Bots();
   vs100State={questions,bots,currentQ:0,playerEliminated:false,botsAlive:100,_timer:null};
+  getOrCreateVs100Screen();
   show('screen-vs100');updateNav('');renderVs100Question();
 }
-
 async function pickVs100Answer(chosen){
   const s=vs100State;
   if(!s)return;
