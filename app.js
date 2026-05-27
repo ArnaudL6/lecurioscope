@@ -4176,7 +4176,7 @@ const FALLBACK_VS100=[
 function generateVs100Bots(){
   // Fourchettes de rangs (du plus haut au plus bas)
   const TIERS=[
-    {id:'S',minPct:1, maxPct:4, minRate:0.90,maxRate:0.97,color:'#a855f7'},
+    {id:'S',minPct:1, maxPct:4, minRate:0.88,maxRate:0.93,color:'#a855f7'},
     {id:'A',minPct:2, maxPct:7, minRate:0.82,maxRate:0.92,color:'#f97316'},
     {id:'B',minPct:5, maxPct:12,minRate:0.72,maxRate:0.85,color:'#fbbf24'},
     {id:'C',minPct:12,maxPct:25,minRate:0.60,maxRate:0.75,color:'#34d399'},
@@ -4210,7 +4210,7 @@ function generateVs100Bots(){
     }
   }
   // Nation : 0.5% de chance qu'un bot soit promu (difficile mais pas imbattable)
-  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'Nation',color:'#ff007f',successRate:0.80};}
+  if(Math.random()<0.005){const ri=Math.floor(Math.random()*bots.length);bots[ri]={...bots[ri],rank:'Nation',color:'#ff007f',successRate:0.90+Math.random()*0.07};}
   return bots;
 }
 
