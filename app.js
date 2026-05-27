@@ -4241,6 +4241,22 @@ function show1vs100Lobby(){
   show('screen-vs100');updateNav('');
 }
 
+function getOrCreateVs100Screen(){
+  let sc=document.getElementById('screen-vs100');
+  if(!sc){
+    sc=document.createElement('div');
+    sc.id='screen-vs100';sc.className='screen';
+    // Insert before footer so screen appears above nav bar
+    const footer=document.getElementById('chat-footer')||document.querySelector('footer,nav');
+    if(footer)document.body.insertBefore(sc,footer);
+    else{
+      const ref=[...document.querySelectorAll('.screen')].find(el=>el.parentNode===document.body);
+      ref?document.body.insertBefore(sc,ref):document.body.appendChild(sc);
+    }
+  }
+  return sc;
+}
+
 async function start1vs100(){
   const btn=document.getElementById('vs100-launch-btn');
   if(btn){btn.textContent='⏳ Préparation...';btn.disabled=true;}
