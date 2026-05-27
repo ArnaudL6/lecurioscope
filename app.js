@@ -4213,7 +4213,7 @@ async function fetchVs100Questions(){
   try{
     const _t=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
     const uid=currentUser?.id||null;
-    const _q=sb.rpc('get_random_questions',{n:50,p_user_id:uid});
+    const _q=sb.rpc('get_random_questions',{n:50,p_user_id:null});
     const{data,error}=await Promise.race([_q,_t]);
     if(error||!data||data.length<10){console.error('fetchVs100',error);return null;}
     return data.sort(()=>Math.random()-.5).slice(0,10).map(q=>({question:q.question,answers:q.options,correctIdx:q.answer}));
