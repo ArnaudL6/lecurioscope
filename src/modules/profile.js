@@ -1,4 +1,4 @@
-import { state, sb, show, escHtml, fmt, fmtShort, showToast, setBtn, today, RANKS, computeStreak } from '../shared.js';
+import { state, sb, show, escHtml, fmt, fmtShort, showToast, setBtn, today, RANKS } from '../shared.js';
 import { calcXP, calcLevel, calcSLXP, getRank, getNextRank, awardXP, checkAndAwardBadges } from './xp.js';
 import { _sendNotif } from './notifs.js';
 
@@ -90,7 +90,7 @@ export async function goProfile(){
     sb.from('daily_enigma_choice').select('chooser_id').eq('date',enigmaDate).eq('chooser_id',state.currentUser.id).maybeSingle()
   ]);
   const r=reads||[],q=qhist||[],a=allAnec||[];
-  const streak=computeStreak(r.map(x=>x.date));
+  const streak=state.userStreak;
   const avg=q.length?Math.round(q.reduce((acc,b)=>acc+b.pct,0)/q.length):0;
   const bestQuiz=q.length?Math.max(...q.map(x=>x.pct)):0;
 
