@@ -8,14 +8,36 @@ export function calcLevel(xp){
   return{lvl,next};
 }
 
-export function calcSLXP({reads=0,quizzes=[],enigmas=[],streak=0}
-
+export function calcSLXP({reads=0,quizzes=[],enigmas=[],streak=0}){
+  let xp=reads*50;
+  xp+=quizzes.length*80;
+  xp+=quizzes.filter(q=>q.pct===100).length*120;
+  xp+=quizzes.filter(q=>q.pct>=80&&q.pct<100).length*40;
+  xp+=enigmas.filter(e=>e.is_correct).length*150;
+  xp+=enigmas.filter(e=>!e.is_correct).length*20;
+  let mult=1;
+  if(streak>=100)mult=1.5;else if(streak>=30)mult=1.2;else if(streak>=7)mult=1.1;
+  return Math.round(xp*mult);
+}
 export function getRank(xp){let r=RANKS[0];for(let i=RANKS.length-1;i>=0;i--){if(xp>=RANKS[i].minXP){r=RANKS[i];break;}}return r;}
 
 export function getNextRank(xp){for(let i=0;i<RANKS.length;i++){if(xp<RANKS[i].minXP)return RANKS[i];}return null;}
 
-export function showSystemNotif({title='QuÃªte accomplie',xpGain=0,rank=null}
-
+export function showSystemNotif({title='QuÃªte accomplie',xpGain=0,rank=null}){
+  const old=document.getElementById('sl-notif');if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='sl-notif';el.className='sl-notif';
+  const r=rank||state.currentUserRank||RANKS[0];
+  el.innerHTML=`
+    <div class="sl-notif-inner" style="border-color:${r.color};box-shadow:${r.glow};">
+      <div class="sl-notif-top"><span class="sl-notif-icon">â¡</span><span class="sl-notif-label">QUÃTE ACCOMPLIE</span></div>
+      <div class="sl-notif-title">${title}</div>
+      <div class="sl-notif-xp" style="color:${r.color};">+${xpGain} XP</div>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('sl-notif-in'));
+  setTimeout(()=>{el.classList.remove('sl-notif-in');setTimeout(()=>el.remove(),400);},3200);
+}
 export function showLevelUp(newRank){
   const old=document.getElementById('sl-levelup');if(old)old.remove();
   const el=document.createElement('div');
