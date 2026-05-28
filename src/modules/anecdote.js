@@ -55,7 +55,7 @@ export async function pickTheme(){
   const lt=document.getElementById('load-title');if(lt)lt.textContent='G\u00e9n\u00e9ration en cours\u2026';
   show('screen-load');
   try{
-    const chooser=state.currentUser?currentUser.username:'Anonyme';
+    const chooser=state.currentUser?state.currentUser.username:'Anonyme';
     const res=await fetch(EDGE,{method:'POST',headers:{'Authorization':'Bearer '+SB_ANON,'apikey':SB_ANON,'Content-Type':'application/json'},body:JSON.stringify({themeId:state.selThemeId,chooser,date:today()})});
     if(!res.ok){
       const txt=await res.text();
@@ -77,17 +77,17 @@ export async function pickTheme(){
 
 export function showAnec(typewrite){
   if(!state.todayAnec)return;
-  const t=THEMES.find(x=>todayAnec.theme&&(todayAnec.theme===x.label||todayAnec.theme.toLowerCase().includes(x.id)))||THEMES[0];
+  const t=THEMES.find(x=>state.todayAnec.theme&&(state.todayAnec.theme===x.label||state.todayAnec.theme.toLowerCase().includes(x.id)))||THEMES[0];
   const idx=THEMES.indexOf(t);
   const card=document.getElementById('anec-num-card');if(card)card.setAttribute('data-num',String(idx+1).padStart(2,'0'));
-  const tag=document.getElementById('anec-tag');if(tag)tag.textContent=(todayAnec.icon||t.icon)+' '+(todayAnec.theme||t.label);
+  const tag=document.getElementById('anec-tag');if(tag)tag.textContent=(state.todayAnec.icon||t.icon)+' '+(state.todayAnec.theme||t.label);
   const jb=document.getElementById('jour-badge');if(jb)jb.textContent='Jour '+dayOfYear()+' / '+daysInYear();
-  const ch=document.getElementById('anec-chooser');if(ch)ch.textContent=todayAnec.chooser||'Communaut\u00e9';
-  const note=document.getElementById('anec-note');if(note)note.textContent=todayAnec.note||'';
+  const ch=document.getElementById('anec-chooser');if(ch)ch.textContent=state.todayAnec.chooser||'Communaut\u00e9';
+  const note=document.getElementById('anec-note');if(note)note.textContent=state.todayAnec.note||'';
   const jbar=document.getElementById('join-bar');if(jbar)jbar.classList.toggle('on',!state.currentUser);
   show('screen-anec');
   const bodyEl=document.getElementById('anec-body');if(!bodyEl)return;
-  const txt=todayAnec.anecdote||'';
+  const txt=state.todayAnec.anecdote||'';
   if(typewrite){
     bodyEl.innerHTML='';let i=0;
     const cur=document.createElement('span');cur.className='cursor';bodyEl.appendChild(cur);
@@ -98,8 +98,8 @@ export function showAnec(typewrite){
 
 export async function markRead(){
   if(!state.currentUser||!state.todayAnec)return;
-  const{data:existing}=await sb.from('reads').select('id').eq('user_id',currentUser.id).eq('anecdote_id',todayAnec.id).maybeSingle();
-  await sb.from('reads').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,date:today(),preview:todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
+  const{data:existing}=await sb.from('reads').select('id').eq('user_id',state.currentUser.id).eq('anecdote_id',state.todayAnec.id).maybeSingle();
+  await sb.from('reads').upsert({user_id:state.currentUser.id,anecdote_id:state.todayAnec.id,date:today(),preview:state.todayAnec.anecdote.slice(0,100)},{onConflict:'user_id,anecdote_id'});
   if(!existing){await awardXP(50,'Le Saviez-Vous ?');}
 }
 
@@ -128,11 +128,11 @@ export function initQuizArea(){
   area.style.display='none';area.innerHTML='';
   state.quizState=null;
   const btn=document.getElementById('btn-quiz-today');
-  if(btn)btn.style.display=state.todayQs&&todayQs.length?'':'none';
+  if(btn)btn.style.display=state.todayQs&&state.todayQs.length?'':'none';
 }
 
 export function triggerTodayQuiz(){
-  if(!state.todayQs||!todayQs.length)return;
+  if(!state.todayQs||!state.todayQs.length)return;
   const area=document.getElementById('quiz-solo-area');
   if(area){area.style.display='block';area.scrollIntoView({behavior:'smooth',block:'start'});}
   startQuizSolo();
@@ -147,9 +147,9 @@ export function selectQCount(btn,n){
 }
 
 export function startQuizSolo(){
-  if(!state.todayQs||!todayQs.length)return;
-  const count=Math.min(10,todayQs.length);
-  const qs=[...todayQs].sort(()=>Math.random()-.5).slice(0,Math.min(count,todayQs.length));
+  if(!state.todayQs||!state.todayQs.length)return;
+  const count=Math.min(10,state.todayQs.length);
+  const qs=[...todayQs].sort(()=>Math.random()-.5).slice(0,Math.min(count,state.todayQs.length));
   state.quizState={questions:qs,idx:0,score:0,active:true};renderQuizQ();
 }
 
@@ -161,20 +161,20 @@ export function renderQuizQ(){
 }
 
 export function answerQ(i){
-  const q=quizState.questions[quizState.idx];
+  const q=state.quizState.questions[state.quizState.idx];
   const opts=document.querySelectorAll('#quiz-solo-area .q-opt');opts.forEach(b=>b.disabled=true);
-  const ok=i===q.answer;if(ok)quizState.score++;
+  const ok=i===q.answer;if(ok)state.quizState.score++;
   opts[i].classList.add(ok?'ok':'err');if(!ok&&q.answer<opts.length)opts[q.answer].classList.add('ok');
   const fb=document.getElementById('q-fb');if(fb){fb.textContent=q.explanation||'';fb.className='q-fb on '+(ok?'ok':'err');}
   const btn=document.getElementById('btn-next');if(btn)btn.classList.add('on');
 }
 
-export function nextQ(){quizState.idx++;if(quizState.idx>=quizState.questions.length)finishQuizSolo();else renderQuizQ();}
+export function nextQ(){state.quizState.idx++;if(state.quizState.idx>=state.quizState.questions.length)finishQuizSolo();else renderQuizQ();}
 
 export async function finishQuizSolo(){
-  quizState.active=false;
-  const pct=Math.round(quizState.score/quizState.questions.length*100);
-  if(state.currentUser&&state.todayAnec)await sb.from('quiz_history').insert({user_id:currentUser.id,anecdote_id:todayAnec.id,score:quizState.score,total:quizState.questions.length,pct,date:today()});
+  state.quizState.active=false;
+  const pct=Math.round(state.quizState.score/state.quizState.questions.length*100);
+  if(state.currentUser&&state.todayAnec)await sb.from('quiz_history').insert({user_id:state.currentUser.id,anecdote_id:state.todayAnec.id,score:state.quizState.score,total:state.quizState.questions.length,pct,date:today()});
   const e=pct>=80?'ð':pct>=60?'\u2B50':'ðª',t=pct>=80?'Excellent !':pct>=60?'Bien jou\u00e9 !':'Continuez !',m=pct>=80?'Parfaite ma\u00eetrise !':pct>=60?'Solide ! Revenez demain.':'Chaque jour on apprend.';
   const area=document.getElementById('quiz-solo-area');if(area)area.innerHTML='<div class="q-result"><span class="qr-emoji">'+e+'</span><span class="qr-score">'+pct+'%</span><div class="qr-title">'+t+'</div><div class="qr-msg">'+m+'</div></div>';
 }
@@ -182,7 +182,7 @@ export async function finishQuizSolo(){
 export async function loadFavs(){
   if(!state.currentUser){document.getElementById('btn-fav')&&(document.getElementById('btn-fav').style.display='none');return;}
   document.getElementById('btn-fav')&&(document.getElementById('btn-fav').style.display='');
-  const{data}=await sb.from('favorites').select('anecdote_id').eq('user_id',currentUser.id);
+  const{data}=await sb.from('favorites').select('anecdote_id').eq('user_id',state.currentUser.id);
   _histFavs=new Set((data||[]).map(f=>String(f.anecdote_id)));
   updateFavBtn();
 }
@@ -200,10 +200,10 @@ export async function toggleFav(){
   if(!state.currentUser){showToast('Connectez-vous pour ajouter des favoris.');return;}
   const id=getAnecId(state.todayAnec);if(!id)return;
   if(_histFavs.has(id)){
-    await sb.from('favorites').delete().eq('user_id',currentUser.id).eq('anecdote_id',id);
+    await sb.from('favorites').delete().eq('user_id',state.currentUser.id).eq('anecdote_id',id);
     _histFavs.delete(id);showToast('RetirÃ© des favoris');
   }else{
-    await sb.from('favorites').insert({user_id:currentUser.id,anecdote_id:id});
+    await sb.from('favorites').insert({user_id:state.currentUser.id,anecdote_id:id});
     _histFavs.add(id);showToast('â¤ AjoutÃ© aux favoris !');
   }
   updateFavBtn();
@@ -215,8 +215,8 @@ export async function loadContexte(){
   if(!card)return;
 
   // Si le contexte est dÃ©jÃ  en cache dans state.todayAnec, on l'affiche direct
-  if(todayAnec.contexte){
-    _renderContexte(todayAnec.contexte, todayAnec.sources||[]);
+  if(state.todayAnec.contexte){
+    _renderContexte(state.todayAnec.contexte, state.todayAnec.sources||[]);
     return;
   }
 
@@ -230,13 +230,13 @@ export async function loadContexte(){
     const res=await fetch(EDGE,{
       method:'PATCH',
       headers:{'Content-Type':'application/json', 'apikey': SB_ANON},
-      body:JSON.stringify({id:todayAnec.id, anecdote:todayAnec.anecdote, theme:todayAnec.theme})
+      body:JSON.stringify({id:state.todayAnec.id, anecdote:state.todayAnec.anecdote, theme:state.todayAnec.theme})
     });
     if(!res.ok)throw new Error('status '+res.status);
     const json=await res.json();
     if(json.contexte){
-      todayAnec.contexte=json.contexte;
-      todayAnec.sources=json.sources||[];
+      state.todayAnec.contexte=json.contexte;
+      state.todayAnec.sources=json.sources||[];
       _renderContexte(json.contexte, json.sources||[]);
     }else{
       document.getElementById('contexte-txt').textContent='Contenu bientÃ´t disponible.';
@@ -265,9 +265,9 @@ export function toggleContexte(){
 
 export function shareAnec(){
   if(!state.todayAnec)return;
-  const theme=todayAnec.theme||'Anecdote';
-  const txt=todayAnec.anecdote||'';
-  document.getElementById('share-preview-theme').textContent=(todayAnec.icon||'')+'  '+theme;
+  const theme=state.todayAnec.theme||'Anecdote';
+  const txt=state.todayAnec.anecdote||'';
+  document.getElementById('share-preview-theme').textContent=(state.todayAnec.icon||'')+'  '+theme;
   document.getElementById('share-preview-txt').textContent=txt;
   document.getElementById('share-hint').textContent='';
   document.getElementById('share-bd').classList.add('on');
@@ -311,7 +311,7 @@ export async function loadReactions(){
   if(wrap)wrap.style.display='flex';
   try{
     const promises=[sb.from('reactions').select('reaction').eq('anecdote_id',anecId)];
-    if(state.currentUser)promises.push(sb.from('reactions').select('reaction').eq('user_id',currentUser.id).eq('anecdote_id',anecId).maybeSingle());
+    if(state.currentUser)promises.push(sb.from('reactions').select('reaction').eq('user_id',state.currentUser.id).eq('anecdote_id',anecId).maybeSingle());
     const results=await Promise.all(promises);
     const counts=results[0].data||[];
     const mine=state.currentUser?(results[1].data||null):null;
@@ -335,9 +335,9 @@ export async function setReaction(type){
   const isActive=btn?.classList.contains('active-'+type);
   try{
     if(isActive){
-      await sb.from('reactions').delete().eq('user_id',currentUser.id).eq('anecdote_id',anecId);
+      await sb.from('reactions').delete().eq('user_id',state.currentUser.id).eq('anecdote_id',anecId);
     }else{
-      await sb.from('reactions').upsert({user_id:currentUser.id,anecdote_id:anecId,reaction:type},{onConflict:'user_id,anecdote_id'});
+      await sb.from('reactions').upsert({user_id:state.currentUser.id,anecdote_id:anecId,reaction:type},{onConflict:'user_id,anecdote_id'});
     }
     loadReactions();
   }catch(e){showToast('Erreur : '+e.message);}
