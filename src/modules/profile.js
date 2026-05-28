@@ -142,7 +142,8 @@ if(state.currentUser?.xp&&state.currentUser.xp>state.currentUserXP)state.current
   // Badges â donnÃ©es enrichies
   const perfectQuiz=q.filter(x=>x.pct>=100).length;
   const themeMap={};readAnec.forEach(x=>{const t=(x.theme||'').toLowerCase();if(t)themeMap[t]=(themeMap[t]||0)+1;});
-  const favs=_histFavs.size;
+  const {count:_favCount}=await sb.from('favorites').select('anecdote_id',{count:'exact',head:true}).eq('user_id',state.currentUser.id);
+  const favs=_favCount||0;
   const shares=parseInt(localStorage.getItem('share_count')||'0');
   const hNow=new Date().getHours();
   if(hNow<7)localStorage.setItem('early_bird','1');
