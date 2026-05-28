@@ -26,20 +26,20 @@ export function goLigue(){
 
 export async function buildLeagueDashboard(){
   if(!state.currentUser){
-    document.getElementById('multi-content').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--ink3);margin-bottom:1rem;">Connecte-toi pour accÃ©der Ã  la ligue.</p><button class="btn-main" onclick="show(\'screen-login\')">Se connecter</button></div>';
+    document.getElementById('multi-content').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--ink3);margin-bottom:1rem;">Connecte-toi pour accéder à la ligue.</p><button class="btn-main" onclick="show(\'screen-login\')">Se connecter</button></div>';
     return;
   }
   document.getElementById('multi-content').innerHTML=
-    '<div class="sl-section-header" style="margin-bottom:1rem;"><span class="sl-section-icon">â</span><span>LIGUE HEBDOMADAIRE</span></div>'+
+    '<div class="sl-section-header" style="margin-bottom:1rem;"><span class="sl-section-icon">⚔</span><span>LIGUE HEBDOMADAIRE</span></div>'+
     '<div style="display:flex;gap:.6rem;margin-bottom:1.25rem;">'+
-    '<button class="sl-btn-primary" style="flex:1;" onclick="goLeaguePlay()">â¡ Jouer en Ligue</button>'+
-    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">ð® PrivÃ©e</button>'+
+    '<button class="sl-btn-primary" style="flex:1;" onclick="goLeaguePlay()">⚡ Jouer en Ligue</button>'+
+    '<button class="btn-sec" style="flex:1;margin-top:0;" onclick="goMultiPlay()">🎮 Privée</button>'+
     '</div>'+
     '<div id="ldash-ranking" style="margin-bottom:1.5rem;"></div>'+
     '<div id="ldash-pending" style="margin-bottom:.5rem;"></div>'+
-    '<div class="friend-search" style="margin-bottom:.75rem;"><input id="friend-q" placeholder="Rechercher un pseudoâ¦"/><button onclick="searchFriend()">Rechercher</button></div>'+
+    '<div class="friend-search" style="margin-bottom:.75rem;"><input id="friend-q" placeholder="Rechercher un pseudo…"/><button onclick="searchFriend()">Rechercher</button></div>'+
     '<div id="friend-results"></div>'+
-    '<div style="margin-top:1rem;"><div class="sl-section-header" style="margin-bottom:.75rem;"><span class="sl-section-icon">ð¥</span><span>ALLIÃS</span></div><div id="friend-list-own"></div></div>';
+    '<div style="margin-top:1rem;"><div class="sl-section-header" style="margin-bottom:.75rem;"><span class="sl-section-icon">👥</span><span>ALLIÉS</span></div><div id="friend-list-own"></div></div>';
   await buildWeeklyLeague(document.getElementById('ldash-ranking'));
   await buildPendingRequests(document.getElementById('ldash-pending'));
   await loadFriends();
@@ -54,32 +54,32 @@ export function renderPlayChoice(){
     +'<div class="sl-play-gates">'
     +'<div class="sl-play-gate" onclick="goSoloPlay()">'
     +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#34d399;border-color:#34d399;">C-RANG</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">ð¯</span><span class="sl-arena-name">SOLO</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎯</span><span class="sl-arena-name">SOLO</span></div>'
     +'<div class="sl-arena-desc">Teste tes connaissances sur les anecdotes.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">âº ENTRER</span></div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'<div class="sl-play-gate" onclick="goMultiPlay()">'
     +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#fbbf24;border-color:#fbbf24;">B-RANG</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">ð®</span><span class="sl-arena-name">PARTIE PRIV\u00c9E</span></div>'
+    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎮</span><span class="sl-arena-name">PARTIE PRIV\u00c9E</span></div>'
     +'<div class="sl-arena-desc">Affronte tes amis en temps r\u00e9el.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">âº ENTRER</span></div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'<div class="sl-play-gate" onclick="showDuelLobby()">'
     +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#f97316;border-color:#f97316;">A-RANG</span></div>'
     +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">\u2694\ufe0f</span><span class="sl-arena-name">DUEL QUIZ</span></div>'
     +'<div class="sl-arena-desc">Tour par tour, choisis le th\u00e8me, bats ton adversaire.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">âº ENTRER</span></div>'
+    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
     +'</div>'
     +'</div>';
 }
 
 export async function goSoloPlay(){
   document.getElementById('multi-title-txt').innerHTML='<em>Quiz</em> Solo';
-  document.getElementById('multi-sub').textContent='Chargement de tes anecdotesâ¦';
-  document.getElementById('multi-content').innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--ink3);font-size:.8rem;">â³ Chargementâ¦</div>';
+  document.getElementById('multi-sub').textContent='Chargement de tes anecdotes…';
+  document.getElementById('multi-content').innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--ink3);font-size:.8rem;">⏳ Chargement…</div>';
 
   if(!state.currentUser){
-    // Pas connectÃ© â quiz du jour uniquement
+    // Pas connecté → quiz du jour uniquement
     show('screen-anec');updateNav('bn-anec');
     setTimeout(()=>{const a=document.getElementById('quiz-solo-area');if(a)a.scrollIntoView({behavior:'smooth',block:'start'});},200);
     return;
@@ -90,7 +90,7 @@ export async function goSoloPlay(){
 
   if(!anecIds.length){
     document.getElementById('multi-sub').textContent='';
-    document.getElementById('multi-content').innerHTML='<div class="quiz-gate"><span class="quiz-gate-icon">ð</span><h3>Aucune anecdote lue</h3><p style="color:var(--ink3);font-size:.8rem;margin-top:.4rem;">Lis des anecdotes pour dÃ©bloquer le quiz de rÃ©vision !</p><button class="btn-main" style="margin-top:1rem;" onclick="goHome();updateNav(\'bn-anec\');">Lire maintenant</button></div>';
+    document.getElementById('multi-content').innerHTML='<div class="quiz-gate"><span class="quiz-gate-icon">📖</span><h3>Aucune anecdote lue</h3><p style="color:var(--ink3);font-size:.8rem;margin-top:.4rem;">Lis des anecdotes pour débloquer le quiz de révision !</p><button class="btn-main" style="margin-top:1rem;" onclick="goHome();updateNav(\'bn-anec\');">Lire maintenant</button></div>';
     return;
   }
 
@@ -107,8 +107,8 @@ export async function goSoloPlay(){
   const total=questions.length;
   const opts=[5,10,20,total].filter((v,i,a)=>v<=total&&a.indexOf(v)===i);
   const btnHtml=opts.map(n=>'<button class="btn-q-count'+(n===Math.min(10,total)?' sel':'')+'" onclick="selectSoloCount(this,'+n+')">'+n+'</button>').join('');
-  document.getElementById('multi-sub').textContent=anecIds.length+' anecdotes Â· '+total+' questions disponibles';
-  document.getElementById('multi-content').innerHTML='<div class="quiz-gate"><span class="quiz-gate-icon">ð§ </span><h3>Quiz de rÃ©vision</h3><p>Combien de questions ?</p><div class="q-count-row" style="display:flex;gap:.5rem;justify-content:center;margin:.75rem 0;">'+btnHtml+'</div><button class="btn-quiz" onclick="startSoloHistoryQuiz()">Lancer le quiz</button></div>';
+  document.getElementById('multi-sub').textContent=anecIds.length+' anecdotes · '+total+' questions disponibles';
+  document.getElementById('multi-content').innerHTML='<div class="quiz-gate"><span class="quiz-gate-icon">🧠</span><h3>Quiz de révision</h3><p>Combien de questions ?</p><div class="q-count-row" style="display:flex;gap:.5rem;justify-content:center;margin:.75rem 0;">'+btnHtml+'</div><button class="btn-quiz" onclick="startSoloHistoryQuiz()">Lancer le quiz</button></div>';
 }
 
 export function selectSoloCount(btn,n){document.querySelectorAll('#multi-content .btn-q-count').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
@@ -127,7 +127,7 @@ export function renderSoloQuizQ(){
   const opts=isVF?'<div class="q-opts q-vf">'+q.options.map((o,i)=>'<button class="q-opt" onclick="answerSoloQ('+i+')">'+o+'</button>').join('')+'</div>':'<div class="q-opts">'+q.options.map((o,i)=>'<button class="q-opt" onclick="answerSoloQ('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</button>').join('')+'</div>';
   const _anec=window._soloAnecMap&&window._soloAnecMap[q.anecdote_id];
 
-  document.getElementById('multi-content').innerHTML='<div class="q-block"><div class="q-header"><span class="q-prog-txt">Question '+(idx+1)+' / '+questions.length+'</span></div><div class="q-prog-bar"><div class="q-prog-fill" style="width:'+prog+'%"></div></div><div class="q-body"><span class="q-type '+(isVF?'vf':'qcm')+'">'+(isVF?'Vrai / Faux':'QCM')+'</span><div class="q-text">'+q.question+'</div>'+opts+'<div class="q-fb" id="q-fb-solo"></div><button class="btn-next" id="btn-next-solo" onclick="nextSoloQ()">â Suite</button></div></div>';
+  document.getElementById('multi-content').innerHTML='<div class="q-block"><div class="q-header"><span class="q-prog-txt">Question '+(idx+1)+' / '+questions.length+'</span></div><div class="q-prog-bar"><div class="q-prog-fill" style="width:'+prog+'%"></div></div><div class="q-body"><span class="q-type '+(isVF?'vf':'qcm')+'">'+(isVF?'Vrai / Faux':'QCM')+'</span><div class="q-text">'+q.question+'</div>'+opts+'<div class="q-fb" id="q-fb-solo"></div><button class="btn-next" id="btn-next-solo" onclick="nextSoloQ()">→ Suite</button></div></div>';
 }
 
 export function answerSoloQ(i){
@@ -146,14 +146,14 @@ export async function finishSoloHistoryQuiz(){
   const{score,questions}=window._soloQuizState;
   const pct=Math.round(score/questions.length*100);
   if(state.currentUser){try{await sb.from('quiz_history').insert({user_id:state.currentUser.id,anecdote_id:questions[0].anecdote_id,score,total:questions.length,pct,date:today()});}catch(_){}}
-  const e=pct>=80?'ð':pct>=60?'â­':'ðª',t=pct>=80?'Excellent !':pct>=60?'Bien jouÃ© !':'Continue !',m=pct>=80?'Parfaite maÃ®trise !':pct>=60?'Solide ! Reviens demain.':'Chaque jour on apprend.';
-  document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">'+e+'</span><span class="qr-score">'+pct+'%</span><div class="qr-title">'+t+'</div><div class="qr-msg">'+m+'</div><div style=\"display:flex;gap:.6rem;margin-top:1.25rem;justify-content:center;\"><button class=\"btn-sec\" onclick=\"goHome();updateNav(&apos;bn-anec&apos;)\">â Accueil</button><button class=\"btn-main\" onclick=\"goSoloPlay()\">Rejouer</button></div></div>';
+  const e=pct>=80?'🏆':pct>=60?'⭐':'💪',t=pct>=80?'Excellent !':pct>=60?'Bien joué !':'Continue !',m=pct>=80?'Parfaite maîtrise !':pct>=60?'Solide ! Reviens demain.':'Chaque jour on apprend.';
+  document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">'+e+'</span><span class="qr-score">'+pct+'%</span><div class="qr-title">'+t+'</div><div class="qr-msg">'+m+'</div><div style=\"display:flex;gap:.6rem;margin-top:1.25rem;justify-content:center;\"><button class=\"btn-sec\" onclick=\"goHome();updateNav(&apos;bn-anec&apos;)\">← Accueil</button><button class=\"btn-main\" onclick=\"goSoloPlay()\">Rejouer</button></div></div>';
 }
 
 export function goMultiPlay(){if(typeof completeBingoCell==='function'){localStorage.setItem('bingo_multi','1');completeBingoCell(22);}
-  if(!state.currentUser){showToast('â  Connecte-toi pour jouer en multijoueur !');show('screen-login');return;}
+  if(!state.currentUser){showToast('⚠ Connecte-toi pour jouer en multijoueur !');show('screen-login');return;}
   document.getElementById('multi-title-txt').innerHTML='<em>Quiz</em> Multijoueur';
-  document.getElementById('multi-sub').textContent='CrÃ©ez une salle ou rejoignez-en une avec un code.';
+  document.getElementById('multi-sub').textContent='Créez une salle ou rejoignez-en une avec un code.';
   renderMultiLobbyChoice();
 }
 
@@ -162,8 +162,8 @@ export function goMulti(){goPlay();}
 export function renderMultiLobbyChoice(){
   document.getElementById('multi-content').innerHTML=
     '<div class="multi-grid">'+
-    '<div class="multi-card" onclick="showCreateForm()"><span class="multi-card-icon">ð®</span><div class="multi-card-title">CrÃ©er une salle</div><div class="multi-card-desc">HÃ©bergez une partie et invitez vos amis avec un code Ã  4 chiffres.</div></div>'+
-    '<div class="multi-card" onclick="showJoinForm()"><span class="multi-card-icon">ð</span><div class="multi-card-title">Rejoindre</div><div class="multi-card-desc">Entrez le code donnÃ© par l\'hÃ´te pour rejoindre sa partie.</div></div>'+
+    '<div class="multi-card" onclick="showCreateForm()"><span class="multi-card-icon">🎮</span><div class="multi-card-title">Créer une salle</div><div class="multi-card-desc">Hébergez une partie et invitez vos amis avec un code à 4 chiffres.</div></div>'+
+    '<div class="multi-card" onclick="showJoinForm()"><span class="multi-card-icon">🔗</span><div class="multi-card-title">Rejoindre</div><div class="multi-card-desc">Entrez le code donné par l\'hôte pour rejoindre sa partie.</div></div>'+
     '</div>';
 }
 
@@ -171,14 +171,14 @@ export function showCreateForm(){
   document.getElementById('multi-content').innerHTML=
     '<div style="max-width:340px;margin:0 auto;">'+
     '<div class="lobby-box" style="border-radius:var(--card-radius);text-align:center;margin-bottom:1rem;">'+
-    '<div style="font-size:.56rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:.2rem;">Partie privÃ©e</div>'+
+    '<div style="font-size:.56rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:.2rem;">Partie privée</div>'+
     '<div style="font-family:\'DM Serif Display\',serif;font-size:1.5rem;font-style:italic;color:var(--ink);margin-bottom:1.1rem;">Combien de questions ?</div>'+
     '<div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;">'+
     [5,8,10,15,20].map(n=>'<button class="btn-q-count'+(n===10?' sel':'')+'" onclick="selectRoomCount(this,'+n+')">'+n+'</button>').join('')+
     '</div>'+
     '</div>'+
-    '<button class="btn-main" onclick="createRoom()">CrÃ©er la salle â</button>'+
-    '<div style="text-align:center;margin-top:.9rem;"><a style="color:var(--ink3);cursor:pointer;font-size:.74rem;" onclick="renderMultiLobbyChoice()">â Retour</a></div>'+
+    '<button class="btn-main" onclick="createRoom()">Créer la salle →</button>'+
+    '<div style="text-align:center;margin-top:.9rem;"><a style="color:var(--ink3);cursor:pointer;font-size:.74rem;" onclick="renderMultiLobbyChoice()">← Retour</a></div>'+
     '</div>';
 }
 
@@ -192,22 +192,22 @@ export function showJoinForm(){
     '<div style="font-family:\'DM Serif Display\',serif;font-size:1.5rem;font-style:italic;color:var(--ink);margin-bottom:1rem;">Entre le code</div>'+
     '<input class="room-code-input" id="join-code" placeholder="0000" maxlength="4" style="border-radius:.5rem;margin-bottom:0;" oninput="this.value=this.value.replace(/\\D/g,\'\')"/>'+
     '</div>'+
-    '<button class="btn-main" onclick="joinRoom()">Rejoindre la salle â</button>'+
-    '<div style="text-align:center;margin-top:.9rem;"><a style="color:var(--ink3);cursor:pointer;font-size:.74rem;" onclick="renderMultiLobbyChoice()">â Retour</a></div>'+
+    '<button class="btn-main" onclick="joinRoom()">Rejoindre la salle →</button>'+
+    '<div style="text-align:center;margin-top:.9rem;"><a style="color:var(--ink3);cursor:pointer;font-size:.74rem;" onclick="renderMultiLobbyChoice()">← Retour</a></div>'+
     '</div>';
 }
 
 export async function createRoom(){
-  if(!state.currentUser){showToast('â  Connexion requise.');return;}
+  if(!state.currentUser){showToast('⚠ Connexion requise.');return;}
   const code=String(Math.floor(1000+Math.random()*9000));
   const selQBtn=document.querySelector('#multi-content .btn-q-count.sel');const qCount=selQBtn?parseInt(selQBtn.textContent):10;
   const{data:allQs,error:qErr}=await sb.from('questions').select('*').limit(500);
-  if(qErr||!allQs||!allQs.length){showToast('â  Impossible de charger les questions.');return;}
+  if(qErr||!allQs||!allQs.length){showToast('⚠ Impossible de charger les questions.');return;}
   const questions=[...allQs].sort(()=>Math.random()-.5).slice(0,Math.min(allQs.length,qCount));
   const insertData={code,host_id:state.currentUser.id,status:'waiting',questions};
   if(state.todayAnec)insertData.anecdote_id=state.todayAnec.id;
   const{data:session,error}=await sb.from('quiz_sessions').insert(insertData).select().single();
-  if(error){showToast('â  Erreur: '+error.message);return;}
+  if(error){showToast('⚠ Erreur: '+error.message);return;}
   await sb.from('quiz_participants').insert({session_id:session.id,user_id:state.currentUser.id,username:state.currentUser.username,score:0});
   state.multiState={session,questions:session.questions,qIdx:0,score:0,answered:false,isHost:true};
   document.getElementById('multi-content').innerHTML=
@@ -215,10 +215,10 @@ export async function createRoom(){
     '<div class="lobby-box" style="border-radius:var(--card-radius);text-align:center;margin-bottom:1rem;">'+
     '<div class="lobby-code-lbl">Code de la salle</div>'+
     '<div class="lobby-code">'+code+'</div>'+
-    '<button onclick="navigator.clipboard.writeText(\''+code+'\').then(()=>showToast(\'â Code copiÃ© !\'))" style="margin-top:.65rem;padding:.32rem 1.1rem;border-radius:.5rem;border:1px solid var(--a);background:var(--adim);color:var(--a);font-family:inherit;font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;">ð Copier le code</button>'+
+    '<button onclick="navigator.clipboard.writeText(\''+code+'\').then(()=>showToast(\'✓ Code copié !\'))" style="margin-top:.65rem;padding:.32rem 1.1rem;border-radius:.5rem;border:1px solid var(--a);background:var(--adim);color:var(--a);font-family:inherit;font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;">📋 Copier le code</button>'+
     '</div>'+
     '<div id="multi-scores" style="margin-top:.5rem;"></div>'+
-    '<button class="btn-main" style="margin-top:1rem;" onclick="startMultiGame()">ð® Lancer la partie</button>'+
+    '<button class="btn-main" style="margin-top:1rem;" onclick="startMultiGame()">🎮 Lancer la partie</button>'+
     '</div>';
   document.getElementById('multi-sub').textContent='En attente de joueurs...';
   state.multiChannel=sb.channel('room:'+code)
@@ -232,11 +232,11 @@ export async function createRoom(){
 
 export async function joinRoom(){
   const code=document.getElementById('join-code')?.value?.trim();
-  if(!code||code.length!==4){showToast('â  Code invalide');return;}
+  if(!code||code.length!==4){showToast('⚠ Code invalide');return;}
   const{data:session,error}=await sb.from('quiz_sessions').select('*').eq('code',code).eq('status','waiting').maybeSingle();
-  if(error||!session){showToast('â  Salle introuvable ou partie dÃ©jÃ  commencÃ©e');return;}
+  if(error||!session){showToast('⚠ Salle introuvable ou partie déjà commencée');return;}
   const{error:e2}=await sb.from('quiz_participants').insert({session_id:session.id,user_id:state.currentUser.id,username:state.currentUser.username,score:0});
-  if(e2&&!e2.message.includes('duplicate')){showToast('â  '+e2.message);return;}
+  if(e2&&!e2.message.includes('duplicate')){showToast('⚠ '+e2.message);return;}
   state.multiState={session,questions:session.questions,qIdx:0,score:0,answered:false,isHost:false};
   document.getElementById('multi-content').innerHTML=
     '<div style="max-width:340px;margin:0 auto;">'+
@@ -247,10 +247,10 @@ export async function joinRoom(){
     '<div id="multi-scores" style="margin-top:.5rem;"></div>'+
     '<div style="text-align:center;margin-top:1rem;padding:.85rem;border-radius:.75rem;background:var(--adim);border:1px solid var(--b1);">'+
     '<div style="width:7px;height:7px;border-radius:50%;background:var(--a);margin:0 auto .5rem;box-shadow:0 0 8px var(--aglow);animation:pulse-c 1.4s ease-in-out infinite;"></div>'+
-    '<div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--a);">En attente du lancementâ¦</div>'+
+    '<div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--a);">En attente du lancement…</div>'+
     '</div>'+
     '</div>';
-  document.getElementById('multi-sub').textContent="En attente de l'hÃ´teâ¦";
+  document.getElementById('multi-sub').textContent="En attente de l'hôte…";
   state.multiChannel=sb.channel('room:'+code)
     .on('broadcast',{event:'game_start'},(p)=>startMultiClient(p.payload))
     .on('broadcast',{event:'player_ready'},(p)=>{state.multiState.readyPlayers=state.multiState.readyPlayers||new Set();state.multiState.readyPlayers.add(p.payload?.userId);checkMultiAllReady(p.payload?.qIdx);})
@@ -297,14 +297,14 @@ export async function submitMultiAnswer(i){
   const fb=document.getElementById('q-fb-multi');if(fb){fb.textContent=q.explanation||'';fb.className='q-fb on '+(ok?'ok':'err');}
   await sb.from('quiz_participants').update({score:state.multiState.score}).eq('session_id',state.multiState.session.id).eq('user_id',state.currentUser.id);
   const nextDiv=document.getElementById('multi-next-btn');
-  if(nextDiv)nextDiv.innerHTML='<button class="btn-main" style="margin-top:1rem;" onclick="readyForNextMulti()">Question suivante â</button>';
+  if(nextDiv)nextDiv.innerHTML='<button class="btn-main" style="margin-top:1rem;" onclick="readyForNextMulti()">Question suivante →</button>';
   setTimeout(loadMultiScores,500);
 }
 
 export async function readyForNextMulti(){
   const qIdx=state.multiState.qIdx;
   const nextDiv=document.getElementById('multi-next-btn');
-  if(nextDiv)nextDiv.innerHTML='<div style="text-align:center;padding:.65rem;font-size:.72rem;color:var(--ink3);margin-top:.75rem;background:var(--adim);border-radius:.5rem;">â³ En attente des autres joueursâ¦</div>';
+  if(nextDiv)nextDiv.innerHTML='<div style="text-align:center;padding:.65rem;font-size:.72rem;color:var(--ink3);margin-top:.75rem;background:var(--adim);border-radius:.5rem;">⏳ En attente des autres joueurs…</div>';
   state.multiState.readyPlayers=state.multiState.readyPlayers||new Set();
   state.multiState.readyPlayers.add(state.currentUser.id);
   await state.multiChannel.send({type:'broadcast',event:'player_ready',payload:{userId:state.currentUser.id,qIdx}});
@@ -331,9 +331,9 @@ export async function checkMultiAllReady(qIdx){
 
 export async function showMultiScoreboard(){
   const{data:players}=await sb.from('quiz_participants').select('*').eq('session_id',state.multiState.session.id).order('score',{ascending:false});
-  const medals=['ð¥','ð¥','ð¥'];
+  const medals=['🥇','🥈','🥉'];
   const rows=(players||[]).map((p,i)=>'<div class="score-row"><div class="score-pos '+(i===0?'gold':'')+'">'+( medals[i]||('#'+(i+1)))+'</div><div class="score-name">'+p.username+'</div><div class="score-val">'+p.score+'pts</div></div>').join('');
-  document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">ð</span><div class="qr-title">Partie terminÃ©e !</div><div class="qr-msg">Classement final</div></div><div class="scores-board">'+rows+'</div><button class="btn-main" style="margin-top:1.25rem;" onclick="renderMultiLobbyChoice()">Nouvelle partie</button>';
+  document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">🏆</span><div class="qr-title">Partie terminée !</div><div class="qr-msg">Classement final</div></div><div class="scores-board">'+rows+'</div><button class="btn-main" style="margin-top:1.25rem;" onclick="renderMultiLobbyChoice()">Nouvelle partie</button>';
 }
 
 export async function loadMultiScores(){
@@ -458,8 +458,8 @@ export async function finishLeague(){
       '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:1rem;">Classement mis \u00e0 jour</div>'+
       '<button class="btn-main" style="margin-right:.5rem;" onclick="goLeaguePlay()">Rejouer</button>'+
       '<button class="btn-sec" onclick="renderPlayChoice()">Menu</button>'+
-      '<button class="btn-sec" onclick="goHome();updateNav(\'bn-anec\')">ð  Accueil</button>'+
+      '<button class="btn-sec" onclick="goHome();updateNav(\'bn-anec\')">🏠 Accueil</button>'+
     '</div>';
-  // Mettre Ã  jour le classement dans l'onglet social
+  // Mettre à jour le classement dans l'onglet social
   const leagueEl=document.getElementById('weekly-league-wrap');if(leagueEl)buildWeeklyLeague(leagueEl);
 }
