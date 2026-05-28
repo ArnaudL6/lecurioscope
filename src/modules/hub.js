@@ -52,17 +52,17 @@ export async function buildWeeklyLeague(el){
 
   const top20=(scores||[]);
   const top20Ids=top20.map(s=>s.user_id);
-  const myInTop=top20Ids.includes(currentUser.id);
+  const myInTop=top20Ids.includes(state.currentUser.id);
 
   // RÃ©cupÃ©rer aussi le score du joueur si pas dans le top 20
   let myEntry=null;
   if(!myInTop){
-    const{data:myScore}=await sb.from('league_scores').select('user_id,points,answers_correct,answers_wrong').eq('week_start',ws).eq('user_id',currentUser.id).maybeSingle();
+    const{data:myScore}=await sb.from('league_scores').select('user_id,points,answers_correct,answers_wrong').eq('week_start',ws).eq('user_id',state.currentUser.id).maybeSingle();
     if(myScore)myEntry=myScore;
   }
 
   // Profils
-  const allIds=[...new Set([...top20Ids,...(myEntry?[currentUser.id]:[])])];
+  const allIds=[...new Set([...top20Ids,...(myEntry?[state.currentUser.id]:[])])];
   const{data:profiles}=allIds.length?await sb.from('profiles').select('id,username,avatar_url').in('id',allIds):{data:[]};
   const pMap={};const avMap={};(profiles||[]).forEach(p=>{pMap[p.id]=p.username;avMap[p.id]=p.avatar_url||'';});
 
@@ -97,10 +97,10 @@ export async function buildWeeklyLeague(el){
   if(!top20.length){
     html+='<div class="empty"><span class="empty-ico">ð</span><p>Aucun joueur cette semaine. Lance une partie !</p></div>';
   }else{
-    html+=top20.map((s,i)=>rowHtml(s.user_id,i+1,s.user_id===currentUser.id)).join('');
+    html+=top20.map((s,i)=>rowHtml(s.user_id,i+1,s.user_id===state.currentUser.id)).join('');
     if(!myInTop&&myEntry){
       html+='<div style="border-top:1px dashed var(--b2);margin:8px 0;padding-top:8px;font-size:.65rem;color:var(--ink3);text-align:center">Votre position</div>';
-      html+=rowHtml(currentUser.id,myRank,true);
+      html+=rowHtml(state.currentUser.id,myRank,true);
     }else if(!myInTop&&!myEntry){
       html+='<div style="border-top:1px dashed var(--b2);margin:8px 0;padding-top:8px;font-size:.65rem;color:var(--ink3);text-align:center">Vous n\'Ãªtes pas encore classÃ© cette semaine</div>';
     }
@@ -110,8 +110,8 @@ export async function buildWeeklyLeague(el){
 
 export async function buildActivityFeed(el){
   if(!el||!state.currentUser)return;
-  const{data:friendData}=await sb.from('friendships').select('requester_id,addressee_id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted');
-  const friendIds=(friendData||[]).map(f=>f.requester_id===currentUser.id?f.addressee_id:f.requester_id);
+  const{data:friendData}=await sb.from('friendships').select('requester_id,addressee_id').or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id).eq('status','accepted');
+  const friendIds=(friendData||[]).map(f=>f.requester_id===state.currentUser.id?f.addressee_id:f.requester_id);
   if(!friendIds.length){el.innerHTML='<div class="league-section-title">ð£ ActivitÃ© des amis</div><div class="empty"><span class="empty-ico">ð¥</span><p>Ajoutez des amis pour voir leur activitÃ©.</p></div>';return;}
   const[{data:reads},{data:quizzes}]=await Promise.all([
     sb.from('reads').select('user_id,created_at').in('user_id',friendIds).order('created_at',{ascending:false}).limit(20),
@@ -134,7 +134,7 @@ export async function checkFriendRequests(){
   if(!state.currentUser)return;
   const{data}=await sb.from('friendships')
     .select('id,requester_id,req:profiles!friendships_requester_id_fkey(username)')
-    .eq('addressee_id',currentUser.id)
+    .eq('addressee_id',state.currentUser.id)
     .eq('status','pending');
   const count=(data||[]).length;
   const badge=document.getElementById('friend-req-badge');
@@ -172,7 +172,7 @@ export async function declineFriend(fid){
 export async function answerChallenge(challengeId,answer,correct_answer){
   if(!state.currentUser){showToast('â ï¸ Connecte-toi pour jouer !');return;}
   const correct=(answer===correct_answer);
-  const{error}=await sb.from('challenge_responses').upsert({user_id:currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
+  const{error}=await sb.from('challenge_responses').upsert({user_id:state.currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
   if(error){showToast('Erreur : '+error.message);return;}
   if(correct)showToast('ð Bonne rÃ©ponse !');else showToast('â RatÃ© ! Retente la semaine prochaine.');
   // Bingo: marquer "dÃ©fi communautaire fait"
@@ -188,8 +188,8 @@ export async function loadBingo(){
   if(!state.currentUser)return;
   // Case libre (18) toujours cochÃ©e
   completeBingoCell(18,false);
-  const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',currentUser.id).maybeSingle();
-  if(data&&data.cells){data.cells.forEach(c=>bingoCompleted.add(c));}
+  const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',state.currentUser.id).maybeSingle();
+  if(data&&data.cells){data.cells.forEach(c=>state.bingoCompleted.add(c));}
   // Auto-check depuis les donnÃ©es
   await autocheckBingo();
   updateBingoFab();
@@ -198,12 +198,12 @@ export async function loadBingo(){
 export async function autocheckBingo(){
   if(!state.currentUser)return;
   const[{data:reads},{data:qhist},{data:friends},{data:lgScores},{data:ratings},{data:themeReads}]=await Promise.all([
-    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('quiz_history').select('pct').eq('user_id',currentUser.id),
-    sb.from('friendships').select('id',{count:'exact',head:true}).or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
-    sb.from('league_scores').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('ratings').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('reads').select('anecdotes(theme)').eq('user_id',currentUser.id).limit(200),
+    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('quiz_history').select('pct').eq('user_id',state.currentUser.id),
+    sb.from('friendships').select('id',{count:'exact',head:true}).or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id).eq('status','accepted'),
+    sb.from('league_scores').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('ratings').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('reads').select('anecdotes(theme)').eq('user_id',state.currentUser.id).limit(200),
   ]);
   const rc=reads?.length||0;
   const qlist=qhist||[];
@@ -223,15 +223,15 @@ export async function autocheckBingo(){
     22:localStorage.getItem('bingo_multi')==='1',
     23:rc>=20, 24:rc>=30,
   };
-  const prev=bingoCompleted.size;
-  Object.entries(checks).forEach(([id,ok])=>{if(ok)bingoCompleted.add(Number(id));});
-  bingoCompleted.add(18); // case libre
-  if(bingoCompleted.size!==prev)saveBingo();
+  const prev=state.bingoCompleted.size;
+  Object.entries(checks).forEach(([id,ok])=>{if(ok)state.bingoCompleted.add(Number(id));});
+  state.bingoCompleted.add(18); // case libre
+  if(state.bingoCompleted.size!==prev)saveBingo();
 }
 
 export function completeBingoCell(id,save=true){
-  if(bingoCompleted.has(id))return;
-  bingoCompleted.add(id);
+  if(state.bingoCompleted.has(id))return;
+  state.bingoCompleted.add(id);
   updateBingoFab();
   if(save)saveBingo();
   // Re-render grid if modal open
@@ -241,11 +241,11 @@ export function completeBingoCell(id,save=true){
 export async function saveBingo(){
   if(!state.currentUser)return;
   const cells=[...bingoCompleted];
-  await sb.from('bingo_progress').upsert({user_id:currentUser.id,cells,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  await sb.from('bingo_progress').upsert({user_id:state.currentUser.id,cells,updated_at:new Date().toISOString()},{onConflict:'user_id'});
 }
 
 export function updateBingoFab(){
-  const n=bingoCompleted.size;
+  const n=state.bingoCompleted.size;
   const badge=document.getElementById('bingo-fab-badge');
   if(badge)badge.textContent=n+'/25';
   const prog=document.getElementById('bingo-prog-fill');
@@ -258,7 +258,7 @@ export function renderBingoGrid(){
   const grid=document.getElementById('bingo-grid');
   if(!grid)return;
   grid.innerHTML=BINGO_CELLS.map(c=>{
-    const done=bingoCompleted.has(c.id);
+    const done=state.bingoCompleted.has(c.id);
     return '<div class="bingo-cell'+(done?' done':'')+(c.free?' free':'')+'">'+
       (done?'<div class="bingo-check">â</div>':'')+
       '<div class="bingo-cell-emoji">'+c.e+'</div>'+
@@ -289,7 +289,7 @@ export async function buildCommunityChallenge(el){
 
   let userResp=null;
   if(state.currentUser){
-    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',currentUser.id).eq('challenge_id',ch.id).maybeSingle();
+    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',state.currentUser.id).eq('challenge_id',ch.id).maybeSingle();
     userResp=r;
   }
 
@@ -339,16 +339,16 @@ export async function showHub(){
 
   if(state.currentUser){
     const[{data:rd},{data:en},{data:qz}]=await Promise.all([
-      sb.from('reads').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
-      sb.from('enigma_responses').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
-      sb.from('quiz_history').select('id').eq('user_id',currentUser.id).eq('date',today()).maybeSingle(),
+      sb.from('reads').select('id').eq('user_id',state.currentUser.id).eq('date',today()).maybeSingle(),
+      sb.from('enigma_responses').select('id').eq('user_id',state.currentUser.id).eq('date',today()).maybeSingle(),
+      sb.from('quiz_history').select('id').eq('user_id',state.currentUser.id).eq('date',today()).maybeSingle(),
     ]);
     readToday=!!rd;enigmaToday=!!en;quizToday=!!qz;
     if(!state.currentUserXP&&state.currentUser){
       const[{data:allReads},{data:allQuiz},{data:allEnigma}]=await Promise.all([
-        sb.from('reads').select('date').eq('user_id',currentUser.id),
-        sb.from('quiz_history').select('pct').eq('user_id',currentUser.id),
-        sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
+        sb.from('reads').select('date').eq('user_id',state.currentUser.id),
+        sb.from('quiz_history').select('pct').eq('user_id',state.currentUser.id),
+        sb.from('enigma_responses').select('is_correct').eq('user_id',state.currentUser.id),
       ]);
       const streak=computeStreak((allReads||[]).map(x=>x.date));
       state.userStreak=streak;
@@ -414,7 +414,7 @@ export async function showHub(){
         <div class="sl-hunter-top">
           <div class="sl-hunter-info">
             <div class="sl-hunter-label">CHASSEUR</div>
-            <div class="sl-hunter-name">${currentUser.username}</div>
+            <div class="sl-hunter-name">${state.currentUser.username}</div>
           </div>
           <div class="sl-rank-badge" style="color:${rank.color};border-color:${rank.color};box-shadow:${rank.glow};">
             <span class="sl-rank-id">${rank.label}</span>
