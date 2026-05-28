@@ -1,7 +1,9 @@
-import { state, sb, show, escHtml, fmt, fmtShort, showToast, setBtn, EDGE, THEMES, today } from '../shared.js';
+import { state, sb, SB_URL, SB_ANON, show, escHtml, fmt, fmtShort, showToast, setBtn, EDGE, THEMES, today } from '../shared.js';
 import { awardXP, popXP, checkAndAwardBadges, getRank } from './xp.js';
 import { completeBingoCell } from './hub.js';
 import { _sendNotif } from './notifs.js';
+
+let _histFavs = new Set(); // module-local favorites set
 
 export function goAnec(){
   setRoute('anecdote');
