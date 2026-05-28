@@ -2,9 +2,9 @@ import { state, sb, show, escHtml, showToast, setBtn, today } from '../shared.js
 
 let _adminUsersCache=[];
 
-export function isAdmin(){return state.currentUser&&(currentUser.role==='admin'||currentUser.email===ADMIN_EMAIL);}
+export function isAdmin(){return state.currentUser&&(state.currentUser.role==='admin'||state.currentUser.email===ADMIN_EMAIL);}
 
-export function isMod(){return state.currentUser&&(currentUser.role==='moderator'||isAdmin());}
+export function isMod(){return state.currentUser&&(state.currentUser.role==='moderator'||isAdmin());}
 
 export function goAdmin(){
   if(!isAdmin())return;
