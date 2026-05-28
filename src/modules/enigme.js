@@ -11,9 +11,9 @@ export async function goEnigme(){
   document.getElementById('top-tab-enigme')?.classList.add('active');
   document.getElementById('top-tab-anec')?.classList.remove('active');
   document.getElementById('top-tab-sondage')?.classList.remove('active');
-  // Afficher l'Ã©cran de chargement
+  // Afficher l'écran de chargement
   show('screen-load');
-  const lt=document.getElementById('load-title');if(lt)lt.textContent='Chargement de l\'Ã©nigmeâ¦';
+  const lt=document.getElementById('load-title');if(lt)lt.textContent='Chargement de l\'énigme…';
   try{
     const res=await fetch(EDGE_ENIGME,{headers:{'Authorization':'Bearer '+SB_ANON,'apikey':SB_ANON}});
     const{enigma,choice}=await res.json();
@@ -45,18 +45,18 @@ export function buildEnigmePick(){
 
 export async function pickEnigmeCat(){
   if(!state.selEnigmeCat)return;
-  const lt=document.getElementById('load-title');if(lt)lt.textContent='GÃ©nÃ©ration de l\'Ã©nigmeâ¦';
+  const lt=document.getElementById('load-title');if(lt)lt.textContent='Génération de l\'énigme…';
   show('screen-load');
   try{
     const chooser=state.currentUser?state.currentUser.username:'Anonyme';
     const chooserId=state.currentUser?state.currentUser.id:null;
     const res=await fetch(EDGE_ENIGME,{method:'POST',headers:{'Authorization':'Bearer '+SB_ANON,'apikey':SB_ANON,'Content-Type':'application/json'},body:JSON.stringify({categoryId:state.selEnigmeCat,chooser,chooserId})});
-    if(!res.ok){showToast('â  Erreur serveur. RÃ©essaie !');buildEnigmePick();show('screen-enigme-pick');return;}
+    if(!res.ok){showToast('⚠ Erreur serveur. Réessaie !');buildEnigmePick();show('screen-enigme-pick');return;}
     const{enigma,choice}=await res.json();
-    if(!enigma){showToast('â  GÃ©nÃ©ration Ã©chouÃ©e. RÃ©essaie !');buildEnigmePick();show('screen-enigme-pick');return;}
+    if(!enigma){showToast('⚠ Génération échouée. Réessaie !');buildEnigmePick();show('screen-enigme-pick');return;}
     state.todayEnigme=enigma;state.todayEnigmeChoice=choice;
     showEnigme(true);
-  }catch(e){console.error(e);showToast('â  Erreur : '+(e?.message||'rÃ©seau'));buildEnigmePick();show('screen-enigme-pick');}
+  }catch(e){console.error(e);showToast('⚠ Erreur : '+(e?.message||'réseau'));buildEnigmePick();show('screen-enigme-pick');}
 }
 
 export function showEnigme(typewrite){
@@ -65,9 +65,9 @@ export function showEnigme(typewrite){
   const cat=ENIGME_CATS.find(c=>c.id===state.todayEnigme.category)||ENIGME_CATS[0];
   // Tags
   const tag=document.getElementById('enigme-cat-tag');if(tag)tag.textContent=cat.icon+' '+cat.label;
-  const chooserEl=document.getElementById('enigme-chooser');if(chooserEl)chooserEl.textContent=state.todayEnigmeChoice?.chooser||'CommunautÃ©';
+  const chooserEl=document.getElementById('enigme-chooser');if(chooserEl)chooserEl.textContent=state.todayEnigmeChoice?.chooser||'Communauté';
   // Difficulty badge
-  const diffMap={easy:'Facile',medium:'IntermÃ©diaire',hard:'Difficile'};
+  const diffMap={easy:'Facile',medium:'Intermédiaire',hard:'Difficile'};
   const diffEl=document.getElementById('enigme-difficulty');if(diffEl)diffEl.textContent=diffMap[state.todayEnigme.difficulty||'medium']||'';
   // Question
   const qEl=document.getElementById('enigme-question');
@@ -198,7 +198,7 @@ export async function initEnigmeChat(){
 
 export function appendChatMsg(msg){
   const box=document.getElementById('chat-msgs');if(!box)return;
-  // DÃ©duplique par id pour Ã©viter double-affichage
+  // Déduplique par id pour éviter double-affichage
   if(msg.id&&box.querySelector('[data-msg-id="'+msg.id+'"]'))return;
   const empty=document.getElementById('chat-empty');if(empty)empty.remove();
   _chatMsgCount++;
@@ -249,7 +249,7 @@ export async function initEnigmeRating(){
   }
   // Avg rating
   const{data:allR}=await sb.from('enigma_ratings').select('stars').eq('enigma_id',state.todayEnigme.id);
-  if(allR&&allR.length){const avg=(allR.reduce((s,r)=>s+r.stars,0)/allR.length).toFixed(1);const el=document.getElementById('enigme-rating-avg');if(el)el.textContent='Moyenne : '+avg+' â­ ('+allR.length+')';}
+  if(allR&&allR.length){const avg=(allR.reduce((s,r)=>s+r.stars,0)/allR.length).toFixed(1);const el=document.getElementById('enigme-rating-avg');if(el)el.textContent='Moyenne : '+avg+' ⭐ ('+allR.length+')';}
 }
 
 export function highlightEnigmeStars(n){document.querySelectorAll('#enigme-stars-row .star').forEach((s,i)=>{s.classList.toggle('on',i<n);});}
@@ -274,7 +274,7 @@ export async function loadEnigmaCommentsFeed(){
     sb.from('enigma_comments').select('*').eq('enigma_id',state.todayEnigme.id).order('created_at',{ascending:false}).limit(30),
     sb.from('profiles').select('id,username').limit(100)
   ]);
-  if(!comments||!comments.length){feed.innerHTML='<div class="comment-empty">Sois le premier Ã  commenter !</div>';return;}
+  if(!comments||!comments.length){feed.innerHTML='<div class="comment-empty">Sois le premier à commenter !</div>';return;}
   const pMap={};(profiles||[]).forEach(p=>pMap[p.id]=p.username);
   const fmt=d=>new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   feed.innerHTML=comments.map(c=>{
@@ -283,7 +283,7 @@ export async function loadEnigmaCommentsFeed(){
       '<div class="comment-header">'+
         '<span class="comment-author" onclick="viewUserProfile(\''+c.user_id+'\',\''+escHtml(pMap[c.user_id]||'Anonyme')+'\')">'+escHtml(pMap[c.user_id]||'Anonyme')+'</span>'+
         '<span class="comment-date">'+fmt(c.created_at)+'</span>'+
-        (isOwn?'<button class="comment-del" onclick="deleteEnigmaComment(\''+c.id+'\')">â</button>':'')+
+        (isOwn?'<button class="comment-del" onclick="deleteEnigmaComment(\''+c.id+'\')">✕</button>':'')+
       '</div>'+
       '<div class="comment-text">'+escHtml(c.comment)+'</div>'+
     '</div>';
@@ -291,14 +291,14 @@ export async function loadEnigmaCommentsFeed(){
 }
 
 export async function submitEnigmaComment(){
-  if(!state.currentUser){showToast('â  Connecte-toi pour commenter !');return;}
+  if(!state.currentUser){showToast('⚠ Connecte-toi pour commenter !');return;}
   if(!state.todayEnigme)return;
   const inp=document.getElementById('enigme-comment-new');
   const text=(inp?.value||'').trim();
-  if(!text){showToast('â  Le commentaire est vide.');return;}
-  if(text.length>500){showToast('â  Commentaire trop long (500 car. max).');return;}
+  if(!text){showToast('⚠ Le commentaire est vide.');return;}
+  if(text.length>500){showToast('⚠ Commentaire trop long (500 car. max).');return;}
   const{error}=await sb.from('enigma_comments').insert({user_id:state.currentUser.id,enigma_id:state.todayEnigme.id,comment:text});
-  if(error){showToast('â  Erreur lors de l\'envoi.');return;}
+  if(error){showToast('⚠ Erreur lors de l\'envoi.');return;}
   if(inp)inp.value='';
   await loadEnigmaCommentsFeed();
 }
@@ -312,7 +312,7 @@ export async function deleteEnigmaComment(id){
 export function showSondageWIP(){
   document.getElementById('top-tab-sondage')?.classList.add('active');
   document.getElementById('top-tab-anec')?.classList.remove('active');
-  showToast('ð Sondage du jour â BientÃ´t disponible !');
+  showToast('📊 Sondage du jour — Bientôt disponible !');
   setTimeout(()=>{
     document.getElementById('top-tab-sondage')?.classList.remove('active');
     document.getElementById('top-tab-anec')?.classList.add('active');
