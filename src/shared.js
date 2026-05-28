@@ -1,30 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
-
-const SB_URL='https://zryrfmothjhywkklmniw.supabase.co';
-const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
+export const SB_URL='https://zryrfmothjhywkklmniw.supabase.co';
+export const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
 export const EDGE=SB_URL+'/functions/v1/daily';
 export const EDGE_ENIGME=SB_URL+'/functions/v1/daily-enigmas';
-export const sb=createClient(SB_URL,SB_ANON);
+export const sb=supabase.createClient(SB_URL,SB_ANON);
 export const ENIGME_CATS=[
   {id:'enigme_du_jour',  label:'Énigme du jour',     icon:'🔮', tag:'La classique'},
   {id:'qui_suis_je',     label:'Qui suis-je ?',       icon:'🎭', tag:'Indices progressifs'},
   {id:'logique',         label:'Logique',             icon:'🧩', tag:'Déduction & raisonnement'},
   {id:'cryptogramme',    label:'Cryptogramme',        icon:'🔐', tag:'Code chiffré'},
-  {id:'historique',      label:'Historique',          icon:'🏛️', tag:'Faits & personnages'},
-  {id:'paradoxe',        label:'Paradoxe',            icon:'♾️', tag:'Logique & philosophie'},
+  {id:'historique',      label:'Historique',          icon:'🏛ï¸', tag:'Faits & personnages'},
+  {id:'paradoxe',        label:'Paradoxe',            icon:'â¾ï¸', tag:'Logique & philosophie'},
   {id:'maths_recreatives',label:'Maths récréatives',  icon:'🔢', tag:'Puzzles numériques'},
-  {id:'science',         label:'Science',             icon:'⚗️', tag:'Phénomènes & curiosités'},
+  {id:'science',         label:'Science',             icon:'âï¸', tag:'Phénomènes & curiosités'},
   {id:'surprise',        label:'Surprise',            icon:'🎲', tag:"L'inattendu"},
 ];
 export const THEMES=[
-  {id:'histoire',label:'Histoire',icon:'🏛️',tag:'Faits historiques'},
+  {id:'histoire',label:'Histoire',icon:'🏛ï¸',tag:'Faits historiques'},
   {id:'science',label:'Science',icon:'🔬',tag:'Découvertes & curiosités'},
   {id:'nature',label:'Nature',icon:'🌿',tag:'Merveilles du vivant'},
   {id:'insolite',label:'Insolite',icon:'🎭',tag:"L'incroyable du quotidien"},
   {id:'art',label:'Art & Culture',icon:'🎨',tag:'Créations & artistes'},
   {id:'espace',label:'Espace',icon:'🚀',tag:"Au-delà de l'atmosphère"},
-  {id:'sport',label:'Sport',icon:'⚡',tag:'Exploits & records'},
-  {id:'food',label:'Gastronomie',icon:'🍽️',tag:'Histoires de saveurs'},
+  {id:'sport',label:'Sport',icon:'â¡',tag:'Exploits & records'},
+  {id:'food',label:'Gastronomie',icon:'🍽ï¸',tag:'Histoires de saveurs'},
   {id:'legendes',label:'Légendes Urbaines',icon:'🔍',tag:'Mythes & réalité'},
 ];
 export const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
@@ -84,6 +82,6 @@ export function goBack(){show(state.prevScreen);}
 
 export function toggleDark(){/* dark mode permanent */}
 
-export function updateToggleIcon(){const btn=document.getElementById('dark-toggle');if(!btn)return;btn.textContent=document.documentElement.classList.contains('dark')?'☀️':'🌙';}
+export function updateToggleIcon(){const btn=document.getElementById('dark-toggle');if(!btn)return;btn.textContent=document.documentElement.classList.contains('dark')?'âï¸':'🌙';}
 
 export function setRoute(hash){try{history.replaceState(null,'','#'+hash);}catch(e){location.hash='#'+hash;}}
