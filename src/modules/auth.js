@@ -4,9 +4,9 @@ import { awardXP } from './xp.js';
 import { subscribeNotifications, _sendNotif } from './notifs.js';
 
 const ONBOARD_SLIDES=[
-  {wolf:'ðº',title:'Bienvenue !',desc:'Chaque jour, une nouvelle anecdote fascinante du monde entier vous attend.'},
-  {wolf:'ð',title:'Lisez & Apprenez',desc:'Gagnez des XP en lisant et en rÃ©pondant aux quiz. Montez de niveau et dÃ©bloquez des badges !'},
-  {wolf:'ð',title:'DÃ©fiez vos amis',desc:'Ajoutez des amis, comparez vos scores dans la ligue hebdomadaire et grimpez au classement !'}
+  {wolf:'🐺',title:'Bienvenue !',desc:'Chaque jour, une nouvelle anecdote fascinante du monde entier vous attend.'},
+  {wolf:'📖',title:'Lisez & Apprenez',desc:'Gagnez des XP en lisant et en répondant aux quiz. Montez de niveau et débloquez des badges !'},
+  {wolf:'🏆',title:'Défiez vos amis',desc:'Ajoutez des amis, comparez vos scores dans la ligue hebdomadaire et grimpez au classement !'}
 ];
 let _onboardStep=0;
 
@@ -106,7 +106,7 @@ export async function doSignOut(){
   state.currentUser=null;
   updateHeader();
   closeNotifPanel();
-  showToast('Ã bientÃ´t !');
+  showToast('À bientôt !');
   goHome();
 }
 
@@ -157,7 +157,7 @@ export function subscribeNewHunters(){
 export function showHunterToast(username){
   let t=document.getElementById('hunter-toast');
   if(!t){t=document.createElement('div');t.id='hunter-toast';t.className='hunter-toast';document.body.appendChild(t);}
-  t.innerHTML='<span class="hunter-toast-ico">â¡</span><div><div class="hunter-toast-title">Nouveau chasseur dÃ©tectÃ©</div><div class="hunter-toast-name">'+username+' a rejoint le SystÃ¨me</div></div>';
+  t.innerHTML='<span class="hunter-toast-ico">⚡</span><div><div class="hunter-toast-title">Nouveau chasseur détecté</div><div class="hunter-toast-name">'+username+' a rejoint le Système</div></div>';
   t.classList.add('on');
   clearTimeout(t._tmr);
   t._tmr=setTimeout(()=>t.classList.remove('on'),4500);
@@ -189,14 +189,14 @@ export async function loadStreak(){
   // Update FAB badge
   const fab=document.getElementById('bingo-fab');
   if(fab&&isEte()){fab.style.display='flex';}
-  // Milestone pop â une seule fois par jour
+  // Milestone pop — une seule fois par jour
   if([3,7,14,30,50,100].includes(n)){
     const popKey='streak_pop_shown_'+today();
     if(!localStorage.getItem(popKey)){
       localStorage.setItem(popKey,'1');
       const pop=document.getElementById('streak-pop');
       if(pop){
-        document.getElementById('sp-num').textContent='ð¥ '+n;
+        document.getElementById('sp-num').textContent='🔥 '+n;
         document.getElementById('sp-msg').textContent=n+' jours de suite !';
         pop.classList.add('on');
         setTimeout(()=>pop.classList.remove('on'),2800);
