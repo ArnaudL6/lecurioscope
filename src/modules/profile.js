@@ -70,24 +70,24 @@ export async function goProfile(){
   const savedColor=localStorage.getItem('adj_prof_color')||PROF_COLORS[0];
   applyProfileColor(savedColor,false);
 
-  const profAv=document.getElementById('prof-av');if(profAv)profAv.textContent=currentUser.username[0].toUpperCase();
-  const profName=document.getElementById('prof-name');if(profName)profName.textContent=currentUser.username;
-  const profSince=document.getElementById('prof-since');if(profSince)profSince.textContent='Membre depuis le '+fmt(currentUser.joined||today());
+  const profAv=document.getElementById('prof-av');if(profAv)profAv.textContent=state.currentUser.username[0].toUpperCase();
+  const profName=document.getElementById('prof-name');if(profName)profName.textContent=state.currentUser.username;
+  const profSince=document.getElementById('prof-since');if(profSince)profSince.textContent='Membre depuis le '+fmt(state.currentUser.joined||today());
   // Avatar photo
-  renderProfileAvatar(currentUser.avatar_url||null);
+  renderProfileAvatar(state.currentUser.avatar_url||null);
   // Bio
   const bioEl=document.getElementById('prof-bio-text');
-  if(bioEl)bioEl.textContent=currentUser.bio||'Ajoute une bioâ¦';
+  if(bioEl)bioEl.textContent=state.currentUser.bio||'Ajoute une bioâ¦';
 
   // Enigma stats
   const enigmaDate=new Date().toISOString().slice(0,10);
   const[{data:reads},{data:qhist},{data:allAnec},{data:friendsData},{data:enigmaStats},{data:enigmaChoice}]=await Promise.all([
-    sb.from('reads').select('*').eq('user_id',currentUser.id).order('date',{ascending:false}),
-    sb.from('quiz_history').select('*').eq('user_id',currentUser.id).order('date',{ascending:false}),
+    sb.from('reads').select('*').eq('user_id',state.currentUser.id).order('date',{ascending:false}),
+    sb.from('quiz_history').select('*').eq('user_id',state.currentUser.id).order('date',{ascending:false}),
     sb.from('anecdotes').select('*').lte('date',today()).order('date',{ascending:false}).limit(90),
-    sb.from('friendships').select('id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
-    sb.from('enigma_responses').select('*').eq('user_id',currentUser.id),
-    sb.from('daily_enigma_choice').select('chooser_id').eq('date',enigmaDate).eq('chooser_id',currentUser.id).maybeSingle()
+    sb.from('friendships').select('id').or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id).eq('status','accepted'),
+    sb.from('enigma_responses').select('*').eq('user_id',state.currentUser.id),
+    sb.from('daily_enigma_choice').select('chooser_id').eq('date',enigmaDate).eq('chooser_id',state.currentUser.id).maybeSingle()
   ]);
   const r=reads||[],q=qhist||[],a=allAnec||[];
   const streak=computeStreak(r.map(x=>x.date));
@@ -97,23 +97,23 @@ export async function goProfile(){
   // XP & niveau
   const xp=calcXP(r.length,q.length,streak);
   state.currentUserXP=calcSLXP({reads:r.length,quizzes:q,enigmas:enigmaStats||[],streak});
-if(state.currentUser?.xp&&currentUser.xp>state.currentUserXP)state.currentUserXP=currentUser.xp;
+if(state.currentUser?.xp&&state.currentUser.xp>state.currentUserXP)state.currentUserXP=state.currentUser.xp;
   state.currentUserRank=getRank(state.currentUserXP);
   const nextSlRank=getNextRank(state.currentUserXP);
   const chip=document.getElementById('prof-level-chip');
-  if(chip){chip.textContent=currentUserRank.label+' Â· '+currentUserRank.title;chip.style.color=currentUserRank.color;chip.style.borderColor=currentUserRank.color;chip.style.background=currentUserRank.bg;chip.style.boxShadow=currentUserRank.glow;}
+  if(chip){chip.textContent=state.currentUserRank.label+' Â· '+state.currentUserRank.title;chip.style.color=state.currentUserRank.color;chip.style.borderColor=state.currentUserRank.color;chip.style.background=state.currentUserRank.bg;chip.style.boxShadow=state.currentUserRank.glow;}
   const xpCur=document.getElementById('prof-xp-cur');
   const xpNextEl=document.getElementById('prof-xp-next');
   const ring=document.getElementById('xp-ring-prog');
   const circ=289;
   if(nextSlRank){
-    const pct=(state.currentUserXP-currentUserRank.minXP)/(nextSlRank.minXP-currentUserRank.minXP);
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-Math.min(1,Math.max(0,pct))));ring.style.stroke=currentUserRank.color;},100);
-    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    const pct=(state.currentUserXP-state.currentUserRank.minXP)/(nextSlRank.minXP-state.currentUserRank.minXP);
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-Math.min(1,Math.max(0,pct))));ring.style.stroke=state.currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=state.currentUserXP.toLocaleString('fr-FR')+' XP';
     if(xpNextEl)xpNextEl.textContent='â '+nextSlRank.label+' '+nextSlRank.minXP.toLocaleString('fr-FR')+' XP';
   }else{
-    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';ring.style.stroke=currentUserRank.color;},100);
-    if(xpCur)xpCur.textContent=currentUserXP.toLocaleString('fr-FR')+' XP';
+    if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';ring.style.stroke=state.currentUserRank.color;},100);
+    if(xpCur)xpCur.textContent=state.currentUserXP.toLocaleString('fr-FR')+' XP';
     if(xpNextEl)xpNextEl.textContent='ð Rang max !';
   }
 
@@ -151,9 +151,9 @@ if(state.currentUser?.xp&&currentUser.xp>state.currentUserXP)state.currentUserXP
   const nightOwl=!!localStorage.getItem('night_owl');
   let duelsPlayed=0,duelsWon=0;
   try{
-    const{data:myDuels}=await sb.from('duels').select('id,challenger_id,opponent_id,challenger_score,opponent_score').or('challenger_id.eq.'+currentUser.id+',opponent_id.eq.'+currentUser.id).eq('status','completed');
+    const{data:myDuels}=await sb.from('duels').select('id,challenger_id,opponent_id,challenger_score,opponent_score').or('challenger_id.eq.'+state.currentUser.id+',opponent_id.eq.'+state.currentUser.id).eq('status','completed');
     duelsPlayed=(myDuels||[]).length;
-    duelsWon=(myDuels||[]).filter(d=>{const ic=d.challenger_id===currentUser.id;return ic?d.challenger_score>d.opponent_score:d.opponent_score>d.challenger_score;}).length;
+    duelsWon=(myDuels||[]).filter(d=>{const ic=d.challenger_id===state.currentUser.id;return ic?d.challenger_score>d.opponent_score:d.opponent_score>d.challenger_score;}).length;
   }catch(e){}
 
   // Badges
@@ -229,14 +229,14 @@ export async function buildAmisTab(){
 
 export async function searchFriend(){
   const q=(document.getElementById('friend-q')?.value||'').trim();if(!q)return;
-  const{data}=await sb.from('profiles').select('*').ilike('username','%'+q+'%').neq('id',currentUser.id).limit(5);
+  const{data}=await sb.from('profiles').select('*').ilike('username','%'+q+'%').neq('id',state.currentUser.id).limit(5);
   const el=document.getElementById('friend-results');if(!el)return;
   if(!data||!data.length){el.innerHTML='<div class="empty"><span class="empty-ico">ð</span><p>Aucun utilisateur trouv\u00e9.</p></div>';return;}
   el.innerHTML='<div style="margin-bottom:.65rem;font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);">R\u00e9sultats</div><div class="friend-list">'+data.map(u=>'<div class="friend-item"><div class="friend-av" onclick="viewUserProfile(\''+u.id+'\',\''+u.username+'\')" style="cursor:pointer;">'+u.username[0].toUpperCase()+'</div><div style="flex:1;cursor:pointer;" onclick="viewUserProfile(\''+u.id+'\',\''+u.username+'\')"><div class="friend-name">'+u.username+'</div></div><button class="btn-friend add" onclick="addFriend(\''+u.id+'\',\''+u.username+'\')">+ Ajouter</button></div>').join('')+'</div>';
 }
 
 export async function addFriend(uid,uname){
-  const{error}=await sb.from('friendships').insert({requester_id:currentUser.id,addressee_id:uid});
+  const{error}=await sb.from('friendships').insert({requester_id:state.currentUser.id,addressee_id:uid});
   if(error&&error.code==='23505'){showToast('D\u00e9j\u00e0 ami ou demande en attente.');return;}
   if(error){showToast('\u26a0 Erreur.');return;}
   showToast('\u2713 Demande envoy\u00e9e \u00e0 '+uname+' !');
@@ -244,9 +244,9 @@ export async function addFriend(uid,uname){
 
 export async function loadFriends(){
   const el=document.getElementById('friend-list-own');if(!el)return;
-  const{data}=await sb.from('friendships').select('*,req:profiles!friendships_requester_id_fkey(username),adr:profiles!friendships_addressee_id_fkey(username)').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id);
+  const{data}=await sb.from('friendships').select('*,req:profiles!friendships_requester_id_fkey(username),adr:profiles!friendships_addressee_id_fkey(username)').or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id);
   if(!data||!data.length){el.innerHTML='<div class="empty"><span class="empty-ico">ð¥</span><p>Aucun ami pour l\'instant.</p></div>';return;}
-  el.innerHTML='<div class="friend-list">'+data.map(f=>{const isMe=f.requester_id===currentUser.id;const name=isMe?(f.adr?.username||'?'):(f.req?.username||'?');const sc=f.status==='accepted'?'accepted':'pending';const sl=f.status==='accepted'?'Ami':(isMe?'En attente':'Accepter ?');const fuid=isMe?f.addressee_id:f.requester_id;return'<div class="friend-item"><div class="friend-av" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" style="cursor:pointer;">'+name[0].toUpperCase()+'</div><div style="flex:1;cursor:pointer;" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" ><div class="friend-name">'+name+'</div></div><span class="friend-status '+sc+'">'+sl+'</span>'+(f.status==='pending'&&!isMe?'<button class="btn-friend accept" onclick="acceptFriend(\''+f.id+'\')">Accepter</button>':'')+'</div>';}).join('')+'</div>';
+  el.innerHTML='<div class="friend-list">'+data.map(f=>{const isMe=f.requester_id===state.currentUser.id;const name=isMe?(f.adr?.username||'?'):(f.req?.username||'?');const sc=f.status==='accepted'?'accepted':'pending';const sl=f.status==='accepted'?'Ami':(isMe?'En attente':'Accepter ?');const fuid=isMe?f.addressee_id:f.requester_id;return'<div class="friend-item"><div class="friend-av" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" style="cursor:pointer;">'+name[0].toUpperCase()+'</div><div style="flex:1;cursor:pointer;" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" ><div class="friend-name">'+name+'</div></div><span class="friend-status '+sc+'">'+sl+'</span>'+(f.status==='pending'&&!isMe?'<button class="btn-friend accept" onclick="acceptFriend(\''+f.id+'\')">Accepter</button>':'')+'</div>';}).join('')+'</div>';
 }
 
 export async function acceptFriend(fid){await sb.from('friendships').update({status:'accepted'}).eq('id',fid);showToast('â Ami ajoutÃ© !');checkFriendRequests();buildLeagueDashboard();}
@@ -263,7 +263,7 @@ export async function initRating(){
   const rs=document.getElementById('rating-section');
   if(!rs||!state.currentUser||!state.todayAnec){if(rs)rs.style.display='none';return;}
   rs.style.display='block';
-  const{data:ex}=await sb.from('ratings').select('*').eq('user_id',currentUser.id).eq('anecdote_id',todayAnec.id).maybeSingle();
+  const{data:ex}=await sb.from('ratings').select('*').eq('user_id',state.currentUser.id).eq('anecdote_id',state.todayAnec.id).maybeSingle();
   state.curRating=ex?ex.stars:0;renderStars(state.curRating);
   const ci=document.getElementById('comment-input');if(ci){ci.value=ex?.comment||'';updateCommentCount();}
   const ok=document.getElementById('rating-saved');if(ok)ok.classList.toggle('on',!!ex);
@@ -283,7 +283,7 @@ export function updateCommentCount(){const ci=document.getElementById('comment-i
 export async function submitRating(){if(typeof completeBingoCell==='function')completeBingoCell(19);
   if(!state.currentUser||!state.todayAnec||state.curRating===0){showToast('\u26a0\ufe0f Choisissez au moins 1 \u00e9toile');return;}
   const comment=(document.getElementById('comment-input')?.value||'').trim();if(comment&&typeof completeBingoCell==='function')completeBingoCell(5);
-  await sb.from('ratings').upsert({user_id:currentUser.id,anecdote_id:todayAnec.id,stars:state.curRating,comment},{onConflict:'user_id,anecdote_id'});
+  await sb.from('ratings').upsert({user_id:state.currentUser.id,anecdote_id:state.todayAnec.id,stars:state.curRating,comment},{onConflict:'user_id,anecdote_id'});
   const ok=document.getElementById('rating-saved');if(ok)ok.classList.add('on');
   showToast('\u2713 Avis enregistr\u00e9 !');
   loadCommentsFeed();
@@ -293,7 +293,7 @@ export async function loadCommentsFeed(){
   const feed=document.getElementById('comments-feed');if(!feed||!state.todayAnec){if(feed)feed.style.display='none';return;}
   const{data:ratings}=await sb.from('ratings')
     .select('id,user_id,stars,comment,created_at')
-    .eq('anecdote_id',todayAnec.id)
+    .eq('anecdote_id',state.todayAnec.id)
     .not('comment','is',null)
     .neq('comment','')
     .order('created_at',{ascending:false})
@@ -330,7 +330,7 @@ export async function deleteCommentInline(uid, ratingId, btn){
   if(!confirm('Supprimer ce commentaire ?'))return;
   btn.disabled=true;btn.textContent='â¦';
   // Set comment to empty string (keeps the rating but removes comment)
-  const{error}=await sb.from('ratings').update({comment:''}).eq('user_id',uid).eq('anecdote_id',todayAnec.id);
+  const{error}=await sb.from('ratings').update({comment:''}).eq('user_id',uid).eq('anecdote_id',state.todayAnec.id);
   if(error){btn.disabled=false;btn.textContent='ð';showToast('Erreur: '+error.message);return;}
   const card=document.getElementById('ci-'+ratingId);
   if(card){card.style.opacity='0';card.style.transition='opacity .3s';setTimeout(()=>{card.remove();},300);}
@@ -407,8 +407,8 @@ export async function buildXpChart(targetId){
     weeks.push({start,end,label:i===0?'Cette sem.':'Sâ'+i});
   }
   const[{data:reads},{data:quizzes}]=await Promise.all([
-    sb.from('reads').select('created_at').eq('user_id',currentUser.id),
-    sb.from('quiz_history').select('created_at').eq('user_id',currentUser.id)
+    sb.from('reads').select('created_at').eq('user_id',state.currentUser.id),
+    sb.from('quiz_history').select('created_at').eq('user_id',state.currentUser.id)
   ]);
   const xpPerWeek=weeks.map(w=>{
     const rXP=((reads||[]).filter(r=>new Date(r.created_at)>=w.start&&new Date(r.created_at)<w.end).length)*10;
@@ -427,13 +427,13 @@ export async function uploadAvatar(input){
   if(file.size>2*1024*1024){showToast('â  Image trop lourde (max 2 Mo)');return;}
   showToast('â³ Upload en coursâ¦');
   const ext=file.name.split('.').pop().toLowerCase();
-  const path=currentUser.id+'/avatar.'+ext;
+  const path=state.currentUser.id+'/avatar.'+ext;
   const{data,error}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
   if(error){showToast('â  Erreur upload: '+error.message);return;}
   const{data:{publicUrl}}=sb.storage.from('avatars').getPublicUrl(path);
   const ts=publicUrl+(publicUrl.includes('?')?'&':'?')+'t='+Date.now();
-  await sb.from('profiles').update({avatar_url:ts}).eq('id',currentUser.id);
-  currentUser.avatar_url=ts;
+  await sb.from('profiles').update({avatar_url:ts}).eq('id',state.currentUser.id);
+  state.currentUser.avatar_url=ts;
   renderProfileAvatar(ts);
   showToast('â Photo mise Ã  jour !');
 }
@@ -450,7 +450,7 @@ export function startEditBio(){
   const inp=document.getElementById('prof-bio-input');
   const acts=document.getElementById('prof-bio-actions');
   if(!txt||!inp)return;
-  inp.value=state.currentUser&&currentUser.bio?currentUser.bio:'';
+  inp.value=state.currentUser&&state.currentUser.bio?state.currentUser.bio:'';
   txt.style.display='none';inp.style.display='block';if(acts)acts.style.display='flex';
   inp.focus();inp.select();
 }
@@ -466,8 +466,8 @@ export async function saveBio(){
   const inp=document.getElementById('prof-bio-input');
   if(!inp||!state.currentUser)return;
   const bio=inp.value.trim().slice(0,160);
-  await sb.from('profiles').update({bio}).eq('id',currentUser.id);
-  currentUser.bio=bio;
+  await sb.from('profiles').update({bio}).eq('id',state.currentUser.id);
+  state.currentUser.bio=bio;
   const txt=document.getElementById('prof-bio-text');
   if(txt)txt.textContent=bio||'Ajoute une bioâ¦';
   cancelEditBio();
@@ -502,9 +502,9 @@ export async function buildIdentityCard(reads,qhist,allAnec){
   const el=document.getElementById('identity-grid');if(!el)return;
   const dates=reads.map(r=>r.date);
   const maxStreak=computeMaxStreak(dates);
-  if(maxStreak>(currentUser.streak_record||0)){
-    await sb.from('profiles').update({streak_record:maxStreak}).eq('id',currentUser.id);
-    currentUser.streak_record=maxStreak;
+  if(maxStreak>(state.currentUser.streak_record||0)){
+    await sb.from('profiles').update({streak_record:maxStreak}).eq('id',state.currentUser.id);
+    state.currentUser.streak_record=maxStreak;
   }
   const avgQuiz=qhist.length?Math.round(qhist.reduce((a,b)=>a+b.pct,0)/qhist.length):0;
   const{title,icon}=funTitle(reads.length,avgQuiz);
@@ -528,7 +528,7 @@ export async function buildIdentityCard(reads,qhist,allAnec){
     '</div>'+
     '<div class="id-stat">'+
       '<div class="id-stat-icon">ð</div>'+
-      '<div class="id-stat-val">'+(currentUser.streak_record||maxStreak)+' j</div>'+
+      '<div class="id-stat-val">'+(state.currentUser.streak_record||maxStreak)+' j</div>'+
       '<div class="id-stat-lbl">Record de sÃ©rie</div>'+
       '<div class="id-stat-sub">max consÃ©cutif</div>'+
     '</div>'+
@@ -564,8 +564,8 @@ export async function viewUserProfile(uid, fallbackName){
     sb.from('quiz_history').select('pct,theme').eq('user_id',uid),
     sb.from('enigma_responses').select('id,is_correct').eq('user_id',uid),
     sb.from('reads').select('date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
-    state.currentUser&&currentUser.id!==uid
-      ?sb.from('friendships').select('id,status,requester_id').or('and(requester_id.eq.'+currentUser.id+',addressee_id.eq.'+uid+'),and(requester_id.eq.'+uid+',addressee_id.eq.'+currentUser.id+')').maybeSingle()
+    state.currentUser&&state.currentUser.id!==uid
+      ?sb.from('friendships').select('id,status,requester_id').or('and(requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+uid+'),and(requester_id.eq.'+uid+',addressee_id.eq.'+state.currentUser.id+')').maybeSingle()
       :{data:null},
     sb.from('friendships').select('id').or('requester_id.eq.'+uid+',addressee_id.eq.'+uid).eq('status','accepted'),
   ]);
@@ -608,9 +608,9 @@ export async function viewUserProfile(uid, fallbackName){
   const isFriend=rel&&rel.status==='accepted';
   const isPending=rel&&rel.status==='pending';
   const theyRequested=rel&&rel.requester_id===uid;
-  const canChallenge=state.currentUser&&isFriend&&currentUser.id!==uid;
+  const canChallenge=state.currentUser&&isFriend&&state.currentUser.id!==uid;
   let friendBtn='';
-  if(state.currentUser&&currentUser.id!==uid){
+  if(state.currentUser&&state.currentUser.id!==uid){
     if(!rel){
       friendBtn='<button class="btn-main umo-action-btn" onclick="addFriend(\''+uid+'\',\''+name+'\');this.textContent=\'Demande envoyÃ©e â\';this.disabled=true">ð¥ Ajouter en ami</button>';
     } else if(isPending&&theyRequested){
@@ -697,20 +697,20 @@ export async function openAccountSettings() {
       const { data: { user: freshUser } } = await sb.auth.getUser();
       if (freshUser) {
         emailEl.textContent = freshUser.email || 'â';
-        if (state.currentUser) currentUser.email = freshUser.email || '';
+        if (state.currentUser) state.currentUser.email = freshUser.email || '';
       }
     } catch(e) {
-      if (emailEl && state.currentUser) emailEl.textContent = currentUser.email || 'â';
+      if (emailEl && state.currentUser) emailEl.textContent = state.currentUser.email || 'â';
     }
   }
 
   // PrÃ©-remplir le pseudo actuel
   const unEl = document.getElementById('acct-username-input');
-  if (unEl && state.currentUser) unEl.value = currentUser.username || '';
+  if (unEl && state.currentUser) unEl.value = state.currentUser.username || '';
 
   // PrÃ©-remplir la bio
   const bioEl = document.getElementById('acct-bio-input');
-  if (bioEl && state.currentUser) bioEl.value = currentUser.bio || '';
+  if (bioEl && state.currentUser) bioEl.value = state.currentUser.bio || '';
 
   // Afficher les providers connectÃ©s
   _renderProviders();
@@ -750,7 +750,7 @@ export function switchAcctTab(name, btn) {
 export function _renderProviders() {
   const el = document.getElementById('acct-providers');
   if (!el || !state.currentUser) return;
-  const providers = currentUser.app_metadata?.providers || [currentUser.app_metadata?.provider || 'email'];
+  const providers = state.currentUser.app_metadata?.providers || [state.currentUser.app_metadata?.provider || 'email'];
   const icons = { email: 'ð§', discord: 'ð¬', google: 'ðµ', github: 'â«' };
   const names = { email: 'Email / Mot de passe', discord: 'Discord', google: 'Google', github: 'GitHub' };
   el.innerHTML = providers.map(p =>
@@ -764,7 +764,7 @@ export function _renderProviders() {
 export async function confirmDeleteAccount() {
   const input = prompt('Pour confirmer, tape "SUPPRIMER" en majuscules :');
   if (input !== 'SUPPRIMER') { showToast('Suppression annulÃ©e.'); return; }
-  await sb.from('profiles').delete().eq('id', currentUser.id);
+  await sb.from('profiles').delete().eq('id', state.currentUser.id);
   await sb.auth.signOut();
   showToast('Compte supprimÃ©. Ã bientÃ´t peut-Ãªtre ð');
   state.currentUser = null;
