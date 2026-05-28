@@ -5,7 +5,7 @@ let _notifChannel=null;
 export async function loadNotifications(){
   if(!state.currentUser)return;
   const{data}=await sb.from('notifications')
-    .select('*').eq('user_id',currentUser.id)
+    .select('*').eq('user_id',state.currentUser.id)
     .order('created_at',{ascending:false}).limit(30);
   _renderNotifBadge(data||[]);
   _renderNotifList(data||[]);
@@ -14,9 +14,9 @@ export async function loadNotifications(){
 export function subscribeNotifications(){
   if(!state.currentUser)return;
   if(_notifChannel){_notifChannel.unsubscribe();}
-  _notifChannel=sb.channel('notifs-'+currentUser.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+currentUser.id},()=>loadNotifications())
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+currentUser.id},()=>loadNotifications())
+  _notifChannel=sb.channel('notifs-'+state.currentUser.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+state.currentUser.id},()=>loadNotifications())
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+state.currentUser.id},()=>loadNotifications())
     .subscribe();
 }
 
@@ -89,7 +89,7 @@ export async function markNotifRead(id){
 
 export async function markAllNotifsRead(){
   if(!state.currentUser)return;
-  await sb.from('notifications').update({read:true}).eq('user_id',currentUser.id).eq('read',false);
+  await sb.from('notifications').update({read:true}).eq('user_id',state.currentUser.id).eq('read',false);
   loadNotifications();
 }
 
