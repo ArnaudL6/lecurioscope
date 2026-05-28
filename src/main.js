@@ -38,7 +38,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
       if(ex)uname=uname.slice(0,15)+'_'+Math.floor(Math.random()*999);
       await sb.from('profiles').insert({id:session.user.id,username:uname,joined:today()});
       state.currentUser={id:session.user.id,username:uname,joined:today(),email:session.user.email||''};
-    } else {currentUser.email=session.user.email||'';}
+    } else {state.currentUser.email=session.user.email||'';}
   }
   updateHeader();
   // PrÃÂ©charger l'anecdote en arriÃÂ¨re-plan sans l'afficher
@@ -59,7 +59,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
 
 async function computeStreak(){
   if(!state.currentUser)return 0;
-  const{data:logins}=await sb.from('user_logins').select('date').eq('user_id',currentUser.id).order('date',{ascending:false}).limit(400);
+  const{data:logins}=await sb.from('user_logins').select('date').eq('user_id',state.currentUser.id).order('date',{ascending:false}).limit(400);
   if(!logins||!logins.length)return 0;
   const dates=[...new Set(logins.map(r=>r.date))].sort().reverse();
   const todayStr=today();
@@ -72,7 +72,7 @@ async function computeStreak(){
 }
 
 async function loadStreak(){
-  if(state.currentUser)await sb.from('user_logins').upsert({user_id:currentUser.id,date:today()},{onConflict:'user_id,date'});
+  if(state.currentUser)await sb.from('user_logins').upsert({user_id:state.currentUser.id,date:today()},{onConflict:'user_id,date'});
   const n=await computeStreak();
   state.userStreak=n;
   const badge=document.getElementById('streak-badge');
@@ -106,8 +106,8 @@ async function loadContexte(){
   if(!card)return;
 
   // Si le contexte est dÃÂ©jÃÂ  en cache dans state.todayAnec, on l'affiche direct
-  if(todayAnec.contexte){
-    _renderContexte(todayAnec.contexte, todayAnec.sources||[]);
+  if(state.todayAnec.contexte){
+    _renderContexte(state.todayAnec.contexte, state.todayAnec.sources||[]);
     return;
   }
 
@@ -121,13 +121,13 @@ async function loadContexte(){
     const res=await fetch(EDGE,{
       method:'PATCH',
       headers:{'Content-Type':'application/json', 'apikey': SB_ANON},
-      body:JSON.stringify({id:todayAnec.id, anecdote:todayAnec.anecdote, theme:todayAnec.theme})
+      body:JSON.stringify({id:state.todayAnec.id, anecdote:state.todayAnec.anecdote, theme:state.todayAnec.theme})
     });
     if(!res.ok)throw new Error('status '+res.status);
     const json=await res.json();
     if(json.contexte){
-      todayAnec.contexte=json.contexte;
-      todayAnec.sources=json.sources||[];
+      state.todayAnec.contexte=json.contexte;
+      state.todayAnec.sources=json.sources||[];
       _renderContexte(json.contexte, json.sources||[]);
     }else{
       document.getElementById('contexte-txt').textContent='Contenu bientÃÂ´t disponible.';
@@ -157,9 +157,9 @@ function toggleContexte(){
 // Ã¢ÂÂÃ¢ÂÂ Share modal Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function shareAnec(){
   if(!state.todayAnec)return;
-  const theme=todayAnec.theme||'Anecdote';
-  const txt=todayAnec.anecdote||'';
-  document.getElementById('share-preview-theme').textContent=(todayAnec.icon||'')+'  '+theme;
+  const theme=state.todayAnec.theme||'Anecdote';
+  const txt=state.todayAnec.anecdote||'';
+  document.getElementById('share-preview-theme').textContent=(state.todayAnec.icon||'')+'  '+theme;
   document.getElementById('share-preview-txt').textContent=txt;
   document.getElementById('share-hint').textContent='';
   document.getElementById('share-bd').classList.add('on');
@@ -214,7 +214,7 @@ async function submitMystery(ws){
 async function answerChallenge(challengeId,answer,correct_answer){
   if(!state.currentUser){showToast('Ã¢ÂÂ Ã¯Â¸Â Connecte-toi pour jouer !');return;}
   const correct=(answer===correct_answer);
-  const{error}=await sb.from('challenge_responses').upsert({user_id:currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
+  const{error}=await sb.from('challenge_responses').upsert({user_id:state.currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
   if(error){showToast('Erreur : '+error.message);return;}
   if(correct)showToast('Ã°ÂÂÂ Bonne rÃÂ©ponse !');else showToast('Ã¢ÂÂ RatÃÂ© ! Retente la semaine prochaine.');
   // Bingo: marquer "dÃÂ©fi communautaire fait"
@@ -263,8 +263,8 @@ async function loadBingo(){
   if(!state.currentUser)return;
   // Case libre (18) toujours cochÃÂ©e
   completeBingoCell(18,false);
-  const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',currentUser.id).maybeSingle();
-  if(data&&data.cells){data.cells.forEach(c=>bingoCompleted.add(c));}
+  const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',state.currentUser.id).maybeSingle();
+  if(data&&data.cells){data.cells.forEach(c=>state.bingoCompleted.add(c));}
   // Auto-check depuis les donnÃÂ©es
   await autocheckBingo();
   updateBingoFab();
@@ -273,12 +273,12 @@ async function loadBingo(){
 async function autocheckBingo(){
   if(!state.currentUser)return;
   const[{data:reads},{data:qhist},{data:friends},{data:lgScores},{data:ratings},{data:themeReads}]=await Promise.all([
-    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('quiz_history').select('pct').eq('user_id',currentUser.id),
-    sb.from('friendships').select('id',{count:'exact',head:true}).or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
-    sb.from('league_scores').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('ratings').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id),
-    sb.from('reads').select('anecdotes(theme)').eq('user_id',currentUser.id).limit(200),
+    sb.from('reads').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('quiz_history').select('pct').eq('user_id',state.currentUser.id),
+    sb.from('friendships').select('id',{count:'exact',head:true}).or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id).eq('status','accepted'),
+    sb.from('league_scores').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('ratings').select('id',{count:'exact',head:true}).eq('user_id',state.currentUser.id),
+    sb.from('reads').select('anecdotes(theme)').eq('user_id',state.currentUser.id).limit(200),
   ]);
   const rc=reads?.length||0;
   const qlist=qhist||[];
@@ -298,15 +298,15 @@ async function autocheckBingo(){
     22:localStorage.getItem('bingo_multi')==='1',
     23:rc>=20, 24:rc>=30,
   };
-  const prev=bingoCompleted.size;
-  Object.entries(checks).forEach(([id,ok])=>{if(ok)bingoCompleted.add(Number(id));});
-  bingoCompleted.add(18); // case libre
-  if(bingoCompleted.size!==prev)saveBingo();
+  const prev=state.bingoCompleted.size;
+  Object.entries(checks).forEach(([id,ok])=>{if(ok)state.bingoCompleted.add(Number(id));});
+  state.bingoCompleted.add(18); // case libre
+  if(state.bingoCompleted.size!==prev)saveBingo();
 }
 
 function completeBingoCell(id,save=true){
-  if(bingoCompleted.has(id))return;
-  bingoCompleted.add(id);
+  if(state.bingoCompleted.has(id))return;
+  state.bingoCompleted.add(id);
   updateBingoFab();
   if(save)saveBingo();
   // Re-render grid if modal open
@@ -316,11 +316,11 @@ function completeBingoCell(id,save=true){
 async function saveBingo(){
   if(!state.currentUser)return;
   const cells=[...bingoCompleted];
-  await sb.from('bingo_progress').upsert({user_id:currentUser.id,cells,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  await sb.from('bingo_progress').upsert({user_id:state.currentUser.id,cells,updated_at:new Date().toISOString()},{onConflict:'user_id'});
 }
 
 function updateBingoFab(){
-  const n=bingoCompleted.size;
+  const n=state.bingoCompleted.size;
   const badge=document.getElementById('bingo-fab-badge');
   if(badge)badge.textContent=n+'/25';
   const prog=document.getElementById('bingo-prog-fill');
@@ -333,7 +333,7 @@ function renderBingoGrid(){
   const grid=document.getElementById('bingo-grid');
   if(!grid)return;
   grid.innerHTML=BINGO_CELLS.map(c=>{
-    const done=bingoCompleted.has(c.id);
+    const done=state.bingoCompleted.has(c.id);
     return '<div class="bingo-cell'+(done?' done':'')+(c.free?' free':'')+'">'+
       (done?'<div class="bingo-check">Ã¢ÂÂ</div>':'')+
       '<div class="bingo-cell-emoji">'+c.e+'</div>'+
@@ -364,7 +364,7 @@ async function buildCommunityChallenge(el){
 
   let userResp=null;
   if(state.currentUser){
-    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',currentUser.id).eq('challenge_id',ch.id).maybeSingle();
+    const{data:r}=await sb.from('challenge_responses').select('answer,correct').eq('user_id',state.currentUser.id).eq('challenge_id',ch.id).maybeSingle();
     userResp=r;
   }
 
