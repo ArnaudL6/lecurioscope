@@ -46,7 +46,7 @@ export async function runAdminCascadeDelete(anecId){
 
 export async function adminShowStats(el){
   el=el||document.getElementById('admin-content');
-  el.innerHTML='<div class="admin-section"><div class="admin-section-title">Chargement…</div></div>';
+  el.innerHTML='<div class="admin-section"><div class="admin-section-title">Chargement&</div></div>';
   const today=new Date().toISOString().slice(0,10);
   const[{count:totalReads},{count:todayReads},{count:totalUsers},{count:totalComments},{count:totalQuiz},{count:totalDuels}]=await Promise.all([
     sb.from('reads').select('*',{count:'exact',head:true}),
@@ -59,27 +59,27 @@ export async function adminShowStats(el){
   const{data:recentAnec}=await sb.from('anecdotes').select('theme,date,id').order('date',{ascending:false}).limit(1).maybeSingle();
   const topUsers=null;
   el.innerHTML=
-    '<div class="admin-section"><div class="admin-section-title">📊 Stats globales</div>'+
+    '<div class="admin-section"><div class="admin-section-title">=� Stats globales</div>'+
     '<div class="admin-stat-row"><span>Utilisateurs inscrits</span><span class="admin-stat-val">'+(totalUsers||0)+'</span></div>'+
     '<div class="admin-stat-row"><span>Lectures totales</span><span class="admin-stat-val">'+(totalReads||0)+'</span></div>'+
     '<div class="admin-stat-row"><span>Lectures aujourd\'hui</span><span class="admin-stat-val">'+(todayReads||0)+'</span></div>'+
-    '<div class="admin-stat-row"><span>Quiz joués</span><span class="admin-stat-val">'+(totalQuiz||0)+'</span></div>'+
-    '<div class="admin-stat-row"><span>Duels terminés</span><span class="admin-stat-val">'+(totalDuels||0)+'</span></div>'+
+    '<div class="admin-stat-row"><span>Quiz jou�s</span><span class="admin-stat-val">'+(totalQuiz||0)+'</span></div>'+
+    '<div class="admin-stat-row"><span>Duels termin�s</span><span class="admin-stat-val">'+(totalDuels||0)+'</span></div>'+
     '<div class="admin-stat-row"><span>Commentaires</span><span class="admin-stat-val">'+(totalComments||0)+'</span></div>'+
-    '<div class="admin-stat-row"><span>Dernière anecdote</span><span class="admin-stat-val">'+(recentAnec?.theme||'—')+' ('+( recentAnec?.date||'—')+')</span></div>'+
+    '<div class="admin-stat-row"><span>Derni�re anecdote</span><span class="admin-stat-val">'+(recentAnec?.theme||'')+' ('+( recentAnec?.date||'')+')</span></div>'+
     '</div>'+
     (topUsers&&topUsers.length?
-      '<div class="admin-section"><div class="admin-section-title">🏆 Top XP</div>'+
-      topUsers.map((u,i)=>'<div class="admin-stat-row"><span>'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'  #'+(i+1))+' '+u.username+'</span><span class="admin-stat-val">'+u.xp+' XP</span></div>').join('')+
+      '<div class="admin-section"><div class="admin-section-title"><� Top XP</div>'+
+      topUsers.map((u,i)=>'<div class="admin-stat-row"><span>'+(i===0?'>G':i===1?'>H':i===2?'>I':'  #'+(i+1))+' '+u.username+'</span><span class="admin-stat-val">'+u.xp+' XP</span></div>').join('')+
       '</div>':''
     );
 }
 
 export async function adminShowAnecdotes(el){
   el=el||document.getElementById('admin-content');
-  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement…</div>';
+  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement&</div>';
 
-  // Générer les 14 derniers jours
+  // G�n�rer les 14 derniers jours
   const days=[];
   for(let i=0;i<14;i++){
     const d=new Date();d.setDate(d.getDate()-i);
@@ -93,31 +93,31 @@ export async function adminShowAnecdotes(el){
 
   // Zone reset par date
   html+=`<div class="admin-section">
-    <div class="admin-section-title">🔄 Forcer le reset</div>
-    <div style="font-size:.72rem;color:var(--ink2);margin-bottom:.65rem;">Supprime toutes les données liées à une anecdote (quiz, lectures, notes…) et revient au sélecteur de thème.</div>
+    <div class="admin-section-title">= Forcer le reset</div>
+    <div style="font-size:.72rem;color:var(--ink2);margin-bottom:.65rem;">Supprime toutes les donn�es li�es � une anecdote (quiz, lectures, notes&) et revient au s�lecteur de th�me.</div>
     <div class="admin-reset-form">
       <input type="date" id="admin-reset-date" value="${today()}" />
-      <button class="admin-btn danger" style="flex-shrink:0;padding:.4rem .9rem;" onclick="adminForceReset()">🗑 Reset cette date</button>
+      <button class="admin-btn danger" style="flex-shrink:0;padding:.4rem .9rem;" onclick="adminForceReset()">=� Reset cette date</button>
     </div>
-    <button class="admin-btn" style="width:100%;margin-top:.25rem;" onclick="adminForceReset('today')">🔄 Reset aujourd'hui (${today()})</button>
+    <button class="admin-btn" style="width:100%;margin-top:.25rem;" onclick="adminForceReset('today')">= Reset aujourd'hui (${today()})</button>
   </div>`;
 
   // Liste des anecdotes
-  html+='<div class="admin-section"><div class="admin-section-title">📅 14 derniers jours</div>';
+  html+='<div class="admin-section"><div class="admin-section-title">=� 14 derniers jours</div>';
   days.forEach(date=>{
     const a=anecMap[date];
     if(a){
       html+=`<div class="admin-anec-row">
         <span class="admin-anec-date">${date}</span>
         <span class="admin-anec-theme">${a.theme||a.id}</span>
-        <span class="admin-anec-status ok">✓ OK</span>
-        <button class="admin-del-btn" onclick="adminDeleteAnecById('${a.id}','${date}',this)">🗑</button>
+        <span class="admin-anec-status ok"> OK</span>
+        <button class="admin-del-btn" onclick="adminDeleteAnecById('${a.id}','${date}',this)">=�</button>
       </div>`;
     }else{
       html+=`<div class="admin-anec-row">
         <span class="admin-anec-date">${date}</span>
         <span class="admin-anec-theme" style="color:var(--ink3);font-style:italic;">Aucune anecdote</span>
-        <span class="admin-anec-status miss">✗ vide</span>
+        <span class="admin-anec-status miss"> vide</span>
       </div>`;
     }
   });
@@ -129,8 +129,8 @@ export async function adminShowAnecdotes(el){
 export async function adminForceReset(mode){
   if(!isAdmin())return;
   const date=mode==='today'?today():document.getElementById('admin-reset-date')?.value||today();
-  if(!confirm('Supprimer toutes les données pour le '+date+' ?'))return;
-  showToast('⏳ Suppression en cours…');
+  if(!confirm('Supprimer toutes les donn�es pour le '+date+' ?'))return;
+  showToast('� Suppression en cours&');
 
   // Chercher l'anecdote pour cette date
   const{data:anec}=await sb.from('anecdotes').select('id').eq('date',date).maybeSingle();
@@ -138,25 +138,25 @@ export async function adminForceReset(mode){
 
   if(id){
     const res=await runAdminCascadeDelete(id);
-    if(res.error==='no_key'){showToast('⚠ Service Role Key requise');adminSwitchTab('anecdotes',null);return;}
-    if(res.error){showToast('⚠ Erreur: '+res.error.slice(0,80));return;}
+    if(res.error==='no_key'){showToast('� Service Role Key requise');adminSwitchTab('anecdotes',null);return;}
+    if(res.error){showToast('� Erreur: '+res.error.slice(0,80));return;}
   }else{
-    showToast('⚠ Aucune anecdote trouvée pour le '+date);return;
+    showToast('� Aucune anecdote trouv�e pour le '+date);return;
   }
 
-  showToast('✓ Anecdote du '+date+' supprimée !');
+  showToast(' Anecdote du '+date+' supprim�e !');
   if(date===today()){state.todayAnec=null;state.todayQs=[];}
   adminShowAnecdotes();
   if(date===today()){setTimeout(()=>{buildList();show('screen-pick');},1200);}
 }
 
 export async function adminDeleteAnecById(id, date, btn){
-  if(!confirm('Supprimer l\'anecdote du '+date+' et toutes ses données ?'))return;
-  btn.disabled=true; btn.textContent='…';
+  if(!confirm('Supprimer l\'anecdote du '+date+' et toutes ses donn�es ?'))return;
+  btn.disabled=true; btn.textContent='&';
   const res=await runAdminCascadeDelete(id);
-  if(res.error==='no_key'){btn.textContent='⚠ Clé';btn.disabled=false;adminSwitchTab('anecdotes',null);return;}
-  if(res.error){btn.textContent='⚠';btn.disabled=false;showToast('Erreur: '+res.error.slice(0,60));return;}
-  showToast('✓ Supprimé');
+  if(res.error==='no_key'){btn.textContent='� Cl�';btn.disabled=false;adminSwitchTab('anecdotes',null);return;}
+  if(res.error){btn.textContent='�';btn.disabled=false;showToast('Erreur: '+res.error.slice(0,60));return;}
+  showToast(' Supprim�');
   if(date===today()){state.todayAnec=null;state.todayQs=[];}
   btn.closest('.admin-anec-row').style.opacity='.3';
   setTimeout(()=>adminShowAnecdotes(),800);
@@ -164,46 +164,46 @@ export async function adminDeleteAnecById(id, date, btn){
 
 export async function adminResetDay(){
   if(!isAdmin())return;
-  if(!confirm('Supprimer l\'anecdote du jour et générer une nouvelle ?'))return;
+  if(!confirm('Supprimer l\'anecdote du jour et g�n�rer une nouvelle ?'))return;
   await adminForceReset('today');
 }
 
 export async function adminShowComments(el){
   el=el||document.getElementById('admin-content');
-  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement…</div>';
+  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement&</div>';
   const{data:ratings}=await sb.from('ratings').select('id,user_id,stars,comment,created_at,anecdote_id').not('comment','is',null).neq('comment','').order('created_at',{ascending:false}).limit(60);
-  if(!ratings||!ratings.length){el.innerHTML='<div class="admin-section"><div class="admin-section-title">💬 Commentaires</div><div style="color:var(--ink3);font-size:.75rem;">Aucun commentaire.</div></div>';return;}
+  if(!ratings||!ratings.length){el.innerHTML='<div class="admin-section"><div class="admin-section-title">=� Commentaires</div><div style="color:var(--ink3);font-size:.75rem;">Aucun commentaire.</div></div>';return;}
   const uids=[...new Set(ratings.map(r=>r.user_id))];
   const{data:profs}=await sb.from('profiles').select('id,username').in('id',uids);
   const pMap={};(profs||[]).forEach(p=>pMap[p.id]=p.username);
-  const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
-  el.innerHTML='<div class="admin-section"><div class="admin-section-title">💬 Commentaires ('+ratings.length+')</div>'+
+  const stars=n=>''.repeat(n)+''.repeat(5-n);
+  el.innerHTML='<div class="admin-section"><div class="admin-section-title">=� Commentaires ('+ratings.length+')</div>'+
     ratings.map(r=>'<div class="admin-comment-item">'+
       '<div><div style="font-size:.65rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;">'+(pMap[r.user_id]||'?')+' <span style="color:#f59e0b">'+stars(r.stars)+'</span></div>'+
       '<div style="font-size:.75rem;color:var(--ink2);">'+r.comment.replace(/</g,'&lt;')+'</div>'+
-      '<div style="font-size:.58rem;color:var(--ink3);margin-top:.15rem;">'+r.anecdote_id+' · '+(r.created_at||'').slice(0,10)+'</div></div>'+
-      '<button class="admin-comment-del" onclick="adminDeleteComment(\''+r.id+'\',this)">🗑</button>'+
+      '<div style="font-size:.58rem;color:var(--ink3);margin-top:.15rem;">'+r.anecdote_id+' � '+(r.created_at||'').slice(0,10)+'</div></div>'+
+      '<button class="admin-comment-del" onclick="adminDeleteComment(\''+r.id+'\',this)">=�</button>'+
     '</div>').join('')+
   '</div>';
 }
 
 export async function adminDeleteComment(id,btn){
-  btn.disabled=true;btn.textContent='…';
+  btn.disabled=true;btn.textContent='&';
   const{error}=await sb.from('ratings').update({comment:''}).eq('id',id);
-  if(error){btn.textContent='⚠';return;}
+  if(error){btn.textContent='�';return;}
   btn.closest('.admin-comment-item').style.opacity='.3';
-  btn.textContent='✓';
-  showToast('Commentaire supprimé');
+  btn.textContent='';
+  showToast('Commentaire supprim�');
   loadCommentsFeed();
 }
 
 export async function adminShowUsers(el){
   el=el||document.getElementById('admin-content');
-  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement…</div>';
+  el.innerHTML='<div style="color:var(--ink3);font-size:.75rem;padding:.5rem 0">Chargement&</div>';
   const{data:users,error}=await sb.from('profiles').select('id,username,role,joined').order('joined',{ascending:false}).limit(500);
   if(error||!users||!users.length){el.innerHTML='<div class="admin-section"><div style="color:var(--re);font-size:.75rem;">'+(error?.message||'Aucun utilisateur')+'</div></div>';return;}
   _adminUsersCache=users;
-  el.innerHTML='<div style="margin-bottom:.75rem;"><input id="admin-user-search" type="text" placeholder="🔍  Rechercher un utilisateur…" style="width:100%;padding:.55rem .85rem;background:var(--s1);border:1px solid var(--b2);border-radius:.6rem;font-family:sans-serif;font-size:.75rem;color:var(--ink);outline:none;box-sizing:border-box;" oninput="adminFilterUsers(this.value)" /></div><div id="admin-users-list"></div>';
+  el.innerHTML='<div style="margin-bottom:.75rem;"><input id="admin-user-search" type="text" placeholder="=  Rechercher un utilisateur&" style="width:100%;padding:.55rem .85rem;background:var(--s1);border:1px solid var(--b2);border-radius:.6rem;font-family:sans-serif;font-size:.75rem;color:var(--ink);outline:none;box-sizing:border-box;" oninput="adminFilterUsers(this.value)" /></div><div id="admin-users-list"></div>';
   adminFilterUsers('');
 }
 
@@ -214,31 +214,31 @@ export function adminFilterUsers(q){
   function userRow(u){
     const isAdm=u.role==='admin',isMod=u.role==='moderator';
     const av=`<div style="width:2rem;height:2rem;border-radius:50%;background:${isAdm?'var(--re)':isMod?'var(--bl)':'var(--a)'};display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0;">${(u.username||'?')[0].toUpperCase()}</div>`;
-    const badge=`<span class="admin-user-role${isMod?' mod':''}">${isAdm?'⚡ Admin':isMod?'🛡 Mod':'user'}</span>`;
+    const badge=`<span class="admin-user-role${isMod?' mod':''}">${isAdm?'� Admin':isMod?'=� Mod':'user'}</span>`;
     const joined=u.joined?'<div style="font-size:.58rem;color:var(--ink3);">Inscrit le '+u.joined.slice(0,10)+'</div>':'';
     const btn=isAdm?'':(`<button class="admin-mod-btn${isMod?' active':''}" onclick="adminToggleMod('${u.id}','${u.role||'user'}',this)">${isMod?'Retirer mod':'Nommer mod'}</button>`);
     return `<div class="admin-user-item">${av}<div style="flex:1;min-width:0;"><div style="font-size:.78rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.username||'?'}</div>${joined}</div>${badge}${btn}</div>`;
   }
-  if(!filtered.length){list.innerHTML='<div class="admin-section"><div style="color:var(--ink3);font-size:.75rem;text-align:center;padding:.5rem 0;">Aucun résultat pour "'+q+'"</div></div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="admin-section"><div style="color:var(--ink3);font-size:.75rem;text-align:center;padding:.5rem 0;">Aucun r�sultat pour "'+q+'"</div></div>';return;}
   const admins=filtered.filter(u=>u.role==='admin');
   const mods=filtered.filter(u=>u.role==='moderator');
   const others=filtered.filter(u=>u.role!=='moderator'&&u.role!=='admin');
   let out='';
   if(term){
-    out+=`<div class="admin-section"><div class="admin-section-title">${filtered.length} résultat${filtered.length>1?'s':''}</div>${filtered.map(userRow).join('')}</div>`;
+    out+=`<div class="admin-section"><div class="admin-section-title">${filtered.length} r�sultat${filtered.length>1?'s':''}</div>${filtered.map(userRow).join('')}</div>`;
   }else{
-    if(admins.length)out+=`<div class="admin-section"><div class="admin-section-title">⚡ Admins</div>${admins.map(userRow).join('')}</div>`;
-    if(mods.length)out+=`<div class="admin-section"><div class="admin-section-title">🛡 Modérateurs (${mods.length})</div>${mods.map(userRow).join('')}</div>`;
-    out+=`<div class="admin-section"><div class="admin-section-title">👥 Membres (${others.length})</div>${others.map(userRow).join('')}</div>`;
+    if(admins.length)out+=`<div class="admin-section"><div class="admin-section-title">� Admins</div>${admins.map(userRow).join('')}</div>`;
+    if(mods.length)out+=`<div class="admin-section"><div class="admin-section-title">=� Mod�rateurs (${mods.length})</div>${mods.map(userRow).join('')}</div>`;
+    out+=`<div class="admin-section"><div class="admin-section-title">=e Membres (${others.length})</div>${others.map(userRow).join('')}</div>`;
   }
   list.innerHTML=out;
 }
 
 export async function adminToggleMod(uid,currentRole,btn){
   const newRole=currentRole==='moderator'?'user':'moderator';
-  btn.disabled=true;btn.textContent='…';
+  btn.disabled=true;btn.textContent='&';
   const{error}=await sb.from('profiles').update({role:newRole}).eq('id',uid);
-  if(error){btn.textContent='⚠';btn.disabled=false;showToast('⚠ Erreur: '+error.message);return;}
-  showToast(newRole==='moderator'?'✓ Modérateur nommé !':'✓ Rôle retiré');
+  if(error){btn.textContent='�';btn.disabled=false;showToast('� Erreur: '+error.message);return;}
+  showToast(newRole==='moderator'?' Mod�rateur nomm� !':' R�le retir�');
   adminShowUsers();
 }
