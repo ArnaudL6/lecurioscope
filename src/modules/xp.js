@@ -68,16 +68,16 @@ export async function awardXP(amount,questTitle){
   if(newRank.id!==prevRank.id){
     setTimeout(()=>showLevelUp(newRank),1500);
   }
-  sb.from('profiles').update({xp:state.currentUserXP}).eq('id',currentUser.id);
+  sb.from('profiles').update({xp:state.currentUserXP}).eq('id',state.currentUser.id);
 }
 
 export async function showStatsWindow(){
   if(!state.currentUser){showToast('Connecte-toi pour voir tes stats !');return;}
   const[{data:reads},{data:quizzes},{data:enigmas},{data:friends}]=await Promise.all([
-    sb.from('reads').select('date').eq('user_id',currentUser.id),
-    sb.from('quiz_history').select('pct,date').eq('user_id',currentUser.id),
-    sb.from('enigma_responses').select('is_correct').eq('user_id',currentUser.id),
-    sb.from('friendships').select('id').or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id).eq('status','accepted'),
+    sb.from('reads').select('date').eq('user_id',state.currentUser.id),
+    sb.from('quiz_history').select('pct,date').eq('user_id',state.currentUser.id),
+    sb.from('enigma_responses').select('is_correct').eq('user_id',state.currentUser.id),
+    sb.from('friendships').select('id').or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id).eq('status','accepted'),
   ]);
   const r=reads||[],q=quizzes||[],e=enigmas||[],f=friends||[];
   const streak=computeStreak(r.map(x=>x.date));
@@ -100,7 +100,7 @@ export async function showStatsWindow(){
       <button class="sl-stats-close" onclick="document.getElementById('sl-stats-bd').remove()">â</button>
       <div class="sl-stats-header">
         <div class="sl-stats-title">FENÃTRE DE STATUT</div>
-        <div class="sl-stats-name">${currentUser.username}</div>
+        <div class="sl-stats-name">${state.currentUser.username}</div>
         <div class="sl-stats-rank" style="color:${rank.color};">[ RANG ${rank.label} â ${rank.title} ]</div>
       </div>
       <div class="sl-stats-xp">
@@ -153,11 +153,11 @@ export function popXP(amount,anchorEl){
 export async function checkAndAwardBadges(badgeData){
   if(!state.currentUser)return;
   try{
-    const{data:saved}=await sb.from('user_badges').select('badge_id').eq('user_id',currentUser.id);
+    const{data:saved}=await sb.from('user_badges').select('badge_id').eq('user_id',state.currentUser.id);
     const savedSet=new Set((saved||[]).map(b=>b.badge_id));
     const newOnes=BADGES_DEF.filter(b=>b.check(badgeData)&&!savedSet.has(b.id));
     for(const badge of newOnes){
-      await sb.from('user_badges').insert({user_id:currentUser.id,badge_id:badge.id});
+      await sb.from('user_badges').insert({user_id:state.currentUser.id,badge_id:badge.id});
       showToast('ð Badge dÃ©bloquÃ© : '+badge.icon+' '+badge.name+' !');
       await new Promise(res=>setTimeout(res,2200));
     }
