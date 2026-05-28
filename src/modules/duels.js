@@ -4,11 +4,11 @@ import { _sendNotif } from './notifs.js';
 
 let currentDuel=null,duelChannel=null;
 const DUEL_THEMES=[
-  {id:'histoire',label:'ðï¸ Histoire'},{id:'science',label:'ð¬ Science'},
-  {id:'nature',label:'ð¿ Nature'},{id:'insolite',label:'ð¤¯ Insolite'},
-  {id:'art',label:'ð¨ Art'},{id:'espace',label:'ð Espace'},
-  {id:'sport',label:'â¡ Sport'},{id:'gastro',label:'ð½ï¸ Gastro'},
-  {id:'legendes',label:'ð LÃ©gendes'},
+  {id:'histoire',label:'🏛️ Histoire'},{id:'science',label:'🔬 Science'},
+  {id:'nature',label:'🌿 Nature'},{id:'insolite',label:'🤯 Insolite'},
+  {id:'art',label:'🎨 Art'},{id:'espace',label:'🚀 Espace'},
+  {id:'sport',label:'⚡ Sport'},{id:'gastro',label:'🍽️ Gastro'},
+  {id:'legendes',label:'🔍 Légendes'},
 ];
 // NOT FOUND: let _asyncRoundAnswers=
 
@@ -32,7 +32,7 @@ export async function createDuel(){
 export function showDuelWaiting(duel){
   const el=document.getElementById('multi-content');
   if(!el)return;
-  el.innerHTML=`<div class="duel-section"><div class="duel-code-box"><div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Partage ce code \xe0 ton adversaire</div><div class="duel-code">${duel.code}</div><button class="btn-sec" style="margin-top:12px;font-size:.78rem" onclick="navigator.clipboard.writeText('${duel.code}').then(()=>showToast('â Code copi\xe9 !'))">ð Copier le code</button></div><div class="duel-waiting"><div class="spinner"></div><div>En attente de ton adversaireâ¦</div></div><button class="btn-sec" style="width:100%;margin-top:8px" onclick="cancelDuel('${duel.id}')">Annuler</button></div>`;
+  el.innerHTML=`<div class="duel-section"><div class="duel-code-box"><div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Partage ce code \xe0 ton adversaire</div><div class="duel-code">${duel.code}</div><button class="btn-sec" style="margin-top:12px;font-size:.78rem" onclick="navigator.clipboard.writeText('${duel.code}').then(()=>showToast('✓ Code copi\xe9 !'))">📋 Copier le code</button></div><div class="duel-waiting"><div class="spinner"></div><div>En attente de ton adversaire…</div></div><button class="btn-sec" style="width:100%;margin-top:8px" onclick="cancelDuel('${duel.id}')">Annuler</button></div>`;
   subscribeToDuel(duel.id);
 }
 
@@ -80,11 +80,11 @@ export async function renderDuelGame(duel){
   const myS=ic?duel.challenger_score:duel.opponent_score;
   const opS=ic?duel.opponent_score:duel.challenger_score;
   const isMyTurn=duel.current_chooser_id===state.currentUser.id;
-  el.innerHTML=`<div class="duel-section"><div class="duel-round-info">Ronde ${duel.current_round} / ${duel.total_rounds}</div><div class="duel-players"><div class="duel-player${ic?' active':''}"><div class="duel-player-name">${myName}</div><div class="duel-player-score">${myS}</div></div><div class="duel-vs">âï¸</div><div class="duel-player${!ic?' active':''}"><div class="duel-player-name">${oppName}</div><div class="duel-player-score">${opS}</div></div></div><div id="duel-round-content"></div></div>`;
+  el.innerHTML=`<div class="duel-section"><div class="duel-round-info">Ronde ${duel.current_round} / ${duel.total_rounds}</div><div class="duel-players"><div class="duel-player${ic?' active':''}"><div class="duel-player-name">${myName}</div><div class="duel-player-score">${myS}</div></div><div class="duel-vs">⚔️</div><div class="duel-player${!ic?' active':''}"><div class="duel-player-name">${oppName}</div><div class="duel-player-score">${opS}</div></div></div><div id="duel-round-content"></div></div>`;
   const{data:round}=await sb.from('duel_rounds').select('*').eq('duel_id',duel.id).eq('round_number',duel.current_round).maybeSingle();
   if(!round){
     if(isMyTurn)showThemePicker(duel.id,duel.current_round);
-    else document.getElementById('duel-round-content').innerHTML=`<div class="duel-waiting"><div class="spinner"></div><div>${oppName} choisit un th\xe8meâ¦</div></div>`;
+    else document.getElementById('duel-round-content').innerHTML=`<div class="duel-waiting"><div class="spinner"></div><div>${oppName} choisit un th\xe8me…</div></div>`;
   }else{renderDuelRound(round);}
 }
 
@@ -94,9 +94,9 @@ export function showThemePicker(duelId,roundNumber){
 }
 
 export async function pickDuelTheme(duelId,roundNumber,theme){
-  // DÃ©sactiver tous les boutons immÃ©diatement pour Ã©viter double-clic
+  // Désactiver tous les boutons immédiatement pour éviter double-clic
   document.querySelectorAll('.duel-theme-btn').forEach(b=>{b.disabled=true;b.style.opacity='.5';});
-  // VÃ©rifier si ce round existe dÃ©jÃ  (double appel possible)
+  // Vérifier si ce round existe déjà (double appel possible)
   const{data:existing}=await sb.from('duel_rounds').select('id').eq('duel_id',duelId).eq('round_number',roundNumber).maybeSingle();
   if(existing)return;
   const{data:anecs}=await sb.from('anecdotes').select('id').eq('theme',theme).limit(50);
@@ -130,15 +130,15 @@ export function renderDuelRound(round){
     const myReadyField2=ic2?'challenger_ready':'opponent_ready';
     const myReady2=round[myReadyField2]||false;
     el.innerHTML=
-      `<div style="margin-bottom:10px"><div style="font-size:.82rem;font-weight:700;margin-bottom:8px">ð¯ ${q.question}</div>`+
-      opts.map((o,i)=>`<div style="padding:8px 12px;border-radius:8px;border:1.5px solid ${i===corrAns?'#22c55e':'var(--b2)'};background:${i===corrAns?'rgba(34,197,94,.1)':'var(--s2)'};font-size:.78rem;margin:3px 0">${i===corrAns?'â ':''}${o}</div>`).join('')+
+      `<div style="margin-bottom:10px"><div style="font-size:.82rem;font-weight:700;margin-bottom:8px">🎯 ${q.question}</div>`+
+      opts.map((o,i)=>`<div style="padding:8px 12px;border-radius:8px;border:1.5px solid ${i===corrAns?'#22c55e':'var(--b2)'};background:${i===corrAns?'rgba(34,197,94,.1)':'var(--s2)'};font-size:.78rem;margin:3px 0">${i===corrAns?'✅ ':''}${o}</div>`).join('')+
       `</div>`+
-      `<div class="duel-result-row"><span class="duel-result-icon">${cA===corrAns?'â':'â'}</span><div class="duel-result-name">${cN}</div><div class="duel-result-ans">${opts[cA]||'?'}</div></div>`+
-      `<div class="duel-result-row"><span class="duel-result-icon">${oA===corrAns?'â':'â'}</span><div class="duel-result-name">${oN}</div><div class="duel-result-ans">${opts[oA]||'?'}</div></div>`+
-      (q.explanation?`<div style="font-size:.72rem;line-height:1.55;color:var(--ink3);padding:10px 12px;background:var(--s2);border-radius:10px;border-left:3px solid var(--a);margin:8px 0">ð¡ ${q.explanation}</div>`:'')+
+      `<div class="duel-result-row"><span class="duel-result-icon">${cA===corrAns?'✅':'❌'}</span><div class="duel-result-name">${cN}</div><div class="duel-result-ans">${opts[cA]||'?'}</div></div>`+
+      `<div class="duel-result-row"><span class="duel-result-icon">${oA===corrAns?'✅':'❌'}</span><div class="duel-result-name">${oN}</div><div class="duel-result-ans">${opts[oA]||'?'}</div></div>`+
+      (q.explanation?`<div style="font-size:.72rem;line-height:1.55;color:var(--ink3);padding:10px 12px;background:var(--s2);border-radius:10px;border-left:3px solid var(--a);margin:8px 0">💡 ${q.explanation}</div>`:'')+
       (myReady2
-        ?`<div class="duel-waiting" style="padding:8px 0"><div class="spinner"></div><div>En attente de l'adversaireâ¦</div></div>`
-        :`<button class="btn-main" style="width:100%;margin-top:6px" onclick="readyForNext('${round.id}','${round.duel_id}')">Question suivante â</button>`);
+        ?`<div class="duel-waiting" style="padding:8px 0"><div class="spinner"></div><div>En attente de l'adversaire…</div></div>`
+        :`<button class="btn-main" style="width:100%;margin-top:6px" onclick="readyForNext('${round.id}','${round.duel_id}')">Question suivante ➜</button>`);
     return;
   }
   if(hasAnswered){
@@ -146,22 +146,22 @@ export function renderDuelRound(round){
     const icH=currentDuel?currentDuel.challenger_id===state.currentUser.id:false;
     const myReadyField=icH?'challenger_ready':'opponent_ready';
     const myReady=round[myReadyField]||false;
-    el.innerHTML=`<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">ð¯ ${q.question}</div>`+
+    el.innerHTML=`<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">🎯 ${q.question}</div>`+
       opts.map((o,i)=>{
         let border='var(--b2)',bg='var(--s2)',op='.45';
         if(i===corrAns){border='#22c55e';bg='rgba(34,197,94,.12)';op='1';}
         else if(i===myAnswer&&i!==corrAns){border='#ef4444';bg='rgba(239,68,68,.10)';op='1';}
         else if(i===myAnswer){op='1';}
-        return `<div style="padding:10px 12px;border-radius:10px;border:1.5px solid ${border};background:${bg};font-size:.8rem;margin:5px 0;opacity:${op}">${i===corrAns?'â ':i===myAnswer&&i!==corrAns?'â ':''}${o}</div>`;
+        return `<div style="padding:10px 12px;border-radius:10px;border:1.5px solid ${border};background:${bg};font-size:.8rem;margin:5px 0;opacity:${op}">${i===corrAns?'✅ ':i===myAnswer&&i!==corrAns?'❌ ':''}${o}</div>`;
       }).join('')+
-      `<div style="font-size:.8rem;font-weight:700;margin:10px 0 4px;color:${isCorrect?'#22c55e':'#ef4444'}">${isCorrect?'â Bonne rÃ©ponse !':'â Mauvaise rÃ©ponse'}</div>`+
-      (q.explanation?`<div style="font-size:.75rem;line-height:1.55;color:var(--ink3);padding:10px 12px;background:var(--s2);border-radius:10px;border-left:3px solid var(--a);margin-bottom:10px">ð¡ ${q.explanation}</div>`:'')+
+      `<div style="font-size:.8rem;font-weight:700;margin:10px 0 4px;color:${isCorrect?'#22c55e':'#ef4444'}">${isCorrect?'✅ Bonne réponse !':'❌ Mauvaise réponse'}</div>`+
+      (q.explanation?`<div style="font-size:.75rem;line-height:1.55;color:var(--ink3);padding:10px 12px;background:var(--s2);border-radius:10px;border-left:3px solid var(--a);margin-bottom:10px">💡 ${q.explanation}</div>`:'')+
       (myReady
-        ?`<div class="duel-waiting" style="padding:8px 0"><div class="spinner"></div><div>En attente de l'adversaireâ¦</div></div>`
-        :`<button class="btn-main" style="width:100%;margin-top:6px" onclick="readyForNext('${round.id}','${round.duel_id}')">Question suivante â</button>`);
+        ?`<div class="duel-waiting" style="padding:8px 0"><div class="spinner"></div><div>En attente de l'adversaire…</div></div>`
+        :`<button class="btn-main" style="width:100%;margin-top:6px" onclick="readyForNext('${round.id}','${round.duel_id}')">Question suivante ➜</button>`);
     return;
   }
-  el.innerHTML=`<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">ð¯ ${q.question}</div>`+
+  el.innerHTML=`<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">🎯 ${q.question}</div>`+
     opts.map((o,i)=>`<button onclick="answerDuel('${round.id}','${round.duel_id}',${i})" style="display:block;width:100%;text-align:left;padding:11px 14px;border-radius:10px;border:1.5px solid var(--b2);background:var(--s2);font-size:.8rem;margin:5px 0;cursor:pointer;font-family:inherit;color:var(--ink);transition:.15s" onmouseover="this.style.borderColor='var(--a)'" onmouseout="this.style.borderColor='var(--b2)'">${o}</button>`).join('');
 }
 
@@ -183,7 +183,7 @@ export async function answerDuel(roundId,duelId,answer){
     const cur=ic?currentDuel.challenger_score:currentDuel.opponent_score;
     await sb.from('duels').update({[sField]:cur+1}).eq('id',duelId);
   }
-  // Pas d'avance auto â on attend que les deux cliquent "Question suivante"
+  // Pas d'avance auto — on attend que les deux cliquent "Question suivante"
 }
 
 export async function readyForNext(roundId,duelId){
@@ -208,12 +208,12 @@ export async function readyForNext(roundId,duelId){
 export async function showDuelLobby(){
   const el=document.getElementById('multi-content');if(!el)return;
   document.getElementById('multi-title-txt').innerHTML='<em>Duels</em>';
-  document.getElementById('multi-sub').textContent='Tour par tour â 5 manches, 3 questions chacune.';
+  document.getElementById('multi-sub').textContent='Tour par tour — 5 manches, 3 questions chacune.';
   if(!state.currentUser){
     el.innerHTML='<div class="duel-waiting"><p style="margin-bottom:16px">Connecte-toi pour jouer en duel !</p><button class="btn-main" onclick="show(\'screen-login\')">Se connecter</button></div>';
     return;
   }
-  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">â³ Chargementâ¦</div>';
+  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">⏳ Chargement…</div>';
   // Charger les duels actifs
   const{data:duels}=await sb.from('async_duels')
     .select('*').or('player_a.eq.'+state.currentUser.id+',player_b.eq.'+state.currentUser.id)
@@ -226,19 +226,19 @@ export async function showDuelLobby(){
       const myScore=isA?d.score_a:d.score_b;
       const opScore=isA?d.score_b:d.score_a;
       const myTurn=d.current_turn===state.currentUser.id;
-      const statusTxt=d.status==='pending'?'â³ En attente d\'adversaire':
-        myTurn?'ð¯ Ã ton tour !':'â³ Tour de '+oppName;
+      const statusTxt=d.status==='pending'?'⏳ En attente d\'adversaire':
+        myTurn?'🎯 À ton tour !':'⏳ Tour de '+oppName;
       return '<div class="duel-async-item" onclick="openAsyncDuel(\''+d.id+'\')">'+
-        '<div style="flex:1"><div class="duel-async-vs">vs '+(oppName||'Adversaire alÃ©atoire')+'</div>'+
-        '<div class="duel-async-status'+(myTurn?' my-turn':'')+'">'+statusTxt+' Â· Manche '+d.current_round+'/'+d.total_rounds+'</div></div>'+
-        '<div class="duel-async-score">'+myScore+' â '+opScore+'</div>'+
+        '<div style="flex:1"><div class="duel-async-vs">vs '+(oppName||'Adversaire aléatoire')+'</div>'+
+        '<div class="duel-async-status'+(myTurn?' my-turn':'')+'">'+statusTxt+' · Manche '+d.current_round+'/'+d.total_rounds+'</div></div>'+
+        '<div class="duel-async-score">'+myScore+' – '+opScore+'</div>'+
       '</div>';
     }).join('')
   :'';
   el.innerHTML='<div class="duel-async-lobby">'+
     '<div class="duel-async-actions">'+
-      '<button class="btn-main" onclick="showChallengeFriend()">âï¸ DÃ©fier un ami</button>'+
-      '<button class="btn-sec" onclick="joinRandomDuel()">ð² Adversaire alÃ©atoire</button>'+
+      '<button class="btn-main" onclick="showChallengeFriend()">⚔️ Défier un ami</button>'+
+      '<button class="btn-sec" onclick="joinRandomDuel()">🎲 Adversaire aléatoire</button>'+
     '</div>'+
     (activeHtml?'<div class="duel-active-list">'+activeHtml+'</div>':'<div style="text-align:center;padding:1.5rem 1rem;color:var(--ink3);font-size:.8rem;">Aucun duel en cours. Lance-toi !</div>')+
   '</div>';
@@ -246,16 +246,16 @@ export async function showDuelLobby(){
 
 export async function showChallengeFriend(){
   const el=document.getElementById('multi-content');if(!el)return;
-  document.getElementById('multi-title-txt').innerHTML='<em>DÃ©fier</em> un ami';
+  document.getElementById('multi-title-txt').innerHTML='<em>Défier</em> un ami';
   const backBtn=document.querySelector('#screen-multi .btn-back');
   if(backBtn){backBtn.style.display='block';}
-  el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--ink3);">â³ Chargement des amisâ¦</div>';
+  el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--ink3);">⏳ Chargement des amis…</div>';
   const{data:friends}=await sb.from('friendships')
     .select('*,req:profiles!friendships_requester_id_fkey(id,username),adr:profiles!friendships_addressee_id_fkey(id,username)')
     .or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id)
     .eq('status','accepted');
   if(!friends||!friends.length){
-    el.innerHTML='<div class="duel-friend-list"><div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">Tu n\'as pas encore d\'amis.<br><a onclick="goProfile();switchTab(\'amis\')" style="color:var(--a);cursor:pointer;">Chercher des amis â</a></div></div>';
+    el.innerHTML='<div class="duel-friend-list"><div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">Tu n\'as pas encore d\'amis.<br><a onclick="goProfile();switchTab(\'amis\')" style="color:var(--a);cursor:pointer;">Chercher des amis →</a></div></div>';
     return;
   }
   const items=friends.map(f=>{
@@ -266,7 +266,7 @@ export async function showChallengeFriend(){
     return '<div class="duel-friend-item">'+
       '<div class="duel-friend-av">'+av+'</div>'+
       '<div class="duel-friend-name">'+friend.username+'</div>'+
-      '<button class="duel-challenge-btn" id="challenge-btn-'+friend.id+'" onclick="challengeFriend(\''+friend.id+'\',\''+friend.username+'\')">DÃ©fier</button>'+
+      '<button class="duel-challenge-btn" id="challenge-btn-'+friend.id+'" onclick="challengeFriend(\''+friend.id+'\',\''+friend.username+'\')">Défier</button>'+
     '</div>';
   }).join('');
   el.innerHTML='<div class="duel-friend-list">'+items+'</div>';
@@ -275,24 +275,24 @@ export async function showChallengeFriend(){
 export async function challengeFriend(friendId,friendName){
   if(!state.currentUser)return;
   const btn=document.getElementById('challenge-btn-'+friendId);
-  if(btn){btn.disabled=true;btn.textContent='â³';}
-  // CrÃ©er le duel
+  if(btn){btn.disabled=true;btn.textContent='⏳';}
+  // Créer le duel
   const{data:duel,error}=await sb.from('async_duels').insert({
     player_a:state.currentUser.id,player_a_name:state.currentUser.username,
     player_b:friendId,player_b_name:friendName,
     status:'active',current_turn:state.currentUser.id,current_round:1
   }).select().maybeSingle();
-  if(error||!duel){showToast('Erreur lors de la crÃ©ation du duel');if(btn){btn.disabled=false;btn.textContent='DÃ©fier';}return;}
+  if(error||!duel){showToast('Erreur lors de la création du duel');if(btn){btn.disabled=false;btn.textContent='Défier';}return;}
   // Notifier l'ami
   await _sendNotif(friendId,'duel_invite',{from:state.currentUser.username,duel_id:duel.id});
-  showToast('â DÃ©fi envoyÃ© Ã  '+friendName+' !');
+  showToast('✓ Défi envoyé à '+friendName+' !');
   openAsyncDuel(duel.id);
 }
 
 export async function joinRandomDuel(){
   if(!state.currentUser){showToast('Connecte-toi !');return;}
-  showToast('ð Recherche d\'adversaireâ¦');
-  // Chercher un duel alÃ©atoire en attente d'un joueur
+  showToast('🔍 Recherche d\'adversaire…');
+  // Chercher un duel aléatoire en attente d'un joueur
   const{data:waiting}=await sb.from('async_duels')
     .select('*').eq('status','pending').eq('is_random',true)
     .is('player_b',null).neq('player_a',state.currentUser.id).limit(1).maybeSingle();
@@ -304,16 +304,16 @@ export async function joinRandomDuel(){
     }).eq('id',waiting.id);
     if(error){showToast('Erreur : '+error.message);return;}
     await _sendNotif(waiting.player_a,'duel_your_turn',{opponent:state.currentUser.username,duel_id:waiting.id});
-    showToast('â Adversaire trouvÃ© !');
+    showToast('✓ Adversaire trouvé !');
     openAsyncDuel(waiting.id);
   }else{
-    // CrÃ©er un duel alÃ©atoire en attente
+    // Créer un duel aléatoire en attente
     const{data:duel,error}=await sb.from('async_duels').insert({
       player_a:state.currentUser.id,player_a_name:state.currentUser.username,
       status:'pending',current_turn:state.currentUser.id,is_random:true
     }).select().maybeSingle();
     if(error||!duel){showToast('Erreur');return;}
-    showToast('â³ En attente d\'un adversaireâ¦ Tu seras notifiÃ© dÃ¨s qu\'il arrive !');
+    showToast('⏳ En attente d\'un adversaire… Tu seras notifié dès qu\'il arrive !');
     openAsyncDuel(duel.id);
   }
 }
@@ -321,7 +321,7 @@ export async function joinRandomDuel(){
 export async function openAsyncDuel(duelId){
   const el=document.getElementById('multi-content');if(!el)return;
   document.getElementById('multi-title-txt').innerHTML='<em>Duel</em>';
-  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);">â³ Chargementâ¦</div>';
+  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);">⏳ Chargement…</div>';
   const{data:duel}=await sb.from('async_duels').select('*').eq('id',duelId).maybeSingle();
   if(!duel){showToast('Duel introuvable');showDuelLobby();return;}
   _asyncDuel=duel;show('screen-multi');renderAsyncDuelView(duel);
@@ -338,18 +338,18 @@ export async function renderAsyncDuelView(duel){
   // Scoreboard
   const scoreHtml='<div class="duel-score-header">'+
     '<div class="duel-score-player mine"><div class="duel-score-name">Toi</div><div class="duel-score-val">'+myScore+'</div></div>'+
-    '<div class="duel-score-sep">âï¸</div>'+
+    '<div class="duel-score-sep">⚔️</div>'+
     '<div class="duel-score-player"><div class="duel-score-name">'+(oppName||'Adversaire')+'</div><div class="duel-score-val">'+opScore+'</div></div>'+
   '</div>'+
   '<div class="duel-round-label">Manche '+duel.current_round+' / '+duel.total_rounds+'</div>';
 
   if(duel.status==='pending'&&duel.is_random){
-    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>En attente d\'un adversaireâ¦<br><br><button class="btn-sec" style="margin-top:.5rem;font-size:.75rem" onclick="cancelAsyncDuel(\''+duel.id+'\')">Annuler</button></div>';
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>En attente d\'un adversaire…<br><br><button class="btn-sec" style="margin-top:.5rem;font-size:.75rem" onclick="cancelAsyncDuel(\''+duel.id+'\')">Annuler</button></div>';
     return;
   }
   if(duel.status==='completed'){renderAsyncDuelResult(duel);return;}
   if(duel.status==='pending'){
-    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">â³ En attente que <strong>'+(oppName||'ton adversaire')+'</strong> rejoigne le duel.</div>';
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">⏳ En attente que <strong>'+(oppName||'ton adversaire')+'</strong> rejoigne le duel.</div>';
     return;
   }
   // Chercher le round actuel
@@ -360,18 +360,18 @@ export async function renderAsyncDuelView(duel){
 
   if(myTurn&&(!round||!iHaveAnswered)){
     if(!round){
-      // Je dois choisir le thÃ¨me
+      // Je dois choisir le thème
       renderAsyncThemePicker(el,scoreHtml,duel);
     }else{
-      // Le round existe (l'autre l'a crÃ©Ã©), je dois juste rÃ©pondre aux questions
+      // Le round existe (l'autre l'a créé), je dois juste répondre aux questions
       renderAsyncQuestions(el,scoreHtml,duel,round);
     }
   }else if(!myTurn&&(!round||!iHaveAnswered)){
-    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>C\'est au tour de <strong>'+(oppName||'ton adversaire')+'</strong>.<br><small style="color:var(--ink3)">Tu seras notifiÃ© quand ce sera ton tour.</small></div>';
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div>C\'est au tour de <strong>'+(oppName||'ton adversaire')+'</strong>.<br><small style="color:var(--ink3)">Tu seras notifié quand ce sera ton tour.</small></div>';
   }else if(iHaveAnswered&&round&&(isA?round.answers_b:round.answers_a)===null){
-    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div><strong>'+(oppName||'Ton adversaire')+'</strong> n\'a pas encore rÃ©pondu Ã  cette manche.<br><small style="color:var(--ink3)">Tu seras notifiÃ© quand ce sera ton tour.</small></div>';
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait"><div class="spinner"></div><strong>'+(oppName||'Ton adversaire')+'</strong> n\'a pas encore répondu à cette manche.<br><small style="color:var(--ink3)">Tu seras notifié quand ce sera ton tour.</small></div>';
   }else{
-    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">â³ Manche en coursâ¦</div>';
+    el.innerHTML=scoreHtml+'<div class="duel-turn-wait">⏳ Manche en cours…</div>';
   }
 }
 
@@ -380,20 +380,20 @@ export function renderAsyncThemePicker(el,scoreHtml,duel){
     '<button class="duel-round-theme-btn" onclick="asyncPickTheme(\''+duel.id+'\','+duel.current_round+',\''+t.id+'\')">'+t.icon+'<br>'+t.label+'</button>'
   ).join('');
   el.innerHTML=scoreHtml+
-    '<div style="font-weight:700;font-size:.82rem;margin-bottom:.75rem;text-align:center;">ð¯ C\'est ton tour ! Choisis un thÃ¨me pour cette manche :</div>'+
+    '<div style="font-weight:700;font-size:.82rem;margin-bottom:.75rem;text-align:center;">🎯 C\'est ton tour ! Choisis un thème pour cette manche :</div>'+
     '<div class="duel-round-theme-grid">'+btnHtml+'</div>';
 }
 
 export async function asyncPickTheme(duelId,roundNumber,theme){
-  // DÃ©sactiver boutons
+  // Désactiver boutons
   document.querySelectorAll('.duel-round-theme-btn').forEach(b=>{b.disabled=true;b.style.opacity='.5';});
   const el=document.getElementById('multi-content');
-  if(el)el.innerHTML+='<div style="text-align:center;padding:1rem;color:var(--ink3);font-size:.78rem;">â³ GÃ©nÃ©ration des questionsâ¦</div>';
-  // Chercher 3 questions sur ce thÃ¨me
+  if(el)el.innerHTML+='<div style="text-align:center;padding:1rem;color:var(--ink3);font-size:.78rem;">⏳ Génération des questions…</div>';
+  // Chercher 3 questions sur ce thème
   const{data:anecs}=await sb.from('anecdotes').select('id').eq('theme',theme).limit(100);
   const pool=(anecs&&anecs.length)?anecs:(await sb.from('anecdotes').select('id').limit(100)).data||[];
-  if(!pool.length){showToast('Pas de questions disponibles pour ce thÃ¨me');showDuelLobby();return;}
-  // Tirer 3 anecdotes alÃ©atoires
+  if(!pool.length){showToast('Pas de questions disponibles pour ce thème');showDuelLobby();return;}
+  // Tirer 3 anecdotes aléatoires
   const shuffled=[...pool].sort(()=>Math.random()-.5).slice(0,3);
   const anecIds=shuffled.map(a=>a.id);
   const{data:allQs}=await sb.from('questions').select('*').in('anecdote_id',anecIds);
@@ -404,7 +404,7 @@ export async function asyncPickTheme(duelId,roundNumber,theme){
     return q?{type:q.type,question:q.question,options:q.options,answer:q.answer,explanation:q.explanation}:null;
   }).filter(Boolean).slice(0,3);
   if(questions.length<1){showToast('Pas assez de questions');showDuelLobby();return;}
-  // InsÃ©rer le round
+  // Insérer le round
   const isA=_asyncDuel&&_asyncDuel.player_a===state.currentUser.id;
   const answers_me={answers:[],score:0,answered_at:null};
   const{error}=await sb.from('async_duel_rounds').insert({
@@ -533,7 +533,7 @@ export async function advanceAsyncDuel(duel, roundNo, roundScore) {
   const bothDone = (isChallenger ? true : challDone) && (isChallenger ? oppDone : true);
 
   if (bothDone) {
-    // Both answered â advance round or finish
+    // Both answered — advance round or finish
     newRound = freshDuel.current_round + 1;
     if (newRound > 5) {
       newStatus  = 'finished';
@@ -583,12 +583,12 @@ export function renderAsyncDuelResult(duel, roundScore) {
 
   let emoji, title, sub;
   if (finished) {
-    if (myScore > theirScore)       { emoji = 'ð'; title = 'Victoire !';   sub = myScore + ' â ' + theirScore; }
-    else if (theirScore > myScore)  { emoji = 'ð¢'; title = 'DÃ©faite';      sub = myScore + ' â ' + theirScore; }
-    else                            { emoji = 'ð¤'; title = 'ÃgalitÃ© !';    sub = myScore + ' â ' + theirScore; }
+    if (myScore > theirScore)       { emoji = '🏆'; title = 'Victoire !';   sub = myScore + ' – ' + theirScore; }
+    else if (theirScore > myScore)  { emoji = '😢'; title = 'Défaite';      sub = myScore + ' – ' + theirScore; }
+    else                            { emoji = '🤝'; title = 'Égalité !';    sub = myScore + ' – ' + theirScore; }
   } else {
-    emoji = 'â'; title = 'Manche terminÃ©e !';
-    sub   = 'Tu as marquÃ© ' + roundScore + ' point' + (roundScore > 1 ? 's' : '') + ' cette manche. En attente de l\'adversaireâ¦';
+    emoji = '✅'; title = 'Manche terminée !';
+    sub   = 'Tu as marqué ' + roundScore + ' point' + (roundScore > 1 ? 's' : '') + ' cette manche. En attente de l\'adversaire…';
   }
 
   el.innerHTML =
@@ -606,6 +606,6 @@ export async function cancelAsyncDuel(duelId) {
   if (!confirm('Abandonner ce duel ?')) return;
   const { error } = await sb.from('async_duels').update({ status: 'cancelled' }).eq('id', duelId);
   if (error) { showToast('Erreur : ' + error.message); return; }
-  showToast('Duel annulÃ©');
+  showToast('Duel annulé');
   showDuelLobby();
 }
