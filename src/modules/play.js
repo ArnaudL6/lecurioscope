@@ -85,7 +85,7 @@ export async function goSoloPlay(){
     return;
   }
 
-  const{data:reads}=await sb.from('reads').select('anecdote_id').eq('user_id',currentUser.id);
+  const{data:reads}=await sb.from('reads').select('anecdote_id').eq('user_id',state.currentUser.id);
   const anecIds=(reads||[]).map(r=>r.anecdote_id);
 
   if(!anecIds.length){
@@ -145,7 +145,7 @@ export async function finishSoloHistoryQuiz(){
   window._soloQuizState.active=false;
   const{score,questions}=window._soloQuizState;
   const pct=Math.round(score/questions.length*100);
-  if(state.currentUser){try{await sb.from('quiz_history').insert({user_id:currentUser.id,anecdote_id:questions[0].anecdote_id,score,total:questions.length,pct,date:today()});}catch(_){}}
+  if(state.currentUser){try{await sb.from('quiz_history').insert({user_id:state.currentUser.id,anecdote_id:questions[0].anecdote_id,score,total:questions.length,pct,date:today()});}catch(_){}}
   const e=pct>=80?'ð':pct>=60?'â­':'ðª',t=pct>=80?'Excellent !':pct>=60?'Bien jouÃ© !':'Continue !',m=pct>=80?'Parfaite maÃ®trise !':pct>=60?'Solide ! Reviens demain.':'Chaque jour on apprend.';
   document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">'+e+'</span><span class="qr-score">'+pct+'%</span><div class="qr-title">'+t+'</div><div class="qr-msg">'+m+'</div><div style=\"display:flex;gap:.6rem;margin-top:1.25rem;justify-content:center;\"><button class=\"btn-sec\" onclick=\"goHome();updateNav(&apos;bn-anec&apos;)\">â Accueil</button><button class=\"btn-main\" onclick=\"goSoloPlay()\">Rejouer</button></div></div>';
 }
@@ -204,11 +204,11 @@ export async function createRoom(){
   const{data:allQs,error:qErr}=await sb.from('questions').select('*').limit(500);
   if(qErr||!allQs||!allQs.length){showToast('â  Impossible de charger les questions.');return;}
   const questions=[...allQs].sort(()=>Math.random()-.5).slice(0,Math.min(allQs.length,qCount));
-  const insertData={code,host_id:currentUser.id,status:'waiting',questions};
-  if(state.todayAnec)insertData.anecdote_id=todayAnec.id;
+  const insertData={code,host_id:state.currentUser.id,status:'waiting',questions};
+  if(state.todayAnec)insertData.anecdote_id=state.todayAnec.id;
   const{data:session,error}=await sb.from('quiz_sessions').insert(insertData).select().single();
   if(error){showToast('â  Erreur: '+error.message);return;}
-  await sb.from('quiz_participants').insert({session_id:session.id,user_id:currentUser.id,username:currentUser.username,score:0});
+  await sb.from('quiz_participants').insert({session_id:session.id,user_id:state.currentUser.id,username:state.currentUser.username,score:0});
   state.multiState={session,questions:session.questions,qIdx:0,score:0,answered:false,isHost:true};
   document.getElementById('multi-content').innerHTML=
     '<div style="max-width:340px;margin:0 auto;">'+
@@ -224,7 +224,7 @@ export async function createRoom(){
   state.multiChannel=sb.channel('room:'+code)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'quiz_participants',filter:'session_id=eq.'+session.id},()=>loadMultiScores())
     .on('broadcast',{event:'game_start'},(p)=>startMultiClient(p.payload))
-    .on('broadcast',{event:'player_ready'},(p)=>{multiState.readyPlayers=multiState.readyPlayers||new Set();multiState.readyPlayers.add(p.payload?.userId);checkMultiAllReady(p.payload?.qIdx);})
+    .on('broadcast',{event:'player_ready'},(p)=>{state.multiState.readyPlayers=state.multiState.readyPlayers||new Set();state.multiState.readyPlayers.add(p.payload?.userId);checkMultiAllReady(p.payload?.qIdx);})
     .on('broadcast',{event:'game_end'},()=>showMultiScoreboard())
     .subscribe();
   loadMultiScores();
@@ -235,7 +235,7 @@ export async function joinRoom(){
   if(!code||code.length!==4){showToast('â  Code invalide');return;}
   const{data:session,error}=await sb.from('quiz_sessions').select('*').eq('code',code).eq('status','waiting').maybeSingle();
   if(error||!session){showToast('â  Salle introuvable ou partie dÃ©jÃ  commencÃ©e');return;}
-  const{error:e2}=await sb.from('quiz_participants').insert({session_id:session.id,user_id:currentUser.id,username:currentUser.username,score:0});
+  const{error:e2}=await sb.from('quiz_participants').insert({session_id:session.id,user_id:state.currentUser.id,username:state.currentUser.username,score:0});
   if(e2&&!e2.message.includes('duplicate')){showToast('â  '+e2.message);return;}
   state.multiState={session,questions:session.questions,qIdx:0,score:0,answered:false,isHost:false};
   document.getElementById('multi-content').innerHTML=
@@ -253,75 +253,75 @@ export async function joinRoom(){
   document.getElementById('multi-sub').textContent="En attente de l'hÃ´teâ¦";
   state.multiChannel=sb.channel('room:'+code)
     .on('broadcast',{event:'game_start'},(p)=>startMultiClient(p.payload))
-    .on('broadcast',{event:'player_ready'},(p)=>{multiState.readyPlayers=multiState.readyPlayers||new Set();multiState.readyPlayers.add(p.payload?.userId);checkMultiAllReady(p.payload?.qIdx);})
+    .on('broadcast',{event:'player_ready'},(p)=>{state.multiState.readyPlayers=state.multiState.readyPlayers||new Set();state.multiState.readyPlayers.add(p.payload?.userId);checkMultiAllReady(p.payload?.qIdx);})
     .on('broadcast',{event:'game_end'},()=>showMultiScoreboard())
     .subscribe();
   loadMultiScores();
 }
 
 export async function startMultiGame(){
-  const questions=multiState.questions;
-  const{data:parts}=await sb.from('quiz_participants').select('user_id').eq('session_id',multiState.session.id);
+  const questions=state.multiState.questions;
+  const{data:parts}=await sb.from('quiz_participants').select('user_id').eq('session_id',state.multiState.session.id);
   const totalPlayers=Math.max(1,(parts||[]).length);
-  multiState.totalPlayers=totalPlayers;
-  await sb.from('quiz_sessions').update({status:'playing'}).eq('id',multiState.session.id);
-  await multiChannel.send({type:'broadcast',event:'game_start',payload:{questions,totalPlayers}});
+  state.multiState.totalPlayers=totalPlayers;
+  await sb.from('quiz_sessions').update({status:'playing'}).eq('id',state.multiState.session.id);
+  await state.multiChannel.send({type:'broadcast',event:'game_start',payload:{questions,totalPlayers}});
   startMultiClient();
 }
 
 export function startMultiClient(data){
   if(data){
-    if(Array.isArray(data)){if(data.length)multiState.questions=data;}
-    else{if(data.questions&&data.questions.length)multiState.questions=data.questions;if(data.totalPlayers)multiState.totalPlayers=data.totalPlayers;}
+    if(Array.isArray(data)){if(data.length)state.multiState.questions=data;}
+    else{if(data.questions&&data.questions.length)state.multiState.questions=data.questions;if(data.totalPlayers)state.multiState.totalPlayers=data.totalPlayers;}
   }
-  multiState.readyPlayers=new Set();
+  state.multiState.readyPlayers=new Set();
   renderMultiQ(0);
 }
 
 export function renderMultiQ(idx){
-  if(!state.multiState||!multiState.questions||idx>=multiState.questions.length){showMultiScoreboard();return;}
-  multiState.qIdx=idx;multiState.answered=false;
-  const q=multiState.questions[idx],prog=Math.round(idx/multiState.questions.length*100),isVF=q.type==='vf';
+  if(!state.multiState||!state.multiState.questions||idx>=state.multiState.questions.length){showMultiScoreboard();return;}
+  state.multiState.qIdx=idx;state.multiState.answered=false;
+  const q=state.multiState.questions[idx],prog=Math.round(idx/state.multiState.questions.length*100),isVF=q.type==='vf';
   const opts=isVF?'<div class="q-opts q-vf">'+q.options.map((o,i)=>'<button class="q-opt" id="mopt-'+i+'" onclick="submitMultiAnswer('+i+')">'+o+'</button>').join('')+'</div>':'<div class="q-opts">'+q.options.map((o,i)=>'<button class="q-opt" id="mopt-'+i+'" onclick="submitMultiAnswer('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</button>').join('')+'</div>';
-  document.getElementById('multi-content').innerHTML='<div class="q-block"><div class="q-header"><span class="q-prog-txt">Question '+(idx+1)+' / '+multiState.questions.length+'</span></div><div class="q-prog-bar"><div class="q-prog-fill" style="width:'+prog+'%"></div></div><div class="q-body"><span class="q-type '+(isVF?'vf':'qcm')+'">'+(isVF?'Vrai / Faux':'QCM')+'</span><div class="q-text">'+q.question+'</div>'+opts+'<div class="q-fb" id="q-fb-multi"></div><div id="multi-scores"></div><div id="multi-next-btn"></div></div></div>';
+  document.getElementById('multi-content').innerHTML='<div class="q-block"><div class="q-header"><span class="q-prog-txt">Question '+(idx+1)+' / '+state.multiState.questions.length+'</span></div><div class="q-prog-bar"><div class="q-prog-fill" style="width:'+prog+'%"></div></div><div class="q-body"><span class="q-type '+(isVF?'vf':'qcm')+'">'+(isVF?'Vrai / Faux':'QCM')+'</span><div class="q-text">'+q.question+'</div>'+opts+'<div class="q-fb" id="q-fb-multi"></div><div id="multi-scores"></div><div id="multi-next-btn"></div></div></div>';
   loadMultiScores();
 }
 
 export async function submitMultiAnswer(i){
-  if(multiState.answered)return;multiState.answered=true;
-  const q=multiState.questions[multiState.qIdx];
+  if(state.multiState.answered)return;state.multiState.answered=true;
+  const q=state.multiState.questions[state.multiState.qIdx];
   document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
-  const ok=i===q.answer;if(ok)multiState.score++;
+  const ok=i===q.answer;if(ok)state.multiState.score++;
   document.getElementById('mopt-'+i)?.classList.add(ok?'ok':'err');
   if(!ok)document.getElementById('mopt-'+q.answer)?.classList.add('ok');
   const fb=document.getElementById('q-fb-multi');if(fb){fb.textContent=q.explanation||'';fb.className='q-fb on '+(ok?'ok':'err');}
-  await sb.from('quiz_participants').update({score:multiState.score}).eq('session_id',multiState.session.id).eq('user_id',currentUser.id);
+  await sb.from('quiz_participants').update({score:state.multiState.score}).eq('session_id',state.multiState.session.id).eq('user_id',state.currentUser.id);
   const nextDiv=document.getElementById('multi-next-btn');
   if(nextDiv)nextDiv.innerHTML='<button class="btn-main" style="margin-top:1rem;" onclick="readyForNextMulti()">Question suivante â</button>';
   setTimeout(loadMultiScores,500);
 }
 
 export async function readyForNextMulti(){
-  const qIdx=multiState.qIdx;
+  const qIdx=state.multiState.qIdx;
   const nextDiv=document.getElementById('multi-next-btn');
   if(nextDiv)nextDiv.innerHTML='<div style="text-align:center;padding:.65rem;font-size:.72rem;color:var(--ink3);margin-top:.75rem;background:var(--adim);border-radius:.5rem;">â³ En attente des autres joueursâ¦</div>';
-  multiState.readyPlayers=multiState.readyPlayers||new Set();
-  multiState.readyPlayers.add(currentUser.id);
-  await multiChannel.send({type:'broadcast',event:'player_ready',payload:{userId:currentUser.id,qIdx}});
+  state.multiState.readyPlayers=state.multiState.readyPlayers||new Set();
+  state.multiState.readyPlayers.add(state.currentUser.id);
+  await state.multiChannel.send({type:'broadcast',event:'player_ready',payload:{userId:state.currentUser.id,qIdx}});
   checkMultiAllReady(qIdx);
 }
 
 export async function checkMultiAllReady(qIdx){
-  if(qIdx!==multiState.qIdx)return;
-  const total=multiState.totalPlayers||1;
-  const ready=(multiState.readyPlayers||new Set()).size;
+  if(qIdx!==state.multiState.qIdx)return;
+  const total=state.multiState.totalPlayers||1;
+  const ready=(state.multiState.readyPlayers||new Set()).size;
   if(ready<total)return;
-  multiState.readyPlayers=new Set();
+  state.multiState.readyPlayers=new Set();
   const next=qIdx+1;
-  if(next>=multiState.questions.length){
-    if(multiState.isHost){
-      await sb.from('quiz_sessions').update({status:'done'}).eq('id',multiState.session.id);
-      await multiChannel.send({type:'broadcast',event:'game_end',payload:{}});
+  if(next>=state.multiState.questions.length){
+    if(state.multiState.isHost){
+      await sb.from('quiz_sessions').update({status:'done'}).eq('id',state.multiState.session.id);
+      await state.multiChannel.send({type:'broadcast',event:'game_end',payload:{}});
     }
     showMultiScoreboard();
   }else{
@@ -330,7 +330,7 @@ export async function checkMultiAllReady(qIdx){
 }
 
 export async function showMultiScoreboard(){
-  const{data:players}=await sb.from('quiz_participants').select('*').eq('session_id',multiState.session.id).order('score',{ascending:false});
+  const{data:players}=await sb.from('quiz_participants').select('*').eq('session_id',state.multiState.session.id).order('score',{ascending:false});
   const medals=['ð¥','ð¥','ð¥'];
   const rows=(players||[]).map((p,i)=>'<div class="score-row"><div class="score-pos '+(i===0?'gold':'')+'">'+( medals[i]||('#'+(i+1)))+'</div><div class="score-name">'+p.username+'</div><div class="score-val">'+p.score+'pts</div></div>').join('');
   document.getElementById('multi-content').innerHTML='<div class="q-result"><span class="qr-emoji">ð</span><div class="qr-title">Partie terminÃ©e !</div><div class="qr-msg">Classement final</div></div><div class="scores-board">'+rows+'</div><button class="btn-main" style="margin-top:1.25rem;" onclick="renderMultiLobbyChoice()">Nouvelle partie</button>';
@@ -338,12 +338,12 @@ export async function showMultiScoreboard(){
 
 export async function loadMultiScores(){
   const el=document.getElementById('multi-scores');if(!el)return;
-  const{data:players}=await sb.from('quiz_participants').select('*').eq('session_id',multiState.session.id).order('score',{ascending:false});
+  const{data:players}=await sb.from('quiz_participants').select('*').eq('session_id',state.multiState.session.id).order('score',{ascending:false});
   if(!players||players.length<=1){el.innerHTML='';return;}
   el.innerHTML='<div style="font-size:.56rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:.4rem;">Scores en direct</div><div class="scores-board">'+players.map((p,i)=>'<div class="score-row"><div class="score-pos '+(i===0?'gold':'')+'">'+String(i+1).padStart(2,'0')+'</div><div class="score-name">'+p.username+'</div><div class="score-val">'+p.score+'</div></div>').join('')+'</div>';
 }
 
-export function leaveMulti(){if(state.multiChannel)multiChannel.unsubscribe();state.multiState=null;state.multiChannel=null;renderPlayChoice();}
+export function leaveMulti(){if(state.multiChannel)state.multiChannel.unsubscribe();state.multiState=null;state.multiChannel=null;renderPlayChoice();}
 
 export async function goLeaguePlay(){
   if(!state.currentUser){showToast('\u26a0 Connecte-toi pour jouer en ligue !');show('screen-login');return;}
@@ -361,7 +361,7 @@ export async function goLeaguePlay(){
   // Calculer les points actuels de la semaine
   const now=new Date();const weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));weekStart.setHours(0,0,0,0);
   const ws=weekStart.toISOString().slice(0,10);
-  const{data:existing}=await sb.from('league_scores').select('points,answers_correct,answers_wrong').eq('user_id',currentUser.id).eq('week_start',ws).maybeSingle();
+  const{data:existing}=await sb.from('league_scores').select('points,answers_correct,answers_wrong').eq('user_id',state.currentUser.id).eq('week_start',ws).maybeSingle();
 
   _lgState={questions:shuffled,idx:0,sessionPts:0,sessionCorrect:0,sessionWrong:0,weekStart:ws,prevPts:existing?.points||0,prevCorrect:existing?.answers_correct||0,prevWrong:existing?.answers_wrong||0,streak:[],anecMap:_lgAnecMap};
   document.getElementById('multi-sub').textContent=shuffled.length+' questions \u00b7 semaine en cours';
@@ -438,7 +438,7 @@ export async function finishLeague(){
   // Sauvegarder dans league_scores
   try{
     await sb.from('league_scores').upsert({
-      user_id:currentUser.id,week_start:s.weekStart,
+      user_id:state.currentUser.id,week_start:s.weekStart,
       points:newPts,answers_correct:newCorrect,answers_wrong:newWrong,
       updated_at:new Date().toISOString()
     },{onConflict:'user_id,week_start'});
