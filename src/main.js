@@ -12,8 +12,12 @@ import * as Duels from './modules/duels.js';
 import * as Admin from './modules/admin.js';
 import * as Vs100 from './modules/vs100.js';
 import * as Notifs from './modules/notifs.js';
-import { _handleHashRouting } from './modules/notifs.js';
 import { state, sb } from './shared.js';
+
+export function _handleHashRouting(){
+  const m=window.location.hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
+  if(m)viewUserProfile(m[1]);
+}
 
 // Make all functions globally available for inline HTML handlers
 Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile, History, Play, Duels, Admin, Vs100, Notifs);
@@ -37,7 +41,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
     } else {currentUser.email=session.user.email||'';}
   }
   updateHeader();
-  // PrÃ©charger l'anecdote en arriÃ¨re-plan sans l'afficher
+  // PrÃÂ©charger l'anecdote en arriÃÂ¨re-plan sans l'afficher
   loadTodayBackground();
   if(state.currentUser){
     showHub();
@@ -46,11 +50,11 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
     show('screen-login');
   }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 // v2 FEATURES
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
-// ââ Streak ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ Streak Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 // state.userStreak declared at top
 
 async function computeStreak(){
@@ -79,14 +83,14 @@ async function loadStreak(){
   // Update FAB badge
   const fab=document.getElementById('bingo-fab');
   if(fab&&isEte()){fab.style.display='flex';}
-  // Milestone pop â une seule fois par jour
+  // Milestone pop Ã¢ÂÂ une seule fois par jour
   if([3,7,14,30,50,100].includes(n)){
     const popKey='streak_pop_shown_'+today();
     if(!localStorage.getItem(popKey)){
       localStorage.setItem(popKey,'1');
       const pop=document.getElementById('streak-pop');
       if(pop){
-        document.getElementById('sp-num').textContent='ð¥ '+n;
+        document.getElementById('sp-num').textContent='Ã°ÂÂÂ¥ '+n;
         document.getElementById('sp-msg').textContent=n+' jours de suite !';
         pop.classList.add('on');
         setTimeout(()=>pop.classList.remove('on'),2800);
@@ -95,21 +99,21 @@ async function loadStreak(){
   }
 }
 
-// ââ "Pour aller plus loin" âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ "Pour aller plus loin" Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 async function loadContexte(){
   if(!state.todayAnec)return;
   const card=document.getElementById('contexte-card');
   if(!card)return;
 
-  // Si le contexte est dÃ©jÃ  en cache dans state.todayAnec, on l'affiche direct
+  // Si le contexte est dÃÂ©jÃÂ  en cache dans state.todayAnec, on l'affiche direct
   if(todayAnec.contexte){
     _renderContexte(todayAnec.contexte, todayAnec.sources||[]);
     return;
   }
 
-  // Sinon : gÃ©nÃ©ration Ã  la demande via l'Edge Function (PATCH)
+  // Sinon : gÃÂ©nÃÂ©ration ÃÂ  la demande via l'Edge Function (PATCH)
   card.style.display='block';
-  document.getElementById('contexte-txt').innerHTML='<span style="color:var(--ink3);font-size:.78rem">â¨ GÃ©nÃ©ration en coursâ¦</span>';
+  document.getElementById('contexte-txt').innerHTML='<span style="color:var(--ink3);font-size:.78rem">Ã¢ÂÂ¨ GÃÂ©nÃÂ©ration en coursÃ¢ÂÂ¦</span>';
   document.getElementById('contexte-sources').innerHTML='';
   card.classList.add('open');
 
@@ -126,7 +130,7 @@ async function loadContexte(){
       todayAnec.sources=json.sources||[];
       _renderContexte(json.contexte, json.sources||[]);
     }else{
-      document.getElementById('contexte-txt').textContent='Contenu bientÃ´t disponible.';
+      document.getElementById('contexte-txt').textContent='Contenu bientÃÂ´t disponible.';
     }
   }catch(e){
     document.getElementById('contexte-txt').textContent='Impossible de charger le contexte pour l\'instant.';
@@ -141,7 +145,7 @@ function _renderContexte(texte, sources){
   document.getElementById('contexte-txt').textContent=texte;
   const srcEl=document.getElementById('contexte-sources');
   if(sources.length){
-    srcEl.innerHTML=sources.map(s=>'<a class="contexte-src-lnk" href="'+s.url+'" target="_blank" rel="noopener"><span class="src-ico">ð</span>'+s.title+'</a>').join('');
+    srcEl.innerHTML=sources.map(s=>'<a class="contexte-src-lnk" href="'+s.url+'" target="_blank" rel="noopener"><span class="src-ico">Ã°ÂÂÂ</span>'+s.title+'</a>').join('');
   }else{srcEl.innerHTML='';}
 }
 
@@ -150,7 +154,7 @@ function toggleContexte(){
   if(card)card.classList.toggle('open');
 }
 
-// ââ Share modal ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ Share modal Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function shareAnec(){
   if(!state.todayAnec)return;
   const theme=todayAnec.theme||'Anecdote';
@@ -167,23 +171,23 @@ function closeShare(){document.getElementById('share-bd').classList.remove('on')
 function _shareText(){
   const theme=state.todayAnec?.theme||'Anecdote';
   const txt=state.todayAnec?.anecdote||'';
-  return 'ð¡ *'+theme+'* â Anecdote du Jour\n\n'+txt+'\n\nð https://anecdote-du-jour.pages.dev/';
+  return 'Ã°ÂÂÂ¡ *'+theme+'* Ã¢ÂÂ Anecdote du Jour\n\n'+txt+'\n\nÃ°ÂÂÂ https://anecdote-du-jour.pages.dev/';
 }
 function shareViaWhatsApp(){
   const url='https://wa.me/?text='+encodeURIComponent(_shareText());
   window.open(url,'_blank','noopener');
-  document.getElementById('share-hint').textContent='â WhatsApp ouvert !';
+  document.getElementById('share-hint').textContent='Ã¢ÂÂ WhatsApp ouvert !';
 }
 function shareViaDiscord(){
   const text=_shareText();
   navigator.clipboard.writeText(text).then(()=>{
-    document.getElementById('share-hint').textContent='â Texte copiÃ© â colle dans Discord !';
+    document.getElementById('share-hint').textContent='Ã¢ÂÂ Texte copiÃÂ© Ã¢ÂÂ colle dans Discord !';
   }).catch(()=>{document.getElementById('share-hint').textContent='Copie manuelle : Ctrl+C';});
 }
 function copyShareText(){
   const text=_shareText();
   navigator.clipboard.writeText(text).then(()=>{
-    document.getElementById('share-hint').textContent='â CopiÃ© dans le presse-papiers !';
+    document.getElementById('share-hint').textContent='Ã¢ÂÂ CopiÃÂ© dans le presse-papiers !';
     setTimeout(()=>{const h=document.getElementById('share-hint');if(h)h.textContent='';},2500);
   });
 }
@@ -195,60 +199,60 @@ async function submitMystery(ws){
   const ri=document.getElementById('mys-r-'+ws);
   if(!si||!ri)return;
   const suspect=si.value.trim(),reason=ri.value.trim();
-  if(!suspect||reason.length<20){showSystemNotif({title:'RÃ©ponse incomplÃ¨te â nom + raisonnement requis',xpGain:0});return;}
+  if(!suspect||reason.length<20){showSystemNotif({title:'RÃÂ©ponse incomplÃÂ¨te Ã¢ÂÂ nom + raisonnement requis',xpGain:0});return;}
   const{data}=await sb.from('weekly_mysteries').select('culprit,keywords,explanation').eq('week_start',ws).single();
   if(!data)return;
   const nameOk=data.culprit.toLowerCase().includes(suspect.toLowerCase())||suspect.toLowerCase().includes(data.culprit.split(' ').pop().toLowerCase());
   const kwHits=data.keywords.filter(kw=>reason.toLowerCase().includes(kw.toLowerCase()));
   const ok=nameOk&&kwHits.length>=2;
   localStorage.setItem('mys_v_'+ws,JSON.stringify({ok,suspect,reason,at:Date.now()}));
-  if(ok){showSystemNotif({title:'EnquÃªte rÃ©solueÂ !',xpGain:50});if(typeof addXP==='function')addXP(50);}
+  if(ok){showSystemNotif({title:'EnquÃÂªte rÃÂ©solueÃÂ !',xpGain:50});if(typeof addXP==='function')addXP(50);}
   const mw=document.getElementById('hub-mystery-wrap');
   if(mw)buildWeeklyMystery(mw);
 }
 
 async function answerChallenge(challengeId,answer,correct_answer){
-  if(!state.currentUser){showToast('â ï¸ Connecte-toi pour jouer !');return;}
+  if(!state.currentUser){showToast('Ã¢ÂÂ Ã¯Â¸Â Connecte-toi pour jouer !');return;}
   const correct=(answer===correct_answer);
   const{error}=await sb.from('challenge_responses').upsert({user_id:currentUser.id,challenge_id:challengeId,answer,correct},{onConflict:'user_id,challenge_id'});
   if(error){showToast('Erreur : '+error.message);return;}
-  if(correct)showToast('ð Bonne rÃ©ponse !');else showToast('â RatÃ© ! Retente la semaine prochaine.');
-  // Bingo: marquer "dÃ©fi communautaire fait"
+  if(correct)showToast('Ã°ÂÂÂ Bonne rÃÂ©ponse !');else showToast('Ã¢ÂÂ RatÃÂ© ! Retente la semaine prochaine.');
+  // Bingo: marquer "dÃÂ©fi communautaire fait"
   completeBingoCell(14);
-  // Recharger le challenge pour afficher rÃ©sultats
+  // Recharger le challenge pour afficher rÃÂ©sultats
   const el=document.querySelector('.challenge-card')?.parentElement;
   if(el)buildCommunityChallenge(el);
 }
 
-// ââ Bingo de l'Ã©tÃ© âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ Bingo de l'ÃÂ©tÃÂ© Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 const BINGO_START=new Date('2026-06-21');
 const BINGO_END  =new Date('2026-09-21T23:59:59');
 const BINGO_CELLS=[
-  {id:0, e:'ð', t:'Lis ta premiÃ¨re anecdote'},
-  {id:1, e:'â­', t:'Fais un quiz Ã  100%'},
-  {id:2, e:'ð', t:'Joue en Ligue'},
-  {id:3, e:'ð¥', t:'Ajoute un ami'},
-  {id:4, e:'ð', t:'Lis 5 anecdotes'},
-  {id:5, e:'ð¬', t:'Commente une anecdote'},
-  {id:6, e:'ð¬', t:'Lis une anecdote Science'},
-  {id:7, e:'ðï¸', t:"Lis une anecdote Histoire"},
-  {id:8, e:'ð¨', t:"Lis une anecdote Art"},
-  {id:9, e:'ð¥', t:'3 jours de suite'},
-  {id:10,e:'ð¤', t:"Partage une anecdote"},
-  {id:11,e:'ðï¸', t:"Obtiens un badge"},
-  {id:12,e:'ð', t:"Lis une anecdote Espace"},
-  {id:13,e:'ð½ï¸', t:"Lis une anecdote Gastro"},
-  {id:14,e:'ð¯', t:"Fais le dÃ©fi communautaire"},
-  {id:15,e:'ð§ ', t:"Fais un quiz"},
-  {id:16,e:'ð', t:"Lis 10 anecdotes"},
-  {id:17,e:'â¡', t:"Lis une anecdote Sport"},
-  {id:18,e:'â¨', t:"Case libre !", free:true},
-  {id:19,e:'ð', t:"Note une anecdote"},
-  {id:20,e:'ð¥', t:"7 jours de suite"},
-  {id:21,e:'ð¤', t:"Lis une anecdote Insolite"},
-  {id:22,e:'ð®', t:"Joue une partie privÃ©e"},
-  {id:23,e:'ð', t:"Lis 20 anecdotes"},
-  {id:24,e:'ð', t:"Lis 30 anecdotes"},
+  {id:0, e:'Ã°ÂÂÂ', t:'Lis ta premiÃÂ¨re anecdote'},
+  {id:1, e:'Ã¢Â­Â', t:'Fais un quiz ÃÂ  100%'},
+  {id:2, e:'Ã°ÂÂÂ', t:'Joue en Ligue'},
+  {id:3, e:'Ã°ÂÂÂ¥', t:'Ajoute un ami'},
+  {id:4, e:'Ã°ÂÂÂ', t:'Lis 5 anecdotes'},
+  {id:5, e:'Ã°ÂÂÂ¬', t:'Commente une anecdote'},
+  {id:6, e:'Ã°ÂÂÂ¬', t:'Lis une anecdote Science'},
+  {id:7, e:'Ã°ÂÂÂÃ¯Â¸Â', t:"Lis une anecdote Histoire"},
+  {id:8, e:'Ã°ÂÂÂ¨', t:"Lis une anecdote Art"},
+  {id:9, e:'Ã°ÂÂÂ¥', t:'3 jours de suite'},
+  {id:10,e:'Ã°ÂÂÂ¤', t:"Partage une anecdote"},
+  {id:11,e:'Ã°ÂÂÂÃ¯Â¸Â', t:"Obtiens un badge"},
+  {id:12,e:'Ã°ÂÂÂ', t:"Lis une anecdote Espace"},
+  {id:13,e:'Ã°ÂÂÂ½Ã¯Â¸Â', t:"Lis une anecdote Gastro"},
+  {id:14,e:'Ã°ÂÂÂ¯', t:"Fais le dÃÂ©fi communautaire"},
+  {id:15,e:'Ã°ÂÂ§Â ', t:"Fais un quiz"},
+  {id:16,e:'Ã°ÂÂÂ', t:"Lis 10 anecdotes"},
+  {id:17,e:'Ã¢ÂÂ¡', t:"Lis une anecdote Sport"},
+  {id:18,e:'Ã¢ÂÂ¨', t:"Case libre !", free:true},
+  {id:19,e:'Ã°ÂÂÂ', t:"Note une anecdote"},
+  {id:20,e:'Ã°ÂÂÂ¥', t:"7 jours de suite"},
+  {id:21,e:'Ã°ÂÂ¤Â', t:"Lis une anecdote Insolite"},
+  {id:22,e:'Ã°ÂÂÂ®', t:"Joue une partie privÃÂ©e"},
+  {id:23,e:'Ã°ÂÂÂ', t:"Lis 20 anecdotes"},
+  {id:24,e:'Ã°ÂÂÂ', t:"Lis 30 anecdotes"},
 ];
 
 // state.bingoCompleted declared at top
@@ -257,11 +261,11 @@ function isEte(){const n=new Date();return n>=BINGO_START&&n<=BINGO_END;}
 
 async function loadBingo(){
   if(!state.currentUser)return;
-  // Case libre (18) toujours cochÃ©e
+  // Case libre (18) toujours cochÃÂ©e
   completeBingoCell(18,false);
   const{data}=await sb.from('bingo_progress').select('cells').eq('user_id',currentUser.id).maybeSingle();
   if(data&&data.cells){data.cells.forEach(c=>bingoCompleted.add(c));}
-  // Auto-check depuis les donnÃ©es
+  // Auto-check depuis les donnÃÂ©es
   await autocheckBingo();
   updateBingoFab();
 }
@@ -322,7 +326,7 @@ function updateBingoFab(){
   const prog=document.getElementById('bingo-prog-fill');
   if(prog)prog.style.width=(n/25*100)+'%';
   const ptxt=document.getElementById('bingo-prog-txt');
-  if(ptxt)ptxt.textContent=n+' / 25 cases cochÃ©es';
+  if(ptxt)ptxt.textContent=n+' / 25 cases cochÃÂ©es';
 }
 
 function renderBingoGrid(){
@@ -331,7 +335,7 @@ function renderBingoGrid(){
   grid.innerHTML=BINGO_CELLS.map(c=>{
     const done=bingoCompleted.has(c.id);
     return '<div class="bingo-cell'+(done?' done':'')+(c.free?' free':'')+'">'+
-      (done?'<div class="bingo-check">â</div>':'')+
+      (done?'<div class="bingo-check">Ã¢ÂÂ</div>':'')+
       '<div class="bingo-cell-emoji">'+c.e+'</div>'+
       '<div class="bingo-cell-txt">'+c.t+'</div>'+
     '</div>';
@@ -340,13 +344,13 @@ function renderBingoGrid(){
 }
 
 function openBingo(){
-  if(!isEte()){showToast('ð Le bingo commence le 21 juin !');return;}
+  if(!isEte()){showToast('Ã°ÂÂÂ Le bingo commence le 21 juin !');return;}
   renderBingoGrid();
   document.getElementById('bingo-bd').classList.add('on');
 }
 function closeBingo(){document.getElementById('bingo-bd').classList.remove('on');}
 
-// ââ Community challenge ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ Community challenge Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 async function buildCommunityChallenge(el){
   if(!el)return;
   // Semaine en cours (lundi)
@@ -356,7 +360,7 @@ async function buildCommunityChallenge(el){
   const ws=mon.toISOString().slice(0,10);
 
   const{data:ch}=await sb.from('community_challenges').select('*').eq('week_start',ws).maybeSingle();
-  if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">ð¯</span><p style="color:var(--ink3);font-size:.8rem">DÃ©fi de la semaine bientÃ´t disponible !</p></div>';return;}
+  if(!ch){el.innerHTML='<div class="empty"><span class="empty-ico">Ã°ÂÂÂ¯</span><p style="color:var(--ink3);font-size:.8rem">DÃÂ©fi de la semaine bientÃÂ´t disponible !</p></div>';return;}
 
   let userResp=null;
   if(state.currentUser){
@@ -364,7 +368,7 @@ async function buildCommunityChallenge(el){
     userResp=r;
   }
 
-  // Compter les rÃ©ponses globales
+  // Compter les rÃÂ©ponses globales
   const{data:allResps}=await sb.from('challenge_responses').select('answer,correct').eq('challenge_id',ch.id);
   const total=(allResps||[]).length;
   const nbOk=(allResps||[]).filter(r=>r.correct).length;
@@ -386,16 +390,16 @@ async function buildCommunityChallenge(el){
   let bottomHtml='';
   if(answered){
     const ok=userResp.correct;
-    bottomHtml='<div class="challenge-result"><span>'+(ok?'â':'â')+'</span><span>'+(ok?'Bonne rÃ©ponse ! Bien jouÃ© ð':'RatÃ© ! La bonne rÃ©ponse est <strong>'+opts[ch.answer]+'</strong>')+'</span></div>'+
-      (ch.explanation?'<div class="challenge-expl">ð '+ch.explanation+'</div>':'')+
+    bottomHtml='<div class="challenge-result"><span>'+(ok?'Ã¢ÂÂ':'Ã¢ÂÂ')+'</span><span>'+(ok?'Bonne rÃÂ©ponse ! Bien jouÃÂ© Ã°ÂÂÂ':'RatÃÂ© ! La bonne rÃÂ©ponse est <strong>'+opts[ch.answer]+'</strong>')+'</span></div>'+
+      (ch.explanation?'<div class="challenge-expl">Ã°ÂÂÂ '+ch.explanation+'</div>':'')+
       '<div class="challenge-score-bar"><div class="challenge-score-fill" style="width:'+pctOk+'%"></div></div>'+
-      '<div class="challenge-stats">'+nbOk+' / '+total+' joueurs ont trouvÃ© ('+pctOk+'%)</div>';
+      '<div class="challenge-stats">'+nbOk+' / '+total+' joueurs ont trouvÃÂ© ('+pctOk+'%)</div>';
   }else if(!state.currentUser){
     bottomHtml='<div style="margin-top:.75rem;text-align:center"><button class="btn-main" style="font-size:.75rem;padding:.5rem 1.25rem" onclick="show(\'screen-login\')">Se connecter pour jouer</button></div>';
   }
 
   el.innerHTML='<div class="challenge-card">'+
-    '<div class="challenge-week">'+ch.icon+' DÃ©fi de la semaine</div>'+
+    '<div class="challenge-week">'+ch.icon+' DÃÂ©fi de la semaine</div>'+
     '<div class="challenge-q">'+ch.question+'</div>'+
     '<div class="challenge-opts">'+optHtml+'</div>'+
     bottomHtml+'</div>';
@@ -404,7 +408,7 @@ async function buildCommunityChallenge(el){
 
 
 
-// ââ XP pop animation âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ XP pop animation Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function popXP(amount,anchorEl){
   const pop=document.createElement('div');
   pop.className='xp-pop';
@@ -437,7 +441,7 @@ function popXP(amount,anchorEl){
 
 
 window.addEventListener('hashchange',_handleHashRouting);
-// DÃ©clencher au chargement si hash prÃ©sent (aprÃ¨s auth)
+// DÃÂ©clencher au chargement si hash prÃÂ©sent (aprÃÂ¨s auth)
 document.addEventListener('DOMContentLoaded',()=>setTimeout(_handleHashRouting,800));
-// âââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢Â
 _handleHashRouting();
