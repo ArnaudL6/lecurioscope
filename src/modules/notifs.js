@@ -35,16 +35,16 @@ export function _renderNotifBadge(notifs){
 export function _renderNotifList(notifs){
   const el=document.getElementById('notif-list');if(!el)return;
   if(!notifs||!notifs.length){el.innerHTML='<div class="notif-empty">Aucune notification</div>';return;}
-  const icons={friend_request:'ð¥',friend_accepted:'ð¤',duel_invite:'âï¸',duel_your_turn:'ð¯',duel_result:'ð'};
+  const icons={friend_request:'👥',friend_accepted:'🤝',duel_invite:'⚔️',duel_your_turn:'🎯',duel_result:'🏆'};
   el.innerHTML=notifs.map(n=>{
-    const ic=icons[n.type]||'ð';
+    const ic=icons[n.type]||'🔔';
     const p=n.payload||{};
     const titles={
-      friend_request:(p.from||'Quelqu\'un')+' t\'a envoyÃ© une demande d\'ami',
-      friend_accepted:(p.from||'Ton ami')+' a acceptÃ© ta demande',
-      duel_invite:(p.from||'Quelqu\'un')+' te dÃ©fie en duel !',
+      friend_request:(p.from||'Quelqu\'un')+' t\'a envoyé une demande d\'ami',
+      friend_accepted:(p.from||'Ton ami')+' a accepté ta demande',
+      duel_invite:(p.from||'Quelqu\'un')+' te défie en duel !',
       duel_your_turn:'C\'est ton tour dans le duel vs '+(p.opponent||'?'),
-      duel_result:'RÃ©sultat du duel vs '+(p.opponent||'?')+' : '+(p.result||''),
+      duel_result:'Résultat du duel vs '+(p.opponent||'?')+' : '+(p.result||''),
     };
     const title=titles[n.type]||n.type;
     const ts=n.created_at?_timeAgo(new Date(n.created_at)):'';
@@ -67,7 +67,7 @@ export function _notifAction(n){
 
 export function _timeAgo(date){
   const s=Math.round((Date.now()-date)/1000);
-  if(s<60)return 'Ã  l\'instant';
+  if(s<60)return 'à l\'instant';
   if(s<3600)return Math.floor(s/60)+'min';
   if(s<86400)return Math.floor(s/3600)+'h';
   return Math.floor(s/86400)+'j';
