@@ -1,62 +1,62 @@
-import { state, sb, show, escHtml, fmt, fmtShort, showToast, setBtn, today, RANKS } from '../shared.js';
+import { state, sb, show, escHtml, fmt, fmtShort, showToast, setBtn, today, RANKS, computeStreak } from '../shared.js';
 import { calcXP, calcLevel, calcSLXP, getRank, getNextRank, awardXP, checkAndAwardBadges } from './xp.js';
 import { _sendNotif } from './notifs.js';
 
 const PROF_COLORS=['#22d3ee','#a855f7','#f97316','#34d399','#f472b6','#fbbf24'];
 const LEVELS=[
   {name:'Novice',min:0},{name:'Curieux',min:100},{name:'Explorateur',min:300},
-  {name:'LettrÃ©',min:600},{name:'Expert',min:1000},{name:'Sage',min:2000}
+  {name:'Lettré',min:600},{name:'Expert',min:1000},{name:'Sage',min:2000}
 ];
 const BADGES_DEF=[
   // ââ Lecture ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
   {id:'first',   icon:'ð±',name:'PremiÃ¨re graine', desc:'PremiÃ¨re anecdote lue',         rarity:'common',   check:d=>d.reads>=1},
   {id:'read10',  icon:'ð',name:'Lecteur assidu',  desc:'10 anecdotes lues',             rarity:'common',   check:d=>d.reads>=10},
   {id:'read50',  icon:'ðï¸',name:'Ãrudit',          desc:'50 anecdotes lues',             rarity:'rare',     check:d=>d.reads>=50},
-  {id:'read100', icon:'ð',name:'EncyclopÃ©diste',  desc:'100 anecdotes lues',            rarity:'epic',     check:d=>d.reads>=100},
+  {id:'read100', icon:'ð',name:'Encyclopédiste',  desc:'100 anecdotes lues',            rarity:'epic',     check:d=>d.reads>=100},
   {id:'read365', icon:'ð',name:'Archiviste',      desc:'365 anecdotes lues',            rarity:'legendary',check:d=>d.reads>=365},
   // ââ Streak âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
   {id:'fire3',   icon:'ð¥',name:'En feu',          desc:'3 jours de suite',              rarity:'common',   check:d=>d.streak>=3},
-  {id:'week',    icon:'â¡',name:'HabituÃ©',          desc:'7 jours de suite',              rarity:'common',   check:d=>d.streak>=7},
+  {id:'week',    icon:'â¡',name:'Habitué',          desc:'7 jours de suite',              rarity:'common',   check:d=>d.streak>=7},
   {id:'fort',    icon:'ðª',name:'Accro',           desc:'14 jours de suite',             rarity:'rare',     check:d=>d.streak>=14},
   {id:'moon',    icon:'ð',name:'Mois lunaire',    desc:'30 jours de suite',             rarity:'rare',     check:d=>d.streak>=30},
   {id:'shield',  icon:'ð¡ï¸',name:'Invincible',      desc:'60 jours de suite',             rarity:'epic',     check:d=>d.streak>=60},
   {id:'cent',    icon:'ð¯',name:'Centurion',       desc:'100 jours de suite',            rarity:'epic',     check:d=>d.streak>=100},
-  {id:'legend',  icon:'ð',name:'LÃ©gende absolue', desc:'365 jours de suite',            rarity:'legendary',check:d=>d.streak>=365},
+  {id:'legend',  icon:'ð',name:'Légende absolue', desc:'365 jours de suite',            rarity:'legendary',check:d=>d.streak>=365},
   // ââ Quiz âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-  {id:'quiz1',   icon:'ð¯',name:'Premier quiz',    desc:'Premier quiz complÃ©tÃ©',         rarity:'common',   check:d=>d.quizzes>=1},
-  {id:'quiz10',  icon:'ð',name:'Quizzeur',        desc:'10 quiz complÃ©tÃ©s',             rarity:'common',   check:d=>d.quizzes>=10},
-  {id:'quiz100', icon:'ð',name:'MaÃ®tre du quiz',  desc:'100 quiz complÃ©tÃ©s',            rarity:'epic',     check:d=>d.quizzes>=100},
+  {id:'quiz1',   icon:'ð¯',name:'Premier quiz',    desc:'Premier quiz complété',         rarity:'common',   check:d=>d.quizzes>=1},
+  {id:'quiz10',  icon:'ð',name:'Quizzeur',        desc:'10 quiz complétés',             rarity:'common',   check:d=>d.quizzes>=10},
+  {id:'quiz100', icon:'ð',name:'MaÃ®tre du quiz',  desc:'100 quiz complétés',            rarity:'epic',     check:d=>d.quizzes>=100},
   {id:'ace',     icon:'â­',name:'Sans faute',      desc:'Quiz 100% parfait',             rarity:'common',   check:d=>d.bestQuiz>=100},
   {id:'ace5',    icon:'ð',name:'Perfectionniste', desc:'5 quiz parfaits',               rarity:'rare',     check:d=>d.perfectQuiz>=5},
   {id:'brain',   icon:'ð§ ',name:'Expert',          desc:'Moyenne > 80%',                 rarity:'rare',     check:d=>d.avgQuiz>80},
   // ââ ThÃ¨mes âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-  {id:'map4',    icon:'ðºï¸',name:'Explorateur',     desc:'4 thÃ¨mes dÃ©couverts',           rarity:'common',   check:d=>d.themes>=4},
-  {id:'atlas',   icon:'ð',name:'Grand voyageur',  desc:'Tous les 8 thÃ¨mes explorÃ©s',    rarity:'epic',     check:d=>d.themes>=8},
+  {id:'map4',    icon:'ðºï¸',name:'Explorateur',     desc:'4 thÃ¨mes découverts',           rarity:'common',   check:d=>d.themes>=4},
+  {id:'atlas',   icon:'ð',name:'Grand voyageur',  desc:'Tous les 8 thÃ¨mes explorés',    rarity:'epic',     check:d=>d.themes>=8},
   {id:'hist5',   icon:'ðï¸',name:'Historien',       desc:'5 anecdotes Histoire',          rarity:'common',   check:d=>(d.themeMap?.histoire||0)>=5},
   {id:'sci5',    icon:'ð¬',name:'Scientifique',    desc:'5 anecdotes Science',           rarity:'common',   check:d=>(d.themeMap?.science||0)>=5},
   {id:'nat5',    icon:'ð¿',name:'Naturaliste',     desc:'5 anecdotes Nature',            rarity:'common',   check:d=>(d.themeMap?.nature||0)>=5},
   {id:'ins5',    icon:'ð¤¯',name:'Bizarre Bizarre', desc:'5 anecdotes Insolite',          rarity:'common',   check:d=>(d.themeMap?.insolite||0)>=5},
   {id:'spc5',    icon:'ð',name:'Astronaute',      desc:'5 anecdotes Espace',            rarity:'common',   check:d=>(d.themeMap?.espace||0)>=5},
   // ââ Social âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-  {id:'social',  icon:'ð¥',name:'Social',          desc:'Premier ami ajoutÃ©',            rarity:'common',   check:d=>d.friends>=1},
-  {id:'duel1',   icon:'âï¸',name:'Challenger',      desc:'Premier duel jouÃ©',             rarity:'common',   check:d=>d.duelsPlayed>=1},
-  {id:'duelw1',  icon:'ð¥',name:'Vainqueur',       desc:'Premier duel gagnÃ©',            rarity:'common',   check:d=>d.duelsWon>=1},
-  {id:'duelw5',  icon:'ð¡ï¸',name:'Gladiateur',      desc:'5 duels gagnÃ©s',                rarity:'rare',     check:d=>d.duelsWon>=5},
-  {id:'share1',  icon:'ð£',name:'Ambassadeur',     desc:'PremiÃ¨re anecdote partagÃ©e',    rarity:'common',   check:d=>d.shares>=1},
+  {id:'social',  icon:'ð¥',name:'Social',          desc:'Premier ami ajouté',            rarity:'common',   check:d=>d.friends>=1},
+  {id:'duel1',   icon:'âï¸',name:'Challenger',      desc:'Premier duel joué',             rarity:'common',   check:d=>d.duelsPlayed>=1},
+  {id:'duelw1',  icon:'ð¥',name:'Vainqueur',       desc:'Premier duel gagné',            rarity:'common',   check:d=>d.duelsWon>=1},
+  {id:'duelw5',  icon:'ð¡ï¸',name:'Gladiateur',      desc:'5 duels gagnés',                rarity:'rare',     check:d=>d.duelsWon>=5},
+  {id:'share1',  icon:'ð£',name:'Ambassadeur',     desc:'PremiÃ¨re anecdote partagée',    rarity:'common',   check:d=>d.shares>=1},
   {id:'fav10',   icon:'â¤ï¸',name:'Collectionneur',  desc:'10 anecdotes en favoris',       rarity:'common',   check:d=>d.favs>=10},
 
   // ââ Ãnigmes ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-  {id:'enigme_first',    icon:'ð®',name:'Premier dÃ©fi',      desc:'PremiÃ¨re Ã©nigme rÃ©solue',        rarity:'common',   check:d=>(d.enigmaTotal||0)>=1},
-  {id:'enigme_correct5', icon:'ð§©',name:'RÃ©solveur',         desc:'5 bonnes rÃ©ponses',              rarity:'common',   check:d=>(d.enigmaCorrect||0)>=5},
-  {id:'enigme_correct20',icon:'ð',name:'MaÃ®tre des Ã©nigmes',desc:'20 bonnes rÃ©ponses',             rarity:'rare',     check:d=>(d.enigmaCorrect||0)>=20},
-  {id:'enigme_correct50',icon:'ð',name:'Grand Sphinx',      desc:'50 bonnes rÃ©ponses',             rarity:'epic',     check:d=>(d.enigmaCorrect||0)>=50},
-  {id:'enigme_all_cats', icon:'ð¯',name:'Polyglotte',        desc:'Toutes les catÃ©gories explorÃ©es', rarity:'epic',     check:d=>(d.enigmaCats||0)>=9},
-  {id:'enigme_chooser',  icon:'ðï¸',name:'Ãclaireur',         desc:'A choisi la catÃ©gorie du jour',  rarity:'common',   check:d=>d.enigmaChooser},
-  {id:'enigme_logique',  icon:'ð§ ',name:'Logicien',          desc:'5 Ã©nigmes Logique rÃ©solues',     rarity:'common',   check:d=>(d.enigmaLogique||0)>=5},
-  {id:'enigme_historique',icon:'ðï¸',name:'Chroniqueur',     desc:'5 Ã©nigmes Historique rÃ©solues',  rarity:'common',   check:d=>(d.enigmaHistorique||0)>=5},
-  {id:'enigme_maths',    icon:'ð¢',name:'Calculateur',       desc:'5 Maths rÃ©crÃ©atives rÃ©solues',   rarity:'common',   check:d=>(d.enigmaMaths||0)>=5},
+  {id:'enigme_first',    icon:'ð®',name:'Premier défi',      desc:'PremiÃ¨re énigme résolue',        rarity:'common',   check:d=>(d.enigmaTotal||0)>=1},
+  {id:'enigme_correct5', icon:'ð§©',name:'Résolveur',         desc:'5 bonnes réponses',              rarity:'common',   check:d=>(d.enigmaCorrect||0)>=5},
+  {id:'enigme_correct20',icon:'ð',name:'MaÃ®tre des énigmes',desc:'20 bonnes réponses',             rarity:'rare',     check:d=>(d.enigmaCorrect||0)>=20},
+  {id:'enigme_correct50',icon:'ð',name:'Grand Sphinx',      desc:'50 bonnes réponses',             rarity:'epic',     check:d=>(d.enigmaCorrect||0)>=50},
+  {id:'enigme_all_cats', icon:'ð¯',name:'Polyglotte',        desc:'Toutes les catégories explorées', rarity:'epic',     check:d=>(d.enigmaCats||0)>=9},
+  {id:'enigme_chooser',  icon:'ðï¸',name:'Ãclaireur',         desc:'A choisi la catégorie du jour',  rarity:'common',   check:d=>d.enigmaChooser},
+  {id:'enigme_logique',  icon:'ð§ ',name:'Logicien',          desc:'5 énigmes Logique résolues',     rarity:'common',   check:d=>(d.enigmaLogique||0)>=5},
+  {id:'enigme_historique',icon:'ðï¸',name:'Chroniqueur',     desc:'5 énigmes Historique résolues',  rarity:'common',   check:d=>(d.enigmaHistorique||0)>=5},
+  {id:'enigme_maths',    icon:'ð¢',name:'Calculateur',       desc:'5 Maths récréatives résolues',   rarity:'common',   check:d=>(d.enigmaMaths||0)>=5},
 
-  // ââ SpÃ©cial ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // ââ Spécial ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
   {id:'early',   icon:'ð',name:'LÃ¨ve-tÃ´t',        desc:'Ouvert avant 7h du matin',      rarity:'rare',     check:d=>d.earlyBird},
   {id:'owl',     icon:'ð¦',name:'Noctambule',       desc:'Ouvert aprÃ¨s 23h',              rarity:'rare',     check:d=>d.nightOwl},
 ];
@@ -66,7 +66,7 @@ export async function goProfile(){
   if(!state.currentUser)return;updateNav('bn-profil');show('screen-profile');
   state.prevScreen=document.querySelector('.screen.on')?.id||'screen-anec';
 
-  // Appliquer couleur sauvegardÃ©e
+  // Appliquer couleur sauvegardée
   const savedColor=localStorage.getItem('adj_prof_color')||PROF_COLORS[0];
   applyProfileColor(savedColor,false);
 
@@ -77,7 +77,7 @@ export async function goProfile(){
   renderProfileAvatar(state.currentUser.avatar_url||null);
   // Bio
   const bioEl=document.getElementById('prof-bio-text');
-  if(bioEl)bioEl.textContent=state.currentUser.bio||'Ajoute une bioâ¦';
+  if(bioEl)bioEl.textContent=state.currentUser.bio||'Ajoute une bio…';
 
   // Enigma stats
   const enigmaDate=new Date().toISOString().slice(0,10);
@@ -101,7 +101,7 @@ if(state.currentUser?.xp&&state.currentUser.xp>state.currentUserXP)state.current
   state.currentUserRank=getRank(state.currentUserXP);
   const nextSlRank=getNextRank(state.currentUserXP);
   const chip=document.getElementById('prof-level-chip');
-  if(chip){chip.textContent=state.currentUserRank.label+' Â· '+state.currentUserRank.title;chip.style.color=state.currentUserRank.color;chip.style.borderColor=state.currentUserRank.color;chip.style.background=state.currentUserRank.bg;chip.style.boxShadow=state.currentUserRank.glow;}
+  if(chip){chip.textContent=state.currentUserRank.label+' · '+state.currentUserRank.title;chip.style.color=state.currentUserRank.color;chip.style.borderColor=state.currentUserRank.color;chip.style.background=state.currentUserRank.bg;chip.style.boxShadow=state.currentUserRank.glow;}
   const xpCur=document.getElementById('prof-xp-cur');
   const xpNextEl=document.getElementById('prof-xp-next');
   const ring=document.getElementById('xp-ring-prog');
@@ -110,7 +110,7 @@ if(state.currentUser?.xp&&state.currentUser.xp>state.currentUserXP)state.current
     const pct=(state.currentUserXP-state.currentUserRank.minXP)/(nextSlRank.minXP-state.currentUserRank.minXP);
     if(ring)setTimeout(()=>{ring.style.strokeDashoffset=String(circ*(1-Math.min(1,Math.max(0,pct))));ring.style.stroke=state.currentUserRank.color;},100);
     if(xpCur)xpCur.textContent=state.currentUserXP.toLocaleString('fr-FR')+' XP';
-    if(xpNextEl)xpNextEl.textContent='â '+nextSlRank.label+' '+nextSlRank.minXP.toLocaleString('fr-FR')+' XP';
+    if(xpNextEl)xpNextEl.textContent='→ '+nextSlRank.label+' '+nextSlRank.minXP.toLocaleString('fr-FR')+' XP';
   }else{
     if(ring)setTimeout(()=>{ring.style.strokeDashoffset='0';ring.style.stroke=state.currentUserRank.color;},100);
     if(xpCur)xpCur.textContent=state.currentUserXP.toLocaleString('fr-FR')+' XP';
@@ -128,18 +128,18 @@ if(state.currentUser?.xp&&state.currentUser.xp>state.currentUserXP)state.current
   const subEl=document.getElementById('streak-sub');
   if(subEl){
     if(streak===0)subEl.textContent='Lance-toi aujourd\'hui !';
-    else if(streak<3)subEl.textContent='Bon dÃ©but, continue !';
+    else if(streak<3)subEl.textContent='Bon début, continue !';
     else if(streak<7)subEl.textContent='Tu es en feu ð¥';
     else if(streak<30)subEl.textContent='Impressionnant, lÃ¢che rien !';
-    else subEl.textContent='LÃ©gende absolue ð';
+    else subEl.textContent='Légende absolue ð';
   }
 
-  // ThÃ¨mes explorÃ©s
+  // ThÃ¨mes explorés
   const readIds=new Set(r.map(x=>x.anecdote_id));
   const readAnec=a.filter(x=>readIds.has(x.id));
   const themesSet=new Set(readAnec.map(x=>x.theme));
 
-  // Badges â donnÃ©es enrichies
+  // Badges â données enrichies
   const perfectQuiz=q.filter(x=>x.pct>=100).length;
   const themeMap={};readAnec.forEach(x=>{const t=(x.theme||'').toLowerCase();if(t)themeMap[t]=(themeMap[t]||0)+1;});
   const {count:_favCount}=await sb.from('favorites').select('anecdote_id',{count:'exact',head:true}).eq('user_id',state.currentUser.id);
@@ -193,8 +193,8 @@ export function buildHistTab(allAnec,reads){
           (isToday?'<span style="font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--a);color:#fff;padding:.1rem .35rem;border-radius:.25rem;">Aujourd\'hui</span>':'')+
           (isRead?'<span style="font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--a);opacity:.7;">â Lu</span>':'<span style="font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);">Non lu</span>')+
         '</div>'+
-        '<div class="hist-preview">'+(a.anecdote||'').slice(0,80)+'â¦</div>'+
-        '<div style="font-size:.6rem;color:var(--ink3);margin-top:.2rem;">Choisi par '+(a.chooser||'CommunautÃ©')+'</div>'+
+        '<div class="hist-preview">'+(a.anecdote||'').slice(0,80)+'…</div>'+
+        '<div style="font-size:.6rem;color:var(--ink3);margin-top:.2rem;">Choisi par '+(a.chooser||'Communauté')+'</div>'+
       '</div>'+
       '<div class="hist-date">'+fmtShort(a.date)+'</div>'+
     '</div>';
@@ -250,7 +250,7 @@ export async function loadFriends(){
   el.innerHTML='<div class="friend-list">'+data.map(f=>{const isMe=f.requester_id===state.currentUser.id;const name=isMe?(f.adr?.username||'?'):(f.req?.username||'?');const sc=f.status==='accepted'?'accepted':'pending';const sl=f.status==='accepted'?'Ami':(isMe?'En attente':'Accepter ?');const fuid=isMe?f.addressee_id:f.requester_id;return'<div class="friend-item"><div class="friend-av" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" style="cursor:pointer;">'+name[0].toUpperCase()+'</div><div style="flex:1;cursor:pointer;" onclick="viewUserProfile(\''+fuid+'\',\''+name+'\')" ><div class="friend-name">'+name+'</div></div><span class="friend-status '+sc+'">'+sl+'</span>'+(f.status==='pending'&&!isMe?'<button class="btn-friend accept" onclick="acceptFriend(\''+f.id+'\')">Accepter</button>':'')+'</div>';}).join('')+'</div>';
 }
 
-export async function acceptFriend(fid){await sb.from('friendships').update({status:'accepted'}).eq('id',fid);showToast('â Ami ajoutÃ© !');checkFriendRequests();buildLeagueDashboard();}
+export async function acceptFriend(fid){await sb.from('friendships').update({status:'accepted'}).eq('id',fid);showToast('â Ami ajouté !');checkFriendRequests();buildLeagueDashboard();}
 
 export function switchTab(name){
   const tabs=['badges','quiz-hist','stats','amis'];
@@ -309,7 +309,7 @@ export async function loadCommentsFeed(){
   const avg=(ratings.reduce((a,b)=>a+b.stars,0)/ratings.length).toFixed(1);
   const avgEl=document.getElementById('rating-avg');if(avgEl)avgEl.textContent=avg+'â ('+ratings.length+' avis)';
   feed.style.display='block';
-  feed.innerHTML='<div class="comments-feed-title">'+ratings.length+' commentaire'+(ratings.length>1?'s':'')+' de la communautÃ©</div>'+
+  feed.innerHTML='<div class="comments-feed-title">'+ratings.length+' commentaire'+(ratings.length>1?'s':'')+' de la communauté</div>'+
     ratings.map(r=>{
       const uname=pMap[r.user_id]||'Anonyme';
       const delBtn=isMod()?'<button class="comment-del-btn" onclick="deleteCommentInline(&quot;'+r.user_id+'&quot;,&quot;'+r.id+'&quot;,this)" title="Supprimer">ð</button>':'';
@@ -329,13 +329,13 @@ export async function loadCommentsFeed(){
 export async function deleteCommentInline(uid, ratingId, btn){
   if(!isMod())return;
   if(!confirm('Supprimer ce commentaire ?'))return;
-  btn.disabled=true;btn.textContent='â¦';
+  btn.disabled=true;btn.textContent='…';
   // Set comment to empty string (keeps the rating but removes comment)
   const{error}=await sb.from('ratings').update({comment:''}).eq('user_id',uid).eq('anecdote_id',state.todayAnec.id);
   if(error){btn.disabled=false;btn.textContent='ð';showToast('Erreur: '+error.message);return;}
   const card=document.getElementById('ci-'+ratingId);
   if(card){card.style.opacity='0';card.style.transition='opacity .3s';setTimeout(()=>{card.remove();},300);}
-  showToast('â Commentaire supprimÃ©');
+  showToast('â Commentaire supprimé');
 }
 
 export function applyProfileColor(color,save=true){
@@ -374,7 +374,7 @@ export function buildBadgesTab(data){
   const earned=BADGES_DEF.filter(b=>b.check(data));
   const locked=BADGES_DEF.filter(b=>!b.check(data));
   const RARITY_COLOR={common:'',rare:'border-color:#3b82f6',epic:'border-color:#9333ea',legendary:'border-color:#f59e0b'};
-  const RARITY_LABEL={common:'',rare:'Rare',epic:'Ãpique',legendary:'LÃ©gendaire'};
+  const RARITY_LABEL={common:'',rare:'Rare',epic:'Ãpique',legendary:'Légendaire'};
   const card=(b,isEarned)=>{
     const rc=isEarned?RARITY_COLOR[b.rarity||'common']:'';
     const rl=isEarned&&b.rarity&&b.rarity!=='common'?'<div class="badge-rarity-lbl" style="font-size:.42rem;font-weight:700;letter-spacing:.08em;color:#9333ea;margin-top:.1rem">'+RARITY_LABEL[b.rarity]+'</div>':'';
@@ -385,7 +385,7 @@ export function buildBadgesTab(data){
       '<div class="badge-desc">'+b.desc+'</div>'+
       rl+'</div>';
   };
-  el.innerHTML='<div class="badges-top">'+earned.length+' / '+BADGES_DEF.length+' badges dÃ©bloquÃ©s</div>'
+  el.innerHTML='<div class="badges-top">'+earned.length+' / '+BADGES_DEF.length+' badges débloqués</div>'
     +'<div class="badges-grid">'+earned.map(b=>card(b,true)).join('')+locked.map(b=>card(b,false)).join('')+'</div>';
 }
 
@@ -426,7 +426,7 @@ export async function uploadAvatar(input){
   if(!input.files||!input.files[0]||!state.currentUser)return;
   const file=input.files[0];
   if(file.size>2*1024*1024){showToast('â  Image trop lourde (max 2 Mo)');return;}
-  showToast('â³ Upload en coursâ¦');
+  showToast('â³ Upload en cours…');
   const ext=file.name.split('.').pop().toLowerCase();
   const path=state.currentUser.id+'/avatar.'+ext;
   const{data,error}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
@@ -470,9 +470,9 @@ export async function saveBio(){
   await sb.from('profiles').update({bio}).eq('id',state.currentUser.id);
   state.currentUser.bio=bio;
   const txt=document.getElementById('prof-bio-text');
-  if(txt)txt.textContent=bio||'Ajoute une bioâ¦';
+  if(txt)txt.textContent=bio||'Ajoute une bio…';
   cancelEditBio();
-  showToast('â Bio enregistrÃ©e !');
+  showToast('â Bio enregistrée !');
 }
 
 export function computeMaxStreak(dates){
@@ -490,12 +490,12 @@ export function computeMaxStreak(dates){
 
 export function funTitle(reads,avgQuiz){
   if(reads>=100)return{title:'Oracle des Anecdotes',icon:'ð®'};
-  if(reads>=60&&avgQuiz>=80)return{title:'GÃ©nie EncyclopÃ©dique',icon:'ð§ '};
-  if(reads>=60)return{title:'Ãrudit ConfirmÃ©',icon:'ð'};
-  if(reads>=30&&avgQuiz>=75)return{title:'Esprit AfftÃ©',icon:'â¡'};
+  if(reads>=60&&avgQuiz>=80)return{title:'Génie Encyclopédique',icon:'ð§ '};
+  if(reads>=60)return{title:'Ãrudit Confirmé',icon:'ð'};
+  if(reads>=30&&avgQuiz>=75)return{title:'Esprit Affté',icon:'â¡'};
   if(reads>=30)return{title:'Voyageur du Savoir',icon:'ð'};
   if(reads>=15)return{title:'Apprenti Savant',icon:'ð'};
-  if(reads>=5)return{title:'Curieux ÃveillÃ©',icon:'ð'};
+  if(reads>=5)return{title:'Curieux Ãveillé',icon:'ð'};
   return{title:'Touriste Curieux',icon:'ð£'};
 }
 
@@ -524,14 +524,14 @@ export async function buildIdentityCard(reads,qhist,allAnec){
     '<div class="id-stat">'+
       '<div class="id-stat-icon">ð</div>'+
       '<div class="id-stat-val">'+themeName+'</div>'+
-      '<div class="id-stat-lbl">ThÃ¨me prÃ©fÃ©rÃ©</div>'+
+      '<div class="id-stat-lbl">ThÃ¨me préféré</div>'+
       '<div class="id-stat-sub">'+themeCount1+' lecture'+(themeCount1>1?'s':'')+'</div>'+
     '</div>'+
     '<div class="id-stat">'+
       '<div class="id-stat-icon">ð</div>'+
       '<div class="id-stat-val">'+(state.currentUser.streak_record||maxStreak)+' j</div>'+
-      '<div class="id-stat-lbl">Record de sÃ©rie</div>'+
-      '<div class="id-stat-sub">max consÃ©cutif</div>'+
+      '<div class="id-stat-lbl">Record de série</div>'+
+      '<div class="id-stat-sub">max consécutif</div>'+
     '</div>'+
     '<div class="id-stat">'+
       '<div class="id-stat-icon">ð¯</div>'+
@@ -555,10 +555,10 @@ export async function viewUserProfile(uid, fallbackName){
   const bd=document.createElement('div');
   bd.id='user-modal-bd';bd.className='user-modal-backdrop';
   bd.onclick=e=>{if(e.target===bd)_closeUserModal();};
-  bd.innerHTML='<div class="user-modal user-modal-full"><div class="user-modal-loading">â³ Chargementâ¦</div></div>';
+  bd.innerHTML='<div class="user-modal user-modal-full"><div class="user-modal-loading">â³ Chargement…</div></div>';
   document.body.appendChild(bd);
 
-  // Fetch toutes les donnÃ©es en parallÃ¨le
+  // Fetch toutes les données en parallÃ¨le
   const[{data:prof},{data:reads},{data:qhist},{data:enigmaR},{data:userReads},{data:relData},{data:friendsCount}]=await Promise.all([
     sb.from('profiles').select('*').eq('id',uid).maybeSingle(),
     sb.from('reads').select('anecdote_id,date').eq('user_id',uid).order('date',{ascending:false}).limit(400),
@@ -604,7 +604,7 @@ export async function viewUserProfile(uid, fallbackName){
   const badgeData={reads:readCount,streak,quizzes:quizList.length,avgQuiz,bestQuiz,friends:totalFriends,duelsPlayed:0,duelsWon:0,favs:0,shares:0,earlyBird:false,nightOwl:false,enigmaTotal,enigmaCorrect,enigmaCats:0,enigmaChooser:false,enigmaLogique:0,enigmaHistorique:0,enigmaMaths:0,perfectQuiz:bestQuiz>=100,themes:0,themeMap:{}};
   const earnedBadges=typeof BADGES_DEF!=='undefined'?BADGES_DEF.filter(b=>{try{return b.check(badgeData);}catch{return false;}}):[];
 
-  // Relation d'amitiÃ©
+  // Relation d'amitié
   const rel=relData;
   const isFriend=rel&&rel.status==='accepted';
   const isPending=rel&&rel.status==='pending';
@@ -613,7 +613,7 @@ export async function viewUserProfile(uid, fallbackName){
   let friendBtn='';
   if(state.currentUser&&state.currentUser.id!==uid){
     if(!rel){
-      friendBtn='<button class="btn-main umo-action-btn" onclick="addFriend(\''+uid+'\',\''+name+'\');this.textContent=\'Demande envoyÃ©e â\';this.disabled=true">ð¥ Ajouter en ami</button>';
+      friendBtn='<button class="btn-main umo-action-btn" onclick="addFriend(\''+uid+'\',\''+name+'\');this.textContent=\'Demande envoyée â\';this.disabled=true">ð¥ Ajouter en ami</button>';
     } else if(isPending&&theyRequested){
       friendBtn='<button class="btn-main umo-action-btn" style="background:var(--gr)" onclick="acceptFriend(\''+rel.id+'\');this.textContent=\'Ami â\';this.disabled=true">â Accepter la demande</button>';
     } else if(isFriend){
@@ -633,7 +633,7 @@ export async function viewUserProfile(uid, fallbackName){
     '<div class="umo-header">'+
       '<div class="umo-av" style="background:'+slRank.bg+';border-color:'+slRank.color+';box-shadow:'+slRank.glow+'"><span style="color:'+slRank.color+'">'+name[0].toUpperCase()+'</span></div>'+
       '<div class="umo-info">'+
-        '<div class="umo-level"><span class="umo-sl-rank-badge" style="color:'+slRank.color+';background:'+slRank.bg+'">RANG '+slRank.id+' Â· '+slRank.title+'</span></div>'+
+        '<div class="umo-level"><span class="umo-sl-rank-badge" style="color:'+slRank.color+';background:'+slRank.bg+'">RANG '+slRank.id+' · '+slRank.title+'</span></div>'+
         '<div class="umo-name">'+name+'</div>'+
         (since?'<div class="umo-since">Membre depuis le '+since+'</div>':'')+
         (bio?'<div class="umo-bio">'+bio+'</div>':'')+
@@ -682,8 +682,8 @@ export async function viewUserProfile(uid, fallbackName){
     // Actions
     '<div class="umo-actions">'+
       friendBtn+
-      (canChallenge?'<button class="btn-main umo-action-btn" onclick="challengeFriend(\''+uid+'\',\''+name+'\');_closeUserModal()">âï¸ DÃ©fier en duel</button>':'')+
-      '<button class="umo-share-btn" onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(()=>showToast(\'ð Lien copiÃ© !\'))">ð Partager ce profil</button>'+
+      (canChallenge?'<button class="btn-main umo-action-btn" onclick="challengeFriend(\''+uid+'\',\''+name+'\');_closeUserModal()">âï¸ Défier en duel</button>':'')+
+      '<button class="umo-share-btn" onclick="navigator.clipboard.writeText(\''+shareUrl+'\').then(()=>showToast(\'ð Lien copié !\'))">ð Partager ce profil</button>'+
     '</div>';
 }
 
@@ -691,7 +691,7 @@ export async function openAccountSettings() {
   const bd = document.getElementById('acct-modal-bd');
   if (!bd) return;
 
-  // PrÃ©-remplir l'email actuel â appel frais pour Ã©viter le cache JWT
+  // Pré-remplir l'email actuel â appel frais pour éviter le cache JWT
   const emailEl = document.getElementById('acct-current-email');
   if (emailEl) {
     try {
@@ -705,15 +705,15 @@ export async function openAccountSettings() {
     }
   }
 
-  // PrÃ©-remplir le pseudo actuel
+  // Pré-remplir le pseudo actuel
   const unEl = document.getElementById('acct-username-input');
   if (unEl && state.currentUser) unEl.value = state.currentUser.username || '';
 
-  // PrÃ©-remplir la bio
+  // Pré-remplir la bio
   const bioEl = document.getElementById('acct-bio-input');
   if (bioEl && state.currentUser) bioEl.value = state.currentUser.bio || '';
 
-  // Afficher les providers connectÃ©s
+  // Afficher les providers connectés
   _renderProviders();
 
 
@@ -740,7 +740,7 @@ export function switchAcctTab(name, btn) {
     const p = document.getElementById('acct-panel-' + t);
     if (p) p.style.display = 'none';
   });
-  // DÃ©sactiver tous les onglets
+  // Désactiver tous les onglets
   document.querySelectorAll('.acct-tab').forEach(b => b.classList.remove('active'));
   // Afficher le bon panel
   const panel = document.getElementById('acct-panel-' + name);
@@ -764,10 +764,10 @@ export function _renderProviders() {
 
 export async function confirmDeleteAccount() {
   const input = prompt('Pour confirmer, tape "SUPPRIMER" en majuscules :');
-  if (input !== 'SUPPRIMER') { showToast('Suppression annulÃ©e.'); return; }
+  if (input !== 'SUPPRIMER') { showToast('Suppression annulée.'); return; }
   await sb.from('profiles').delete().eq('id', state.currentUser.id);
   await sb.auth.signOut();
-  showToast('Compte supprimÃ©. Ã bientÃ´t peut-Ãªtre ð');
+  showToast('Compte supprimé. Ã bientÃ´t peut-Ãªtre ð');
   state.currentUser = null;
   goHome();
 }
