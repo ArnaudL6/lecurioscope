@@ -11,11 +11,11 @@ export async function goHistoire(){
   document.getElementById('hist-screen-list').innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--ink3);font-size:.8rem;">â³ Chargementâ¦</div>';
   const[{data:allAnec},{data:reads}]=await Promise.all([
     sb.from('anecdotes').select('*').lte('date',today()).order('date',{ascending:false}).limit(90),
-    sb.from('reads').select('anecdote_id').eq('user_id',currentUser.id)
+    sb.from('reads').select('anecdote_id').eq('user_id',state.currentUser.id)
   ]);
   _histAllAnec=allAnec||[];
   _histReads=new Set((reads||[]).map(r=>r.anecdote_id));
-  if(state.currentUser){const{data:favData}=await sb.from('favorites').select('anecdote_id').eq('user_id',currentUser.id);_histFavs=new Set((favData||[]).map(f=>String(f.anecdote_id)));}
+  if(state.currentUser){const{data:favData}=await sb.from('favorites').select('anecdote_id').eq('user_id',state.currentUser.id);_histFavs=new Set((favData||[]).map(f=>String(f.anecdote_id)));}
   _histFilter='all';
   document.querySelectorAll('.hist-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
   renderHistScreen();
