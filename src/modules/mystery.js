@@ -37,7 +37,7 @@ export async function showMysteryDetail(){
   const todayDate=new Date().toISOString().slice(0,10);
   let todayGuess=null;
   if(state.currentUser){
-    const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',currentUser.id).eq('mystery_id',mystery.id).eq('guess_date',todayDate).maybeSingle();
+    const{data:g}=await sb.from('mystery_guesses').select('*').eq('user_id',state.currentUser.id).eq('mystery_id',mystery.id).eq('guess_date',todayDate).maybeSingle();
     todayGuess=g;
   }
   const{data:guesses}=await sb.from('mystery_guesses_lb').select('*').eq('mystery_id',mystery.id).eq('is_correct',true).order('created_at',{ascending:true});
@@ -84,7 +84,7 @@ export async function submitMysteryGuess(mysteryId,culpritAnswer){
   const culprit=input.value.trim();
   const todayDate=new Date().toISOString().slice(0,10);
   const is_correct=!!(culpritAnswer&&culprit&&culpritAnswer.toLowerCase().split(' ').some(w=>w.length>2&&culprit.toLowerCase().includes(w)));
-  const{error}=await sb.from('mystery_guesses').upsert({user_id:currentUser.id,mystery_id:mysteryId,culprit,is_correct,guess_date:todayDate},{onConflict:'user_id,mystery_id,guess_date'});
+  const{error}=await sb.from('mystery_guesses').upsert({user_id:state.currentUser.id,mystery_id:mysteryId,culprit,is_correct,guess_date:todayDate},{onConflict:'user_id,mystery_id,guess_date'});
   if(error){showToast('Erreur : '+error.message);return;}
   showToast(is_correct?'\u2705 Bonne d\u00E9duction !':'\u274C Mauvaise piste\u2026');
   showMysteryDetail();
