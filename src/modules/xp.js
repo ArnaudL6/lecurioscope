@@ -23,14 +23,14 @@ export function getRank(xp){let r=RANKS[0];for(let i=RANKS.length-1;i>=0;i--){if
 
 export function getNextRank(xp){for(let i=0;i<RANKS.length;i++){if(xp<RANKS[i].minXP)return RANKS[i];}return null;}
 
-export function showSystemNotif({title='QuÃªte accomplie',xpGain=0,rank=null}){
+export function showSystemNotif({title='Quête accomplie',xpGain=0,rank=null}){
   const old=document.getElementById('sl-notif');if(old)old.remove();
   const el=document.createElement('div');
   el.id='sl-notif';el.className='sl-notif';
   const r=rank||state.currentUserRank||RANKS[0];
   el.innerHTML=`
     <div class="sl-notif-inner" style="border-color:${r.color};box-shadow:${r.glow};">
-      <div class="sl-notif-top"><span class="sl-notif-icon">â¡</span><span class="sl-notif-label">QUÃTE ACCOMPLIE</span></div>
+      <div class="sl-notif-top"><span class="sl-notif-icon">⚡</span><span class="sl-notif-label">QUÊTE ACCOMPLIE</span></div>
       <div class="sl-notif-title">${title}</div>
       <div class="sl-notif-xp" style="color:${r.color};">+${xpGain} XP</div>
     </div>`;
@@ -44,14 +44,14 @@ export function showLevelUp(newRank){
   el.id='sl-levelup';el.className='sl-levelup-overlay';
   el.innerHTML=`
     <div class="sl-levelup-inner">
-      <div class="sl-levelup-particles">${Array.from({length:20},(_,i)=>`<span class="sl-particle" style="--i:${i};color:${newRank.color};">â</span>`).join('')}</div>
+      <div class="sl-levelup-particles">${Array.from({length:20},(_,i)=>`<span class="sl-particle" style="--i:${i};color:${newRank.color};">◆</span>`).join('')}</div>
       <div class="sl-levelup-content">
-        <div class="sl-levelup-label">RANG SUPÃRIEUR DÃBLOQUÃ</div>
+        <div class="sl-levelup-label">RANG SUPÉRIEUR DÉBLOQUÉ</div>
         <div class="sl-levelup-rank" style="color:${newRank.color};text-shadow:${newRank.glow};">${newRank.label}</div>
         <div class="sl-levelup-title">${newRank.title}</div>
-        <div class="sl-levelup-sub">FÃ©licitations, Chasseur.</div>
+        <div class="sl-levelup-sub">Félicitations, Chasseur.</div>
       </div>
-      <button class="sl-levelup-btn" style="border-color:${newRank.color};color:${newRank.color};" onclick="document.getElementById('sl-levelup').remove()">CONTINUER â</button>
+      <button class="sl-levelup-btn" style="border-color:${newRank.color};color:${newRank.color};" onclick="document.getElementById('sl-levelup').remove()">CONTINUER →</button>
     </div>`;
   document.body.appendChild(el);
   requestAnimationFrame(()=>el.classList.add('sl-levelup-in'));
@@ -97,11 +97,11 @@ export async function showStatsWindow(){
   bd.onclick=ev=>{if(ev.target===bd)bd.remove();};
   bd.innerHTML=`
     <div class="sl-stats-panel" style="--rank-color:${rank.color};--rank-glow:${rank.glow};">
-      <button class="sl-stats-close" onclick="document.getElementById('sl-stats-bd').remove()">â</button>
+      <button class="sl-stats-close" onclick="document.getElementById('sl-stats-bd').remove()">✕</button>
       <div class="sl-stats-header">
-        <div class="sl-stats-title">FENÃTRE DE STATUT</div>
+        <div class="sl-stats-title">FENÊTRE DE STATUT</div>
         <div class="sl-stats-name">${state.currentUser.username}</div>
-        <div class="sl-stats-rank" style="color:${rank.color};">[ RANG ${rank.label} â ${rank.title} ]</div>
+        <div class="sl-stats-rank" style="color:${rank.color};">[ RANG ${rank.label} — ${rank.title} ]</div>
       </div>
       <div class="sl-stats-xp">
         <div class="sl-stats-xp-row">
@@ -115,7 +115,7 @@ export async function showStatsWindow(){
           {key:'INT',label:'Intelligence',val:INT,desc:avgQuiz+'% moy. quiz',color:'#60a5fa'},
           {key:'SAG',label:'Sagesse',val:SAG,desc:r.length+' anecdotes lues',color:'#34d399'},
           {key:'END',label:'Endurance',val:END,desc:streak+' jours de streak',color:'#f97316'},
-          {key:'FOR',label:'Force',val:FOR,desc:enigmaCorrect+' Ã©nigmes rÃ©solues',color:'#a855f7'},
+          {key:'FOR',label:'Force',val:FOR,desc:enigmaCorrect+' énigmes résolues',color:'#a855f7'},
         ].map(s=>`
           <div class="sl-stat-item">
             <div class="sl-stat-key" style="color:${s.color};">${s.key}</div>
@@ -129,9 +129,9 @@ export async function showStatsWindow(){
       </div>
       <div class="sl-stats-footer">
         <div class="sl-stats-misc">
-          <span>ð¤ ${f.length} ami${f.length!==1?'s':''}</span>
-          <span>ð¯ ${q.length} quiz</span>
-          <span>ð ${e.length} Ã©nigmes</span>
+          <span>🤝 ${f.length} ami${f.length!==1?'s':''}</span>
+          <span>🎯 ${q.length} quiz</span>
+          <span>🔐 ${e.length} énigmes</span>
         </div>
       </div>
     </div>`;
@@ -158,7 +158,7 @@ export async function checkAndAwardBadges(badgeData){
     const newOnes=BADGES_DEF.filter(b=>b.check(badgeData)&&!savedSet.has(b.id));
     for(const badge of newOnes){
       await sb.from('user_badges').insert({user_id:state.currentUser.id,badge_id:badge.id});
-      showToast('ð Badge dÃ©bloquÃ© : '+badge.icon+' '+badge.name+' !');
+      showToast('🏅 Badge débloqué : '+badge.icon+' '+badge.name+' !');
       await new Promise(res=>setTimeout(res,2200));
     }
   }catch(e){}
