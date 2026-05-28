@@ -107,15 +107,15 @@ export async function markRead(){
 
 export async function showAnecHistorique(){
   let modal=document.getElementById('hist-modal');
-  if(!modal){modal=document.createElement('div');modal.id='hist-modal';modal.className='hist-modal-overlay';modal.onclick=e=>{if(e.target===modal)modal.style.display='none';};modal.innerHTML='<div class="hist-modal-box"><div class="hist-modal-hd"><span>📚 Vos anecdotes passées</span><button class="hist-close-btn" onclick="document.getElementById(\'hist-modal\').style.display=\'none\'">✕</button></div><div class="hist-modal-body" id="hist-modal-body"><p class="hist-loading">Chargement...</p></div></div>';document.body.appendChild(modal);}
+  if(!modal){modal=document.createElement('div');modal.id='hist-modal';modal.className='hist-modal-overlay';modal.onclick=e=>{if(e.target===modal)modal.style.display='none';};modal.innerHTML='<div class="hist-modal-box"><div class="hist-modal-hd"><span>=� Vos anecdotes pass�es</span><button class="hist-close-btn" onclick="document.getElementById(\'hist-modal\').style.display=\'none\'"></button></div><div class="hist-modal-body" id="hist-modal-body"><p class="hist-loading">Chargement...</p></div></div>';document.body.appendChild(modal);}
   modal.style.display='flex';
   const body=document.getElementById('hist-modal-body');
   try{
     const reads=(allReads||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
-    if(!reads.length){body.innerHTML='<p class="hist-empty">Aucune lecture enregistrée.</p>';return;}
+    if(!reads.length){body.innerHTML='<p class="hist-empty">Aucune lecture enregistr�e.</p>';return;}
     const{data}=await sb.from('anecdotes').select('date,title,content,theme').in('date',reads.map(r=>r.date)).order('date',{ascending:false});
     if(!data||!data.length){body.innerHTML='<p class="hist-empty">Impossible de charger.</p>';return;}
-    body.innerHTML=data.map(a=>'<div class="hist-item"><div class="hist-item-date">'+a.date+'</div><div class="hist-item-title">'+(a.title||'Anecdote')+'</div><div class="hist-item-excerpt">'+((a.content||'').slice(0,100))+'…</div></div>').join('');
+    body.innerHTML=data.map(a=>'<div class="hist-item"><div class="hist-item-date">'+a.date+'</div><div class="hist-item-title">'+(a.title||'Anecdote')+'</div><div class="hist-item-excerpt">'+((a.content||'').slice(0,100))+'&</div></div>').join('');
   }catch(e){body.innerHTML='<p class="hist-empty" style="color:#f97316">Erreur: '+e.message+'</p>';}
 }
 
@@ -177,7 +177,7 @@ export async function finishQuizSolo(){
   state.quizState.active=false;
   const pct=Math.round(state.quizState.score/state.quizState.questions.length*100);
   if(state.currentUser&&state.todayAnec)await sb.from('quiz_history').insert({user_id:state.currentUser.id,anecdote_id:state.todayAnec.id,score:state.quizState.score,total:state.quizState.questions.length,pct,date:today()});
-  const e=pct>=80?'🏆':pct>=60?'\u2B50':'💪',t=pct>=80?'Excellent !':pct>=60?'Bien jou\u00e9 !':'Continuez !',m=pct>=80?'Parfaite ma\u00eetrise !':pct>=60?'Solide ! Revenez demain.':'Chaque jour on apprend.';
+  const e=pct>=80?'<�':pct>=60?'\u2B50':'=�',t=pct>=80?'Excellent !':pct>=60?'Bien jou\u00e9 !':'Continuez !',m=pct>=80?'Parfaite ma\u00eetrise !':pct>=60?'Solide ! Revenez demain.':'Chaque jour on apprend.';
   const area=document.getElementById('quiz-solo-area');if(area)area.innerHTML='<div class="q-result"><span class="qr-emoji">'+e+'</span><span class="qr-score">'+pct+'%</span><div class="qr-title">'+t+'</div><div class="qr-msg">'+m+'</div></div>';
 }
 
@@ -194,7 +194,7 @@ export function getAnecId(a){return String(a?.id||a?.slug||a?.date||'');}
 export function updateFavBtn(){
   const btn=document.getElementById('btn-fav');if(!btn||!state.todayAnec)return;
   const isFav=_histFavs.has(getAnecId(state.todayAnec));
-  btn.textContent=isFav?'❤️':'🤍';
+  btn.textContent=isFav?'d':'>';
   btn.classList.toggle('active',isFav);
 }
 
@@ -203,10 +203,10 @@ export async function toggleFav(){
   const id=getAnecId(state.todayAnec);if(!id)return;
   if(_histFavs.has(id)){
     await sb.from('favorites').delete().eq('user_id',state.currentUser.id).eq('anecdote_id',id);
-    _histFavs.delete(id);showToast('Retiré des favoris');
+    _histFavs.delete(id);showToast('Retir� des favoris');
   }else{
     await sb.from('favorites').insert({user_id:state.currentUser.id,anecdote_id:id});
-    _histFavs.add(id);showToast('❤ Ajouté aux favoris !');
+    _histFavs.add(id);showToast('d Ajout� aux favoris !');
   }
   updateFavBtn();
 }
@@ -216,15 +216,15 @@ export async function loadContexte(){
   const card=document.getElementById('contexte-card');
   if(!card)return;
 
-  // Si le contexte est déjà en cache dans state.todayAnec, on l'affiche direct
+  // Si le contexte est d�j� en cache dans state.todayAnec, on l'affiche direct
   if(state.todayAnec.contexte){
     _renderContexte(state.todayAnec.contexte, state.todayAnec.sources||[]);
     return;
   }
 
-  // Sinon : génération à la demande via l'Edge Function (PATCH)
+  // Sinon : g�n�ration � la demande via l'Edge Function (PATCH)
   card.style.display='block';
-  document.getElementById('contexte-txt').innerHTML='<span style="color:var(--ink3);font-size:.78rem">✨ Génération en cours…</span>';
+  document.getElementById('contexte-txt').innerHTML='<span style="color:var(--ink3);font-size:.78rem">( G�n�ration en cours&</span>';
   document.getElementById('contexte-sources').innerHTML='';
   card.classList.add('open');
 
@@ -241,7 +241,7 @@ export async function loadContexte(){
       state.todayAnec.sources=json.sources||[];
       _renderContexte(json.contexte, json.sources||[]);
     }else{
-      document.getElementById('contexte-txt').textContent='Contenu bientôt disponible.';
+      document.getElementById('contexte-txt').textContent='Contenu bient�t disponible.';
     }
   }catch(e){
     document.getElementById('contexte-txt').textContent='Impossible de charger le contexte pour l\'instant.';
@@ -256,7 +256,7 @@ export function _renderContexte(texte, sources){
   document.getElementById('contexte-txt').textContent=texte;
   const srcEl=document.getElementById('contexte-sources');
   if(sources.length){
-    srcEl.innerHTML=sources.map(s=>'<a class="contexte-src-lnk" href="'+s.url+'" target="_blank" rel="noopener"><span class="src-ico">🔗</span>'+s.title+'</a>').join('');
+    srcEl.innerHTML=sources.map(s=>'<a class="contexte-src-lnk" href="'+s.url+'" target="_blank" rel="noopener"><span class="src-ico">=</span>'+s.title+'</a>').join('');
   }else{srcEl.innerHTML='';}
 }
 
@@ -282,26 +282,26 @@ export function closeShare(){document.getElementById('share-bd').classList.remov
 export function _shareText(){
   const theme=state.todayAnec?.theme||'Anecdote';
   const txt=state.todayAnec?.anecdote||'';
-  return '💡 *'+theme+'* — Anecdote du Jour\n\n'+txt+'\n\n👉 https://anecdote-du-jour.pages.dev/';
+  return '=� *'+theme+'*  Anecdote du Jour\n\n'+txt+'\n\n=I https://anecdote-du-jour.pages.dev/';
 }
 
 export function shareViaWhatsApp(){
   const url='https://wa.me/?text='+encodeURIComponent(_shareText());
   window.open(url,'_blank','noopener');
-  document.getElementById('share-hint').textContent='✓ WhatsApp ouvert !';
+  document.getElementById('share-hint').textContent=' WhatsApp ouvert !';
 }
 
 export function shareViaDiscord(){
   const text=_shareText();
   navigator.clipboard.writeText(text).then(()=>{
-    document.getElementById('share-hint').textContent='✓ Texte copié — colle dans Discord !';
+    document.getElementById('share-hint').textContent=' Texte copi�  colle dans Discord !';
   }).catch(()=>{document.getElementById('share-hint').textContent='Copie manuelle : Ctrl+C';});
 }
 
 export function copyShareText(){
   const text=_shareText();
   navigator.clipboard.writeText(text).then(()=>{
-    document.getElementById('share-hint').textContent='✓ Copié dans le presse-papiers !';
+    document.getElementById('share-hint').textContent=' Copi� dans le presse-papiers !';
     setTimeout(()=>{const h=document.getElementById('share-hint');if(h)h.textContent='';},2500);
   });
 }
@@ -331,7 +331,7 @@ export async function loadReactions(){
 }
 
 export async function setReaction(type){
-  if(!state.currentUser){showToast('Connecte-toi pour réagir !');return;}
+  if(!state.currentUser){showToast('Connecte-toi pour r�agir !');return;}
   const anecId=getAnecId(state.todayAnec);
   const btn=document.getElementById('react-'+type);
   const isActive=btn?.classList.contains('active-'+type);
@@ -369,7 +369,7 @@ export function generateShareImage(){
   ctx.fillStyle=ink3;ctx.font='26px system-ui,sans-serif';
   ctx.fillText(new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),60,135);
   // Theme pill
-  const theme=state.todayAnec?.theme||'Anecdote';const ico=state.todayAnec?.icon||'💡';
+  const theme=state.todayAnec?.theme||'Anecdote';const ico=state.todayAnec?.icon||'=�';
   const pillTxt=ico+'  '+theme;
   ctx.font='bold 26px system-ui,sans-serif';
   const pillW=ctx.measureText(pillTxt).width+40;
@@ -380,7 +380,7 @@ export function generateShareImage(){
   ctx.fillStyle=ink;ctx.font='30px system-ui,sans-serif';
   const txt=state.todayAnec?.anecdote||'';
   const words=txt.split(' ');let line='',lines=[];const maxW=W-120;
-  for(const w of words){const t=line+w+' ';if(ctx.measureText(t).width>maxW&&line){lines.push(line.trim());line=w+' ';if(lines.length>=13){lines.push('…');break;}}else line=t;}
+  for(const w of words){const t=line+w+' ';if(ctx.measureText(t).width>maxW&&line){lines.push(line.trim());line=w+' ';if(lines.length>=13){lines.push('&');break;}}else line=t;}
   if(line&&lines.length<13)lines.push(line.trim());
   lines.forEach((l,i)=>ctx.fillText(l,60,260+i*48));
   // Bottom bar
@@ -400,7 +400,7 @@ export function downloadShareImage(){
   link.download='anecdote-du-jour-'+today()+'.png';
   link.href=canvas.toDataURL('image/png');
   link.click();
-  document.getElementById('share-hint').textContent='✓ Image téléchargée !';
+  document.getElementById('share-hint').textContent=' Image t�l�charg�e !';
   // Badge share
   const n=parseInt(localStorage.getItem('share_count')||'0')+1;
   localStorage.setItem('share_count',String(n));
