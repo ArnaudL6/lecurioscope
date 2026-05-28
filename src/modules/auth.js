@@ -14,7 +14,7 @@ export function updateHeader(){
   const lbl=document.getElementById('date-lbl');
   if(lbl)lbl.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const btnL=document.getElementById('btn-hlogin'),btnA=document.getElementById('av-btn');
-  if(state.currentUser){if(btnL)btnL.style.display='none';if(btnA){btnA.classList.add('on');btnA.textContent=currentUser.username[0].toUpperCase();}}
+  if(state.currentUser){if(btnL)btnL.style.display='none';if(btnA){btnA.classList.add('on');btnA.textContent=state.currentUser.username[0].toUpperCase();}}
   else{if(btnL)btnL.style.display='';if(btnA)btnA.classList.remove('on');}
 }
 
@@ -67,7 +67,7 @@ export async function doLogin(){
   if(error){showErr('lerr','Email ou mot de passe incorrect.');return;}
   state.currentUser=await getProfile(data.user.id);
   if(!state.currentUser){showErr('lerr','Profil introuvable.');return;}
-  currentUser.email=data.user.email||'';
+  state.currentUser.email=data.user.email||'';
   updateHeader();afterLogin();
 }
 
@@ -97,7 +97,7 @@ export async function doRegister(){
 export async function getProfile(uid){const{data}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();return data;}
 
 export function afterLogin(){
-  showToast('\u2713 Connect\u00e9 en tant que '+currentUser.username+' !');
+  showToast('\u2713 Connect\u00e9 en tant que '+state.currentUser.username+' !');
   showHub();
 }
 
@@ -148,7 +148,7 @@ export function initOnboarding(){
 export function subscribeNewHunters(){
   sb.channel('new-hunters')
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'profiles'},(payload)=>{
-      if(state.currentUser&&payload.new.id===currentUser.id)return;
+      if(state.currentUser&&payload.new.id===state.currentUser.id)return;
       showHunterToast(payload.new.username||'Chasseur inconnu');
     })
     .subscribe();
@@ -165,7 +165,7 @@ export function showHunterToast(username){
 
 export async function computeStreak(){
   if(!state.currentUser)return 0;
-  const{data:logins}=await sb.from('user_logins').select('date').eq('user_id',currentUser.id).order('date',{ascending:false}).limit(400);
+  const{data:logins}=await sb.from('user_logins').select('date').eq('user_id',state.currentUser.id).order('date',{ascending:false}).limit(400);
   if(!logins||!logins.length)return 0;
   const dates=[...new Set(logins.map(r=>r.date))].sort().reverse();
   const todayStr=today();
@@ -178,7 +178,7 @@ export async function computeStreak(){
 }
 
 export async function loadStreak(){
-  if(state.currentUser)await sb.from('user_logins').upsert({user_id:currentUser.id,date:today()},{onConflict:'user_id,date'});
+  if(state.currentUser)await sb.from('user_logins').upsert({user_id:state.currentUser.id,date:today()},{onConflict:'user_id,date'});
   const n=await computeStreak();
   state.userStreak=n;
   const badge=document.getElementById('streak-badge');
