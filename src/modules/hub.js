@@ -1,4 +1,4 @@
-import { state, sb, show, escHtml, fmt, today, computeStreak as _computeStreakPure } from '../shared.js';
+import { state, sb, show, escHtml, fmt, today } from '../shared.js';
 import { awardXP, popXP, checkAndAwardBadges } from './xp.js';
 import { _sendNotif, subscribeNotifications } from './notifs.js';
 
@@ -350,8 +350,7 @@ export async function showHub(){
         sb.from('quiz_history').select('pct').eq('user_id',state.currentUser.id),
         sb.from('enigma_responses').select('is_correct').eq('user_id',state.currentUser.id),
       ]);
-      const streak=_computeStreakPure((allReads||[]).map(x=>x.date));
-      state.userStreak=streak;
+      const streak=state.userStreak;
       xp=calcSLXP({reads:(allReads||[]).length,quizzes:allQuiz||[],enigmas:allEnigma||[],streak});
       state.currentUserXP=xp;state.currentUserRank=getRank(xp);rank=state.currentUserRank;nextRank=getNextRank(xp);
     }
