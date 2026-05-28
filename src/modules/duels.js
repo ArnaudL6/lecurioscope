@@ -23,7 +23,7 @@ export function showJoinDuel(){
 export async function createDuel(){
   if(!state.currentUser)return;
   const code=genDuelCode();
-  const{data,error}=await sb.from('duels').insert({code,challenger_id:currentUser.id,challenger_name:currentUser.username,status:'waiting',current_round:1,total_rounds:6,challenger_score:0,opponent_score:0,current_chooser_id:currentUser.id}).select().maybeSingle();
+  const{data,error}=await sb.from('duels').insert({code,challenger_id:state.currentUser.id,challenger_name:state.currentUser.username,status:'waiting',current_round:1,total_rounds:6,challenger_score:0,opponent_score:0,current_chooser_id:state.currentUser.id}).select().maybeSingle();
   if(error){showToast('Erreur : '+error.message);return;}
   if(!data){showToast('Erreur lors de la cr\u00e9ation du duel');return;}
   currentDuel=data;showDuelWaiting(data);
@@ -48,8 +48,8 @@ export async function joinDuelByCode(){
   if(!state.currentUser){showToast('Connecte-toi !');return;}
   const{data:duel,error}=await sb.from('duels').select('*').eq('code',code).eq('status','waiting').maybeSingle();
   if(error||!duel){showToast('Code introuvable ou duel d\xe9j\xe0 commenc\xe9');return;}
-  if(duel.challenger_id===currentUser.id){showToast('Tu ne peux pas rejoindre ton propre duel !');return;}
-  const{error:e2}=await sb.from('duels').update({opponent_id:currentUser.id,opponent_name:currentUser.username,status:'active'}).eq('id',duel.id);
+  if(duel.challenger_id===state.currentUser.id){showToast('Tu ne peux pas rejoindre ton propre duel !');return;}
+  const{error:e2}=await sb.from('duels').update({opponent_id:state.currentUser.id,opponent_name:state.currentUser.username,status:'active'}).eq('id',duel.id);
   if(e2){showToast('Erreur : '+e2.message);return;}
   const{data:updated,error:e3}=await sb.from('duels').select('*').eq('id',duel.id).maybeSingle();
   if(e3||!updated){showToast('Impossible de rejoindre ce duel');return;}
@@ -74,12 +74,12 @@ export async function renderDuelGame(duel){
   const el=document.getElementById('multi-content');if(!el)return;
   if(duel.status==='waiting'){showDuelWaiting(duel);return;}
   if(duel.status==='completed'){renderDuelResult(duel);return;}
-  const ic=duel.challenger_id===currentUser.id;
+  const ic=duel.challenger_id===state.currentUser.id;
   const myName=ic?duel.challenger_name:duel.opponent_name;
   const oppName=ic?(duel.opponent_name||'?'):duel.challenger_name;
   const myS=ic?duel.challenger_score:duel.opponent_score;
   const opS=ic?duel.opponent_score:duel.challenger_score;
-  const isMyTurn=duel.current_chooser_id===currentUser.id;
+  const isMyTurn=duel.current_chooser_id===state.currentUser.id;
   el.innerHTML=`<div class="duel-section"><div class="duel-round-info">Ronde ${duel.current_round} / ${duel.total_rounds}</div><div class="duel-players"><div class="duel-player${ic?' active':''}"><div class="duel-player-name">${myName}</div><div class="duel-player-score">${myS}</div></div><div class="duel-vs">âï¸</div><div class="duel-player${!ic?' active':''}"><div class="duel-player-name">${oppName}</div><div class="duel-player-score">${opS}</div></div></div><div id="duel-round-content"></div></div>`;
   const{data:round}=await sb.from('duel_rounds').select('*').eq('duel_id',duel.id).eq('round_number',duel.current_round).maybeSingle();
   if(!round){
@@ -110,13 +110,13 @@ export async function pickDuelTheme(duelId,roundNumber,theme){
   const{data:qs}=await sb.from('questions').select('*').eq('anecdote_id',anecId);
   if(!qs||!qs.length){showToast('Pas de question pour cette anecdote');return;}
   const q=qs[Math.floor(Math.random()*qs.length)];
-  const{error}=await sb.from('duel_rounds').insert({duel_id:duelId,round_number:roundNumber,chooser_id:currentUser.id,theme,anecdote_id:anecId,question:{type:q.type,question:q.question,options:q.options,answer:q.answer,explanation:q.explanation},status:'answering'});
+  const{error}=await sb.from('duel_rounds').insert({duel_id:duelId,round_number:roundNumber,chooser_id:state.currentUser.id,theme,anecdote_id:anecId,question:{type:q.type,question:q.question,options:q.options,answer:q.answer,explanation:q.explanation},status:'answering'});
   if(error)showToast('Erreur : '+error.message);
 }
 
 export function renderDuelRound(round){
   const el=document.getElementById('duel-round-content');if(!el||!round)return;
-  const ic=currentDuel?currentDuel.challenger_id===currentUser.id:false;
+  const ic=currentDuel?currentDuel.challenger_id===state.currentUser.id:false;
   const myField=ic?'challenger_answer':'opponent_answer';
   const myAnswer=round[myField];
   const hasAnswered=myAnswer!==null&&myAnswer!==undefined;
@@ -126,7 +126,7 @@ export function renderDuelRound(round){
   if(round.status==='completed'){
     const cA=round.challenger_answer,oA=round.opponent_answer;
     const cN=currentDuel.challenger_name,oN=currentDuel.opponent_name;
-    const ic2=currentDuel?currentDuel.challenger_id===currentUser.id:false;
+    const ic2=currentDuel?currentDuel.challenger_id===state.currentUser.id:false;
     const myReadyField2=ic2?'challenger_ready':'opponent_ready';
     const myReady2=round[myReadyField2]||false;
     el.innerHTML=
@@ -143,7 +143,7 @@ export function renderDuelRound(round){
   }
   if(hasAnswered){
     const isCorrect=myAnswer===corrAns;
-    const icH=currentDuel?currentDuel.challenger_id===currentUser.id:false;
+    const icH=currentDuel?currentDuel.challenger_id===state.currentUser.id:false;
     const myReadyField=icH?'challenger_ready':'opponent_ready';
     const myReady=round[myReadyField]||false;
     el.innerHTML=`<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">ð¯ ${q.question}</div>`+
@@ -167,7 +167,7 @@ export function renderDuelRound(round){
 
 export async function answerDuel(roundId,duelId,answer){
   if(!currentDuel)return;
-  const ic=currentDuel.challenger_id===currentUser.id;
+  const ic=currentDuel.challenger_id===state.currentUser.id;
   const field=ic?'challenger_answer':'opponent_answer';
   const corrField=ic?'challenger_correct':'opponent_correct';
   const{data:round}=await sb.from('duel_rounds').select('*').eq('id',roundId).maybeSingle();
@@ -188,7 +188,7 @@ export async function answerDuel(roundId,duelId,answer){
 
 export async function readyForNext(roundId,duelId){
   if(!currentDuel||!state.currentUser)return;
-  const ic=currentDuel.challenger_id===currentUser.id;
+  const ic=currentDuel.challenger_id===state.currentUser.id;
   const myReadyField=ic?'challenger_ready':'opponent_ready';
   const otherReadyField=ic?'opponent_ready':'challenger_ready';
   await sb.from('duel_rounds').update({[myReadyField]:true}).eq('id',roundId);
@@ -216,16 +216,16 @@ export async function showDuelLobby(){
   el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">â³ Chargementâ¦</div>';
   // Charger les duels actifs
   const{data:duels}=await sb.from('async_duels')
-    .select('*').or('player_a.eq.'+currentUser.id+',player_b.eq.'+currentUser.id)
+    .select('*').or('player_a.eq.'+state.currentUser.id+',player_b.eq.'+state.currentUser.id)
     .in('status',['pending','active']).order('updated_at',{ascending:false});
   const activeHtml=(duels&&duels.length)?
     '<div class="duel-active-label">Duels en cours</div>'+
     duels.map(d=>{
-      const isA=d.player_a===currentUser.id;
+      const isA=d.player_a===state.currentUser.id;
       const oppName=isA?d.player_b_name:d.player_a_name;
       const myScore=isA?d.score_a:d.score_b;
       const opScore=isA?d.score_b:d.score_a;
-      const myTurn=d.current_turn===currentUser.id;
+      const myTurn=d.current_turn===state.currentUser.id;
       const statusTxt=d.status==='pending'?'â³ En attente d\'adversaire':
         myTurn?'ð¯ Ã ton tour !':'â³ Tour de '+oppName;
       return '<div class="duel-async-item" onclick="openAsyncDuel(\''+d.id+'\')">'+
@@ -252,14 +252,14 @@ export async function showChallengeFriend(){
   el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--ink3);">â³ Chargement des amisâ¦</div>';
   const{data:friends}=await sb.from('friendships')
     .select('*,req:profiles!friendships_requester_id_fkey(id,username),adr:profiles!friendships_addressee_id_fkey(id,username)')
-    .or('requester_id.eq.'+currentUser.id+',addressee_id.eq.'+currentUser.id)
+    .or('requester_id.eq.'+state.currentUser.id+',addressee_id.eq.'+state.currentUser.id)
     .eq('status','accepted');
   if(!friends||!friends.length){
     el.innerHTML='<div class="duel-friend-list"><div style="text-align:center;padding:2rem;color:var(--ink3);font-size:.8rem;">Tu n\'as pas encore d\'amis.<br><a onclick="goProfile();switchTab(\'amis\')" style="color:var(--a);cursor:pointer;">Chercher des amis â</a></div></div>';
     return;
   }
   const items=friends.map(f=>{
-    const isReq=f.requester_id===currentUser.id;
+    const isReq=f.requester_id===state.currentUser.id;
     const friend=isReq?f.adr:f.req;
     if(!friend)return '';
     const av=(friend.username||'?')[0].toUpperCase();
@@ -278,13 +278,13 @@ export async function challengeFriend(friendId,friendName){
   if(btn){btn.disabled=true;btn.textContent='â³';}
   // CrÃ©er le duel
   const{data:duel,error}=await sb.from('async_duels').insert({
-    player_a:currentUser.id,player_a_name:currentUser.username,
+    player_a:state.currentUser.id,player_a_name:state.currentUser.username,
     player_b:friendId,player_b_name:friendName,
-    status:'active',current_turn:currentUser.id,current_round:1
+    status:'active',current_turn:state.currentUser.id,current_round:1
   }).select().maybeSingle();
   if(error||!duel){showToast('Erreur lors de la crÃ©ation du duel');if(btn){btn.disabled=false;btn.textContent='DÃ©fier';}return;}
   // Notifier l'ami
-  await _sendNotif(friendId,'duel_invite',{from:currentUser.username,duel_id:duel.id});
+  await _sendNotif(friendId,'duel_invite',{from:state.currentUser.username,duel_id:duel.id});
   showToast('â DÃ©fi envoyÃ© Ã  '+friendName+' !');
   openAsyncDuel(duel.id);
 }
@@ -295,22 +295,22 @@ export async function joinRandomDuel(){
   // Chercher un duel alÃ©atoire en attente d'un joueur
   const{data:waiting}=await sb.from('async_duels')
     .select('*').eq('status','pending').eq('is_random',true)
-    .is('player_b',null).neq('player_a',currentUser.id).limit(1).maybeSingle();
+    .is('player_b',null).neq('player_a',state.currentUser.id).limit(1).maybeSingle();
   if(waiting){
     // Rejoindre ce duel
     const{error}=await sb.from('async_duels').update({
-      player_b:currentUser.id,player_b_name:currentUser.username,
+      player_b:state.currentUser.id,player_b_name:state.currentUser.username,
       status:'active',current_turn:waiting.player_a
     }).eq('id',waiting.id);
     if(error){showToast('Erreur : '+error.message);return;}
-    await _sendNotif(waiting.player_a,'duel_your_turn',{opponent:currentUser.username,duel_id:waiting.id});
+    await _sendNotif(waiting.player_a,'duel_your_turn',{opponent:state.currentUser.username,duel_id:waiting.id});
     showToast('â Adversaire trouvÃ© !');
     openAsyncDuel(waiting.id);
   }else{
     // CrÃ©er un duel alÃ©atoire en attente
     const{data:duel,error}=await sb.from('async_duels').insert({
-      player_a:currentUser.id,player_a_name:currentUser.username,
-      status:'pending',current_turn:currentUser.id,is_random:true
+      player_a:state.currentUser.id,player_a_name:state.currentUser.username,
+      status:'pending',current_turn:state.currentUser.id,is_random:true
     }).select().maybeSingle();
     if(error||!duel){showToast('Erreur');return;}
     showToast('â³ En attente d\'un adversaireâ¦ Tu seras notifiÃ© dÃ¨s qu\'il arrive !');
@@ -329,11 +329,11 @@ export async function openAsyncDuel(duelId){
 
 export async function renderAsyncDuelView(duel){
   const el=document.getElementById('multi-content');if(!el)return;
-  const isA=duel.player_a===currentUser.id;
+  const isA=duel.player_a===state.currentUser.id;
   const myScore=isA?duel.score_a:duel.score_b;
   const opScore=isA?duel.score_b:duel.score_a;
   const oppName=isA?duel.player_b_name:duel.player_a_name;
-  const myTurn=duel.current_turn===currentUser.id;
+  const myTurn=duel.current_turn===state.currentUser.id;
 
   // Scoreboard
   const scoreHtml='<div class="duel-score-header">'+
@@ -405,10 +405,10 @@ export async function asyncPickTheme(duelId,roundNumber,theme){
   }).filter(Boolean).slice(0,3);
   if(questions.length<1){showToast('Pas assez de questions');showDuelLobby();return;}
   // InsÃ©rer le round
-  const isA=_asyncDuel&&_asyncDuel.player_a===currentUser.id;
+  const isA=_asyncDuel&&_asyncDuel.player_a===state.currentUser.id;
   const answers_me={answers:[],score:0,answered_at:null};
   const{error}=await sb.from('async_duel_rounds').insert({
-    duel_id:duelId,round_number:roundNumber,theme,initiated_by:currentUser.id,questions,
+    duel_id:duelId,round_number:roundNumber,theme,initiated_by:state.currentUser.id,questions,
     answers_a:isA?null:null,answers_b:null
   });
   if(error){showToast('Erreur : '+error.message);return;}
@@ -486,7 +486,7 @@ export async function submitAsyncAnswers(duel) {
   const roundNo = _asyncCurrentRound ? _asyncCurrentRound.round_number : 1;
 
   // Determine which score column to update
-  const isChallenger = (duel.challenger_id === currentUser.id);
+  const isChallenger = (duel.challenger_id === state.currentUser.id);
   const scoreCol     = isChallenger ? 'challenger_score' : 'opponent_score';
   const answersCol   = isChallenger ? 'challenger_answers' : 'opponent_answers';
   const doneCol      = isChallenger ? 'challenger_done' : 'opponent_done';
@@ -507,7 +507,7 @@ export async function submitAsyncAnswers(duel) {
 }
 
 export async function advanceAsyncDuel(duel, roundNo, roundScore) {
-  const isChallenger = (duel.challenger_id === currentUser.id);
+  const isChallenger = (duel.challenger_id === state.currentUser.id);
   const opponentId   = isChallenger ? duel.opponent_id : duel.challenger_id;
 
   // Reload fresh duel state
@@ -576,7 +576,7 @@ export function renderAsyncDuelResult(duel, roundScore) {
   const el = document.getElementById('screen-duel');
   if (!el) return;
 
-  const isChallenger = (duel.challenger_id === currentUser.id);
+  const isChallenger = (duel.challenger_id === state.currentUser.id);
   const myScore      = isChallenger ? (duel.challenger_score || 0) : (duel.opponent_score || 0);
   const theirScore   = isChallenger ? (duel.opponent_score   || 0) : (duel.challenger_score || 0);
   const finished     = (duel.status === 'finished');
