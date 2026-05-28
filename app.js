@@ -2642,9 +2642,9 @@ function showHunterToast(username){
 
 async function computeStreak(){
   if(!currentUser)return 0;
-  const{data:reads}=await sb.from('reads').select('date').eq('user_id',currentUser.id).order('date',{ascending:false}).limit(400);
-  if(!reads||!reads.length)return 0;
-  const dates=[...new Set(reads.map(r=>r.date))].sort().reverse();
+  const{data:logins}=await sb.from('user_logins').select('date').eq('user_id',currentUser.id).order('date',{ascending:false}).limit(400);
+  if(!logins||!logins.length)return 0;
+  const dates=[...new Set(logins.map(r=>r.date))].sort().reverse();
   const todayStr=today();
   let streak=0,expected=todayStr;
   for(const date of dates){
@@ -2655,6 +2655,7 @@ async function computeStreak(){
 }
 
 async function loadStreak(){
+  if(currentUser)await sb.from('user_logins').upsert({user_id:currentUser.id,date:today()},{onConflict:'user_id,date'});
   const n=await computeStreak();
   userStreak=n;
   const badge=document.getElementById('streak-badge');
