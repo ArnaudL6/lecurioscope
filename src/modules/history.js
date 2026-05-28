@@ -4,11 +4,11 @@ let _histAllAnec=[],_histReads=new Set(),_histFavs=new Set(),_histFilter='all';
 
 export async function goHistoire(){
   setRoute('hist');
-  if(!state.currentUser){showToast('� Connecte-toi pour voir ton historique !');show('screen-login');return;}
+  if(!state.currentUser){showToast('⚠ Connecte-toi pour voir ton historique !');show('screen-login');return;}
   updateNav('bn-hist');
   state.prevScreen=document.querySelector('.screen.on')?.id||'screen-anec';
   show('screen-hist');
-  document.getElementById('hist-screen-list').innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--ink3);font-size:.8rem;">� Chargement&</div>';
+  document.getElementById('hist-screen-list').innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--ink3);font-size:.8rem;">⏳ Chargement…</div>';
   const[{data:allAnec},{data:reads}]=await Promise.all([
     sb.from('anecdotes').select('*').lte('date',today()).order('date',{ascending:false}).limit(90),
     sb.from('reads').select('anecdote_id').eq('user_id',state.currentUser.id)
@@ -34,19 +34,19 @@ export function renderHistScreen(){
   if(_histFilter==='read')items=items.filter(a=>_histReads.has(a.id));
   if(_histFilter==='unread')items=items.filter(a=>!_histReads.has(a.id));
   if(_histFilter==='fav')items=items.filter(a=>_histFavs.has(String(a.id)));
-  if(!items.length){list.innerHTML='<div class="empty"><span class="empty-ico">=�</span><p>Aucune anecdote ici.</p></div>';return;}
+  if(!items.length){list.innerHTML='<div class="empty"><span class="empty-ico">📚</span><p>Aucune anecdote ici.</p></div>';return;}
   list.innerHTML=items.map(a=>{
     const isRead=_histReads.has(a.id),isToday=a.date===today();
     return'<div class="hist-screen-card" onclick="viewHistAnec(\''+a.id+'\')">'
-      +'<div class="hist-screen-icon">'+(a.icon||'=�')+'</div>'
+      +'<div class="hist-screen-icon">'+(a.icon||'📜')+'</div>'
       +'<div>'
         +'<div class="hist-screen-theme">'+(a.theme||'Anecdote')
           +(isToday?'<span class="hist-today-chip">Aujourd\'hui</span>':'')
         +'</div>'
-        +'<div class="hist-screen-preview">'+(a.anecdote||'').slice(0,110)+'&</div>'
+        +'<div class="hist-screen-preview">'+(a.anecdote||'').slice(0,110)+'…</div>'
         +'<div class="hist-screen-footer">'
-          +'<span class="hist-screen-date">'+fmtShort(a.date)+(a.chooser&&a.chooser!=='Auto'?' � '+a.chooser:'')+'</span>'
-          +'<span class="'+(isRead?'hist-read-badge':'hist-unread-badge')+'">'+(isRead?' Lu':'� lire')+'</span>'
+          +'<span class="hist-screen-date">'+fmtShort(a.date)+(a.chooser&&a.chooser!=='Auto'?' · '+a.chooser:'')+'</span>'
+          +'<span class="'+(isRead?'hist-read-badge':'hist-unread-badge')+'">'+(isRead?'✓ Lu':'À lire')+'</span>'
         +'</div>'
       +'</div>'
     +'</div>';
@@ -59,7 +59,7 @@ export async function viewHistAnec(anecId){
     sb.from('anecdotes').select('*').eq('id',anecId).single(),
     sb.from('questions').select('*').eq('anecdote_id',anecId)
   ]);
-  if(!anec){showToast('� Anecdote introuvable.');return;}
+  if(!anec){showToast('⚠ Anecdote introuvable.');return;}
   state.todayAnec=anec;state.todayQs=questions||[];
   if(state.currentUser){await markRead();_histReads.add(anecId);loadFavs();}
   showAnec(false);updateNav('bn-hist');
