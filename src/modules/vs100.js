@@ -11,15 +11,15 @@ const BOT_RANKS_DEF=[
 ];
 
 const BOT_NAMES_POOL=[
-  'Th�o42','LucasQ','Emma_X','JujuPro','Naomie','Zak99','BirH','KilianK',
-  'Sofia3','MaxDev','Cl�ment','In�sZ','ThibO','CharlyB','J�r�my','No�M',
-  'AlinaS','Baptiste','Florent','Chlo�X','AntoineR','MaevaQ','OlivierT','SarahV',
-  'RemiC','PaulaD','TomG','IsaH','KarimL','Val�ryM','DorianN','LauraO',
+  'Théo42','LucasQ','Emma_X','JujuPro','Naomie','Zak99','BirH','KilianK',
+  'Sofia3','MaxDev','Clément','InèsZ','ThibO','CharlyB','Jérémy','NoéM',
+  'AlinaS','Baptiste','Florent','ChloéX','AntoineR','MaevaQ','OlivierT','SarahV',
+  'RemiC','PaulaD','TomG','IsaH','KarimL','ValéryM','DorianN','LauraO',
   'VincentP','NathalQ','GregR','StephS','AnnikaT','MarcV','JuliettW','CyrilX',
   'AurelyY','GastonZ','SimonA','MarieB','RafaelC','EloiseD','EdouardE','LeaF',
   'AlbanG','CamilH','DamienI','FlorJ','GuillK','HenriL','IreneM','JacqN',
   'KevO','LisaP','MathQ','NinaR','OlgaS','PierrT','RoxanU','SamuelV',
-  'TaniaW','UgoX','ViolaY','WilZ','XavA','YannB','Zo�C','ActD',
+  'TaniaW','UgoX','ViolaY','WilZ','XavA','YannB','ZoéC','ActD',
   'BeatE','CedF','DelphG','EtienH','FabI','GenevJ','HugoK','IrinaL',
   'JoakM','KatiaN','LorenO','MariP','NicoQ','OctavR','PercS','QuinT',
   'RomU','SylvV','ThierW','UlanX','VictY','WendZ','XimA','YvetB',
@@ -28,15 +28,15 @@ const BOT_NAMES_POOL=[
 
 const FALLBACK_VS100=[
   {question:"Quelle est la capitale de l'Australie ?",answers:["Sydney","Melbourne","Canberra","Brisbane"],correctIdx:2},
-  {question:"Combien de c�t�s a un hexagone ?",answers:["5","6","7","8"],correctIdx:1},
-  {question:"Qui a peint la Joconde ?",answers:["Michel-Ange","Rapha�l","L�onard de Vinci","Botticelli"],correctIdx:2},
-  {question:"En quelle ann�e a eu lieu la R�volution fran�aise ?",answers:["1789","1769","1799","1815"],correctIdx:0},
-  {question:"Quel est l'�l�ment chimique de symbole 'Fe' ?",answers:["Fluor","Fer","Francium","Fermium"],correctIdx:1},
-  {question:"Quelle plan�te est la plus grande du syst�me solaire ?",answers:["Saturne","Neptune","Jupiter","Uranus"],correctIdx:2},
+  {question:"Combien de côtés a un hexagone ?",answers:["5","6","7","8"],correctIdx:1},
+  {question:"Qui a peint la Joconde ?",answers:["Michel-Ange","Raphaël","Léonard de Vinci","Botticelli"],correctIdx:2},
+  {question:"En quelle année a eu lieu la Révolution française ?",answers:["1789","1769","1799","1815"],correctIdx:0},
+  {question:"Quel est l'élément chimique de symbole 'Fe' ?",answers:["Fluor","Fer","Francium","Fermium"],correctIdx:1},
+  {question:"Quelle planète est la plus grande du système solaire ?",answers:["Saturne","Neptune","Jupiter","Uranus"],correctIdx:2},
   {question:"Combien d'os contient le corps humain adulte ?",answers:["196","206","216","226"],correctIdx:1},
-  {question:"Qui a �crit 'Les Mis�rables' ?",answers:["Balzac","Zola","Hugo","Flaubert"],correctIdx:2},
-  {question:"Quelle est la vitesse de la lumi�re (km/s) ?",answers:["100 000","200 000","300 000","400 000"],correctIdx:2},
-  {question:"En quelle ann�e l'Homme a-t-il march� sur la Lune pour la premi�re fois ?",answers:["1965","1967","1969","1971"],correctIdx:2},
+  {question:"Qui a écrit 'Les Misérables' ?",answers:["Balzac","Zola","Hugo","Flaubert"],correctIdx:2},
+  {question:"Quelle est la vitesse de la lumière (km/s) ?",answers:["100 000","200 000","300 000","400 000"],correctIdx:2},
+  {question:"En quelle année l'Homme a-t-il marché sur la Lune pour la première fois ?",answers:["1965","1967","1969","1971"],correctIdx:2},
 ];
 
 export function generateVs100Bots(){
@@ -48,7 +48,7 @@ export function generateVs100Bots(){
     {id:'C',minPct:12,maxPct:25,minRate:0.60,maxRate:0.75,color:'#34d399'},
     {id:'D',minPct:20,maxPct:35,minRate:0.45,maxRate:0.65,color:'#60a5fa'},
   ];
-  // Chaque rang tire un count al�atoire dans sa fourchette, E re�oit le reste
+  // Chaque rang tire un count aléatoire dans sa fourchette, E reçoit le reste
   let rem=100;
   const counts={};
   for(let t=0;t<TIERS.length;t++){
@@ -100,7 +100,7 @@ export function show1vs100Lobby(){
   const _rc={Nation:'#ff007f',S:'#a855f7',A:'#f97316',B:'#fbbf24',C:'#34d399',D:'#60a5fa',E:'#6b7280'};
 const _rk={};previewBots.forEach(b=>{_rk[b.rank]=(_rk[b.rank]||0)+1;});
 const dotWall=previewBots.map(b=>`<div class="vs100-wall-dot" style="background:${b.color}44;border:1.5px solid ${b.color}77;width:.9rem;height:.9rem;margin:.15rem;border-radius:50%;flex-shrink:0;" title="${b.rank}"></div>`).join('');
-const legend=['Nation','S','A','B','C','D','E'].filter(r=>_rk[r]).map(r=>`<span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#aaa"><span style="width:.6rem;height:.6rem;border-radius:50%;background:${_rc[r]};display:inline-block"></span>${r}�(${_rk[r]})</span>`).join('');;
+const legend=['Nation','S','A','B','C','D','E'].filter(r=>_rk[r]).map(r=>`<span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:#aaa"><span style="width:.6rem;height:.6rem;border-radius:50%;background:${_rc[r]};display:inline-block"></span>${r} (${_rk[r]})</span>`).join('');;
   sc.innerHTML=`
 <div class="vs100-lobby">
   <div class="vs100-lobby-header">
@@ -113,7 +113,7 @@ const legend=['Nation','S','A','B','C','D','E'].filter(r=>_rk[r]).map(r=>`<span 
     <p class="vs100-lobby-sub">Affronte 100 challengers. Reste le dernier debout.</p>
   </div>
   <div class="vs100-rules-grid">
-    <div class="vs100-rule"><span>&#10067;</span><span>Questions illimit�es &#183; 4 choix</span></div>
+    <div class="vs100-rule"><span>&#10067;</span><span>Questions illimitées &#183; 4 choix</span></div>
     <div class="vs100-rule"><span>&#129302;</span><span>Bots rangs E &#8594; Nation</span></div>
     <div class="vs100-rule"><span>&#9201;</span><span>20 secondes par question</span></div>
     <div class="vs100-rule"><span>&#128128;</span><span>1 erreur &#61; fin de partie</span></div>
@@ -147,10 +147,10 @@ export async function renderVs100Question(){
   sc.innerHTML=`
 <div class="vs100-arena">
   <div class="vs100-arena-top">
-    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()"></button>
+    <button class="vs100-back-btn" onclick="if(confirm('Abandonner la partie ?'))showHub()">✕</button>
     <div class="vs100-arena-info">
       <span class="vs100-q-badge">Q${s.currentQ+1}/10</span>
-      <span class="vs100-alive-badge">=e <span id="vs100-alive-count">${alive}</span> restants</span>
+      <span class="vs100-alive-badge">👥 <span id="vs100-alive-count">${alive}</span> restants</span>
     </div>
     <div class="vs100-timer-ring" id="vs100-timer">20</div>
   </div>
@@ -219,7 +219,7 @@ export async function pickVs100Answer(chosen){
     if(qBox){
       const explDiv=document.createElement('div');
       explDiv.className='vs100-expl';
-      explDiv.innerHTML='=� '+expl;
+      explDiv.innerHTML='💡 '+expl;
       qBox.appendChild(explDiv);
     }
   }
@@ -238,7 +238,7 @@ export async function pickVs100Answer(chosen){
   if(s.botsAlive===0){await vs100Delay(400);endVs100Victory();return;}
 
   // Show inter-question panel
-  await new Promise(res=>{const btn=document.createElement('button');btn.className='sl-btn vs100-continue-btn';btn.textContent='Continuer �';btn.onclick=()=>{btn.remove();res();};const qb=document.getElementById('vs100-qbox');if(qb)qb.appendChild(btn);else res();});
+  await new Promise(res=>{const btn=document.createElement('button');btn.className='sl-btn vs100-continue-btn';btn.textContent='Continuer →';btn.onclick=()=>{btn.remove();res();};const qb=document.getElementById('vs100-qbox');if(qb)qb.appendChild(btn);else res();});
   vs100ShowInterlude(eliminated.length,s.botsAlive,s.currentQ);
 }
 
@@ -267,13 +267,13 @@ export function vs100ShowInterlude(elimCount,botsLeft,nextQ){
   panel.className='vs100-interlude';
   panel.innerHTML=`
     <div class="vs100-interlude-box">
-      <div class="vs100-interlude-elim">=� <strong>${elimCount}</strong> challenger${elimCount>1?'s':''} �limin�${elimCount>1?'s':''}</div>
+      <div class="vs100-interlude-elim">💀 <strong>${elimCount}</strong> challenger${elimCount>1?'s':''} éliminé${elimCount>1?'s':''}</div>
       <div class="vs100-interlude-remain">
         <span class="vs100-interlude-count">${botsLeft}</span>
         <span class="vs100-interlude-lbl">challenger${botsLeft>1?'s':''} encore debout</span>
       </div>
       <div class="vs100-interlude-next">Question ${nextQ}</div>
-      <button class="vs100-continue-btn" onclick="this.closest('.vs100-interlude').remove();renderVs100Question();">Continuer �</button>
+      <button class="vs100-continue-btn" onclick="this.closest('.vs100-interlude').remove();renderVs100Question();">Continuer ▶</button>
     </div>`;
   sc.appendChild(panel);
   requestAnimationFrame(()=>panel.classList.add('vs100-interlude-show'));
@@ -283,28 +283,28 @@ export function endVs100Defeat(q,chosen){
   const sc=getOrCreateVs100Screen();
   const s=state.vs100State;
   const correct=q.answers[q.correctIdx];
-  const picked=chosen>=0?q.answers[chosen]:'� Temps �coul�';
+  const picked=chosen>=0?q.answers[chosen]:'⏱ Temps écoulé';
   sc.innerHTML=`
 <div class="vs100-defeat">
-  <div class="vs100-defeat-skull">=�</div>
-  <div class="vs100-defeat-title">�LIMIN�</div>
+  <div class="vs100-defeat-skull">💀</div>
+  <div class="vs100-defeat-title">ÉLIMINÉ</div>
   <div class="vs100-defeat-msg">Les challengers ont eu raison de toi !</div>
   <div class="vs100-defeat-card">
-    <div class="vs100-dc-row"><span>Questions r�ussies</span><span class="vs100-dc-val">${s.currentQ}</span></div>
-    <div class="vs100-dc-row"><span>Ta r�ponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
-    <div class="vs100-dc-row"><span>Bonne r�ponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
+    <div class="vs100-dc-row"><span>Questions réussies</span><span class="vs100-dc-val">${s.currentQ}</span></div>
+    <div class="vs100-dc-row"><span>Ta réponse</span><span class="vs100-dc-val vs100-dc-wrong">${picked}</span></div>
+    <div class="vs100-dc-row"><span>Bonne réponse</span><span class="vs100-dc-val vs100-dc-ok">${correct}</span></div>
     <div class="vs100-dc-row"><span>Challengers restants</span><span class="vs100-dc-val" style="color:#f97316;">${s.botsAlive} / 100</span></div>
   </div>
   <div class="vs100-defeat-btns">
-    <button class="vs100-retry-btn" onclick="start1vs100()">= R�essayer</button>
-    <button class="vs100-home-btn" onclick="showHub()">� Accueil</button>
+    <button class="vs100-retry-btn" onclick="start1vs100()">🔄 Réessayer</button>
+    <button class="vs100-home-btn" onclick="showHub()">← Accueil</button>
   </div>
 </div>`;
 }
 
 export async function endVs100Victory(){
   const xpGain=500;
-  if(state.currentUser)await awardXP(xpGain,'1 Contre 100  Victoire !');
+  if(state.currentUser)await awardXP(xpGain,'1 Contre 100 — Victoire !');
   const sc=getOrCreateVs100Screen();
   const s=state.vs100State;
   const totalQ=s?s.questions.length:10;
@@ -315,15 +315,15 @@ export async function endVs100Victory(){
 '<div class="vs100-victory">'+
   particles+
   '<div class="vs100-victory-inner">'+
-    '<div class="vs100-victory-trophy"><�</div>'+
+    '<div class="vs100-victory-trophy">🏆</div>'+
     '<div class="vs100-victory-title">VICTOIRE !</div>'+
-    '<div class="vs100-victory-sub">Tu as �limin� les 100 challengers !</div>'+
+    '<div class="vs100-victory-sub">Tu as éliminé les 100 challengers !</div>'+
     '<div class="vs100-victory-card">'+
-      '<div class="vs100-vc-row"><span>R�ponses parfaites</span><span style="color:#fbbf24;">'+totalQ+' / '+totalQ+'</span></div>'+
-      '<div class="vs100-vc-row"><span>Bots �limin�s</span><span style="color:#34d399;">100 / 100</span></div>'+
-      '<div class="vs100-vc-row"><span>XP remport�</span><span style="color:#a855f7;">+'+xpGain+' XP</span></div>'+
+      '<div class="vs100-vc-row"><span>Réponses parfaites</span><span style="color:#fbbf24;">'+totalQ+' / '+totalQ+'</span></div>'+
+      '<div class="vs100-vc-row"><span>Bots éliminés</span><span style="color:#34d399;">100 / 100</span></div>'+
+      '<div class="vs100-vc-row"><span>XP remporté</span><span style="color:#a855f7;">+'+xpGain+' XP</span></div>'+
     '</div>'+
-    '<button class="vs100-back-gold" onclick="showHub()">� Retour au Syst�me</button>'+
+    '<button class="vs100-back-gold" onclick="showHub()">← Retour au Système</button>'+
    '</div>'+
 '</div>';
 }
