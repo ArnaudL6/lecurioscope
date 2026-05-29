@@ -3,6 +3,8 @@
 :root{--banner-h:0px;}
 #site-banner{transition:opacity .2s;}
 body:has(#site-banner:not([style*="display:none"])) .screen{padding-top:calc(var(--banner-h,38px) + .5rem);}
+body:has(#site-banner:not([style*="display:none"])) header{top:var(--banner-h,38px);}
+body:has(#site-banner:not([style*="display:none"])) .sl-hub-left{top:calc(var(--banner-h,38px) + 70px);}
 :root{
   /* ── Duolingo-inspired light theme (default) ─────────────────────────── */
   --bg:#f0f2f9;--s0:#ffffff;--s1:#ffffff;--s2:#eef0f8;
