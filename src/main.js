@@ -15,8 +15,14 @@ import * as Notifs from './modules/notifs.js';
 import { state, sb } from './shared.js';
 
 export function _handleHashRouting(){
-  const m=window.location.hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
-  if(m)viewUserProfile(m[1]);
+  const hash=window.location.hash;
+  // Deep link: profil d'un autre utilisateur
+  const m=hash.match(/^\/profil\/([a-f0-9-]{36})$/i) || hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
+  if(m){viewUserProfile(m[1]);return;}
+  // Navigation vers une section par hash (#anecdote, #enigme, etc.)
+  const SECTIONS=['hub','anecdote','quiz','enigme','mystere','duels','vs100','profil','notifs','admin'];
+  const sec=(hash||'').replace(/^#/,'').toLowerCase().split('/')[0];
+  if(sec&&SECTIONS.includes(sec))show(sec);
 }
 
 // Make all functions globally available for inline HTML handlers
@@ -445,3 +451,4 @@ window.addEventListener('hashchange',_handleHashRouting);
 document.addEventListener('DOMContentLoaded',()=>setTimeout(_handleHashRouting,800));
 // ══════════════════════════════â
 _handleHashRouting();
+  window.addEventListener('hashchange',_handleHashRouting);
