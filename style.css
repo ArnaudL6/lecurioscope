@@ -873,7 +873,7 @@ main{padding-bottom:5.5rem;}
 /* Carte Savoir */
 .carte-savoir{background:var(--s1);border:1px solid var(--b1);border-top:3px solid #34d399;padding:1.5rem;margin-top:1.5rem;border-radius:var(--card-radius);display:none;}
 .carte-savoir-head{font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#34d399;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
-.carte-savoir-head::before{content:'ÃÂ°ÃÂÃÂÃÂ¡';font-size:.9rem;}
+.carte-savoir-head::before{content:'💡';font-size:.9rem;}
 .carte-savoir-title{font-size:.82rem;font-weight:600;color:var(--ink2);margin-bottom:.45rem;}
 .carte-savoir-text{font-size:.82rem;color:var(--ink3);line-height:1.75;}
 .carte-savoir-funfact{margin-top:1rem;padding:.75rem;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.15);border-radius:.5rem;}
@@ -1827,7 +1827,7 @@ html.dark .hist-item, html.dark .prof-stat
   text-align:center!important;
 }
 .load-wrap::before{
-  content:'ÃÂ¢ÃÂÃÂ SYSTÃÂÃÂME ÃÂ¢ÃÂÃÂ'!important;
+  content:'◈ SYSTÈME ◈'!important;
   position:absolute!important;
   top:-13px!important;
   left:50%!important;
