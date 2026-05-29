@@ -271,7 +271,8 @@ let hubMods = null;
 async function hub(pane) {
   if (!hubMods) {
     const { data } = await sb.from('app_config').select('value').eq('key','hub_modules').single();
-    hubMods = data?.value ? JSON.parse(data.value) : HUB_DEFAULT.map(m=>({...m}));
+    const _saved = data?.value ? JSON.parse(data.value) : null;
+    hubMods = (_saved && _saved.length) ? _saved : HUB_DEFAULT.map(m=>({...m}));
   }
   renderHub(pane);
 }
