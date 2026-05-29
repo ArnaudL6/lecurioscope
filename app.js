@@ -4468,7 +4468,7 @@ async function endVs100Victory(){
 
 // deploy trigger 3
 
-function setRoute(hash){try{history.replaceState(null,'','#'+hash);}catch(e){location.hash='#'+hash;}}
+function setRoute(hash){const _u={anecdote:'/le-saviez-vous',enigme:'/enigme',hub:'/',mystere:'/mystere',vs100:'/vs100'};const _p=_u[hash]||('/#'+hash);try{history.replaceState(null,'',_p);}catch(e){location.hash='#'+hash;}}
 window.addEventListener('hashchange',()=>{
   const h=location.hash.slice(1);
   if(h==='hub')showHub();
