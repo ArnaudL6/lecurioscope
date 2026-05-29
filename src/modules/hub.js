@@ -332,6 +332,7 @@ export async function buildCommunityChallenge(el){
 
 export async function showHub(){
   setRoute('hub');
+  show('screen-hub');
   let readToday=false,enigmaToday=false,quizToday=false;
   let xp=state.currentUserXP||0;
   let rank=state.currentUserRank||RANKS[0];
