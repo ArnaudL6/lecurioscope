@@ -72,7 +72,7 @@ textarea{resize:vertical;min-height:75px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 
-/* ── Module items (hub) ── */
+/* ── Hub preview cards ── */
 .hub-preview-list{display:flex;flex-direction:column;gap:.55rem}
 .hub-card{background:var(--surface2);border-radius:.875rem;border:1px solid var(--border);border-left:3px solid var(--border);padding:.8rem .9rem;display:flex;align-items:flex-start;gap:.7rem;transition:opacity .2s,box-shadow .15s}
 .hub-card.off{opacity:.3}
@@ -92,6 +92,7 @@ textarea{resize:vertical;min-height:75px}
 .hub-card-edit input[type=text]{font-size:.74rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.4rem;color:var(--text);padding:.2rem .45rem}
 .hub-card-edit input[type=color]{width:30px;height:28px;padding:.12rem;border-radius:.35rem;background:rgba(255,255,255,.04);border:1px solid var(--border);cursor:pointer}
 .hub-card-actions{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;padding-top:.1rem}
+/* ── Table ── */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th{text-align:left;padding:.55rem .7rem;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -160,7 +161,7 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 // ═══════════════════════════════════════
 const SB_URL  = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
-const ADMIN_EMAIL = 'licour.arnaud@gmail.com';
+const ADMIN_EMAIL = 'nymeraroman@gmail.com';
 const APP_URL = 'https://lecurioscope.pages.dev';
 const TODAY  = () => new Date().toISOString().slice(0,10);
 
@@ -264,7 +265,7 @@ async function stats(pane) {
 // Hub Config
 // ═══════════════════════════════════════
 const HUB_DEFAULT = [
-  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote surprenante du jour",type:'gate',enabled:true},
+  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true},
   {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true},
   {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true},
   {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true},
@@ -276,8 +277,8 @@ let hubMods = null;
 async function hub(pane) {
   if (!hubMods) {
     const { data } = await sb.from('app_config').select('value').eq('key','hub_modules').single();
-    const _saved = data?.value ? JSON.parse(data.value) : null;
-    hubMods = (_saved && _saved.length) ? _saved : HUB_DEFAULT.map(m=>({...m}));
+    const _saved = (data && data.value) ? (() => { try { const p = JSON.parse(data.value); return (p && p.length) ? p : null; } catch(e){ return null; } })() : null;
+    hubMods = _saved || HUB_DEFAULT.map(m => ({...m}));
   }
   renderHub(pane);
 }
@@ -286,17 +287,19 @@ function renderHub(pane) {
   pane.innerHTML = [
     '<div class="card">',
     '<h3>🏠 Modules du Hub</h3>',
-    '<p class="hint">Glisse <strong>⣿</strong> pour réordonner. Toggle active/désactive. Les <em>Quêtes</em> sont personnalisables (icône, titre, couleur). Sauvegarde pour appliquer au site.</p>',
-    '<div id="mod-list" class="hub-preview-list">'+hubMods.map((m,i)=>modHtml(m,i)).join('')+'</div>',
+    '<p class="hint">Glisse <strong>⠷</strong> pour réordonner. Le toggle active/désactive. Les <em>Quêtes</em> sont personnalisables (icône, titre, couleur). Sauvegarde pour appliquer au site.</p>',
+    '<div class="hub-preview-list" id="mod-list">',
+    hubMods.map((m,i) => modHtml(m,i)).join(''),
+    '</div>',
     '<div class="btn-row">',
     '<button class="btn btn-primary" onclick="saveHub()">💾 Sauvegarder</button>',
     '<button class="btn btn-ghost" onclick="resetHub()">↺ Défaut</button>',
     '</div></div>',
     '<div class="card" style="border-color:#1e3a2a">',
-    '<h3 style="color:#86efac">📚 Légende</h3>',
+    '<h3 style="color:#86efac">💡 Légende</h3>',
     '<div style="display:grid;gap:.4rem;font-size:.82rem;color:var(--text2)">',
     '<div><span style="background:#7c6aff22;color:#7c6aff;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Quête</span> Porte journalière — icône, titre et couleur personnalisables.</div>',
-    '<div><span style="background:#ef444422;color:#ef4444;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Section</span> Bloc entier (Arène, Mystère…) — activer/désactiver uniquement.</div>',
+    '<div><span style="background:#ef444422;color:#ef4444;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Section</span> Bloc entier du Hub — activer/désactiver uniquement.</div>',
     '<div><span style="background:#64748b22;color:#64748b;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Portail</span> WIP — visible ou masqué.</div>',
     '</div></div>'
   ].join('');
@@ -304,31 +307,32 @@ function renderHub(pane) {
 }
 
 function modHtml(m, i) {
-  const typeLabels = {gate:'Quête',section:'Section',locked:'Portail'};
-  const isGate = m.type === 'gate';
+  const typeLabels = {gate:'Quête', section:'Section', locked:'Portail'};
+  const typeColors = {gate:'#7c6aff', section:'#ef4444', locked:'#64748b'};
   const col = m.color || '#7c6aff';
-  const typeColor = m.type==='gate' ? '#7c6aff' : m.type==='section' ? '#ef4444' : '#64748b';
+  const tc = typeColors[m.type] || '#7c6aff';
+  const isGate = m.type === 'gate';
   const parts = [
-    '<div class="hub-card'+(m.enabled?'':' off')+'" id="mi'+i+'" draggable="true" data-idx="'+i+'" style="border-left-color:'+col+'">',
-    '<span class="hub-drag" title="Glisser pour réordonner">⣿</span>',
+    '<div class="hub-card'+(m.enabled?'':' off')+'" id="mi'+i+'" draggable="true" data-idx="'+i+'">',
+    '<span class="hub-drag" title="Glisser pour réordonner">⠷</span>',
     '<div class="hub-card-inner">',
     '<div class="hub-card-top">',
-    '<span class="hub-rank" style="background:'+col+'22;color:'+col+'">'+esc(m.rank||'?')+'-RANG</span>',
-    '<span class="hub-xp">'+esc(m.xp||'')+'</span>',
-    '<span class="hub-type-tag" style="background:'+typeColor+'22;color:'+typeColor+'">'+( typeLabels[m.type]||m.type)+'</span>',
+    '<span class="hub-rank" style="background:'+col+'22;color:'+col+'">'  +esc(m.rank||'?')+'</span>',
+    (m.xp ? '<span class="hub-xp">'+esc(m.xp)+'</span>' : ''),
+    '<span class="hub-type-tag" style="background:'+tc+'22;color:'+tc+'">'+(typeLabels[m.type]||m.type)+'</span>',
     '</div>',
     '<div class="hub-card-title">',
-    '<span style="font-size:1.3rem;line-height:1">'+esc(m.icon||'▪')+'</span>',
-    '<strong style="font-size:.92rem">'+esc(m.title||'')+'</strong>',
+    '<span style="font-size:1.15rem;line-height:1">'+esc(m.icon||'⭐')+'</span>',
+    '<span style="font-size:.88rem;font-weight:700">'+esc(m.title||'')+'</span>',
     '</div>',
     '<div class="hub-card-desc">'+esc(m.desc||'')+'</div>',
   ];
   if (isGate) {
     parts.push(
       '<div class="hub-card-edit">',
-      '<input type="text" value="'+esc(m.icon||'')+'" style="width:48px;text-align:center" placeholder="🎯" oninput="upd('+i+','icon',this.value)" title="Icône">',
-      '<input type="text" value="'+esc(m.title||'')+'" placeholder="Titre" oninput="upd('+i+','title',this.value)" style="flex:1;min-width:90px">',
-      '<input type="color" value="'+(m.color||'#7c6aff')+'" oninput="upd('+i+','color',this.value);this.closest('.hub-card').style.borderLeftColor=this.value" title="Couleur">',
+      '<input type="text" value="'+esc(m.icon||'')+'" style="width:48px;text-align:center" placeholder="🎯" oninput="upd('+i+',\'icon\',this.value)" title="Icône">',
+      '<input type="text" value="'+esc(m.title||'')+'" placeholder="Titre" oninput="upd('+i+',\'title\',this.value)" style="flex:1;min-width:90px">',
+      '<input type="color" value="'+col+'" oninput="upd('+i+',\'color\',this.value)" title="Couleur">',
       '</div>'
     );
   }
@@ -338,8 +342,7 @@ function modHtml(m, i) {
     '<label class="toggle" title="'+(m.enabled?'Désactiver':'Activer')+'">',
     '<input type="checkbox"'+(m.enabled?' checked':'')+' onchange="togMod('+i+',this.checked)">',
     '<span class="slider"></span></label>',
-    '</div>',
-    '</div>'
+    '</div></div>'
   );
   return parts.join('');
 }
@@ -360,7 +363,7 @@ function enableDnD() {
       const newOrder = [];
       list.querySelectorAll('.hub-card').forEach(el => {
         const idx = parseInt(el.dataset.idx);
-        if (!isNaN(idx) && hubMods[idx]) newOrder.push(Object.assign({},hubMods[idx]));
+        if (!isNaN(idx) && hubMods[idx]) newOrder.push(Object.assign({}, hubMods[idx]));
       });
       if (newOrder.length === hubMods.length) {
         hubMods = newOrder;
@@ -391,7 +394,7 @@ function togMod(i, v) {
 }
 function resetHub() {
   if (!confirm('Réinitialiser les modules Hub par défaut ?')) return;
-  hubMods = HUB_DEFAULT.map(m => Object.assign({},m));
+  hubMods = HUB_DEFAULT.map(m => Object.assign({}, m));
   renderHub(document.getElementById('pane'));
 }
 async function saveHub() {
@@ -654,7 +657,7 @@ CREATE POLICY "Lecture publique" ON public.app_config
   FOR SELECT USING (true);
 
 CREATE POLICY "Écriture admin seulement" ON public.app_config
-  FOR ALL USING (auth.email() = 'licour.arnaud@gmail.com');
+  FOR ALL USING (auth.email() = 'nymeraroman@gmail.com');
 </pre>
         <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-create')">📋 Copier</button>
       </div>
@@ -672,9 +675,9 @@ CREATE POLICY "Lecture enigmes" ON public.daily_enigmas FOR SELECT USING (true);
 
 -- Insertion anecdotes/énigmes : admin seulement
 CREATE POLICY "Insert anecdotes admin" ON public.anecdotes
-  FOR INSERT WITH CHECK (auth.email() = 'licour.arnaud@gmail.com');
+  FOR INSERT WITH CHECK (auth.email() = 'nymeraroman@gmail.com');
 CREATE POLICY "Insert enigmes admin" ON public.daily_enigmas
-  FOR INSERT WITH CHECK (auth.email() = 'licour.arnaud@gmail.com');
+  FOR INSERT WITH CHECK (auth.email() = 'nymeraroman@gmail.com');
 </pre>
         <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-rls')">📋 Copier</button>
       </div>
@@ -706,7 +709,7 @@ async function testConn() {
   el.textContent='Test en cours…';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
   if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
-  else el.innerHTML<`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
+  else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
 }
 
 // ═══════════════════════════════════════
