@@ -106,7 +106,7 @@ tr:hover td{background:var(--surface2)}
 /* ── Setup box ── */
 .setup-box{background:#12201a;border:1px solid #1e4a2a;border-radius:.75rem;padding:1.25rem}
 .setup-box h4{color:#86efac;margin-bottom:.75rem;font-size:.9rem}
-.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow/x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
+.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow-x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
 
 /* ── Toast ── */
 #toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:.65rem;padding:.65rem 1.1rem;font-size:.875rem;z-index:9999;transform:translateY(120px);transition:transform .28s;max-width:300px;pointer-events:none}
@@ -204,7 +204,7 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
     <div class="tab" onclick="go('content',this)">✍️ Contenu</div>
     <div class="tab" onclick="go('flags',this)">🚩 Fonctions</div>
     <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
-    <div class="tab" onclick="go 'users',this)">👥 Utilisateurs</div>
+    <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
     <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
     <div class="tab" onclick="go('accounts',this)">👤 Comptes</div>
   </div>
@@ -288,7 +288,7 @@ async function doLogin() {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(me));
     showApp();
   } catch(e) {
-    err.textContent = 'Erreur réseau. Réessaie.';
+    err.textContent = 'Erreur reseau. Reessaie.';
     btn.disabled = false; btn.textContent = 'Se connecter';
   }
 }
@@ -300,7 +300,7 @@ function doSignOut() {
 
 function showFirstSetup() {
   document.querySelector('.login-box').innerHTML = `
-    <div class="login-logo">🛡️</div>
+    <div class="login-logo">🛠️</div>
     <h2>Créer le premier compte</h2>
     <p style="font-size:.8rem;color:var(--text2);text-align:center;margin-bottom:1.25rem">
       Aucun compte admin trouvé. Crée le tien pour accéder au panel.
@@ -315,7 +315,7 @@ function showFirstSetup() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-async function doFirstSetup() {
+acync function doFirstSetup() {
   const id   = document.getElementById('setup-id').value.trim().toLowerCase();
   const name = document.getElementById('setup-name').value.trim();
   const pw   = document.getElementById('setup-pw').value;
@@ -369,8 +369,8 @@ async function stats(pane) {
     <div class="stats-grid">
       <div class="stat"><span class="val">${usersR.count ?? '—'}</span><span class="lbl">Chasseurs inscrits</span></div>
       <div class="stat"><span class="val">${duelsR.count ?? '—'}</span><span class="lbl">Duels actifs</span></div>
-      <div class="stat"><span class="val">${anecR.count ? '✅' : '❌'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
-      <div class="stat"><span class="val">${enigR.count ? '✅' : '❌'}</span><span class="lbl">Énigme aujourd'hui</span></div>
+      <div class="stat"><span class="val">${anecR.count ? '✅' : '❩L'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
+      <div class="stat"><span class="val">${enigR.count ? '✅' : '❩L'}</span><span class="lbl">Énigme aujourd'hui</span></div>
     </div>
 
     <div class="card">
@@ -409,12 +409,12 @@ async function stats(pane) {
 // Hub Config
 // ═══════════════════════════════════════
 const HUB_DEFAULT = [
-  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true},
-  {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true},
-  {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true},
-  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true},
-  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true},
-  {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true},
+  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true,action:'goAnec()'},
+  {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true,action:'goEnigme()'},
+  {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true,action:"renderPlayChoice();show('screen-play');updateNav('bn-play');"},
+  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true,action:'show1vs100Lobby()'},
+  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true,action:''},
+  {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true,action:''},
 ];
 let hubMods = null;
 
@@ -467,6 +467,16 @@ function renderHub(pane) {
             <input type="text" value="${esc(m.title||'')}" placeholder="Titre" oninput="upd(${i},'title',this.value)" style="flex:1;min-width:80px">
             <input type="text" value="${esc(m.desc||'')}" placeholder="Description" oninput="upd(${i},'desc',this.value)" style="flex:2;min-width:100px">
             <input type="color" value="${gc}" oninput="upd(${i},'color',this.value);this.closest('.hub-gate-card').style.setProperty('--gc',this.value)" title="Couleur">
+          </div>
+          <div class="hub-edit-row" style="margin-top:.3rem">
+            <span style="font-size:.6rem;color:rgba(255,255,255,.3);white-space:nowrap">🎮 Jeu lié :</span>
+            <select style="flex:1;font-size:.7rem;background:#0f0f1a;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:.35rem;padding:.25rem .4rem" onchange="upd(${i},'action',this.value)">
+              <option value="" ${!m.action?'selected':''}>— Aucun —</option>
+              <option value="goAnec()" ${m.action==='goAnec()'?'selected':''}>💡 Anecdote du Jour</option>
+              <option value="goEnigme()" ${m.action==='goEnigme()'?'selected':''}>🔐 Crack le Code</option>
+              <option value="renderPlayChoice();show('screen-play');updateNav('bn-play');" ${m.action&&m.action.includes('screen-play')?'selected':''}>🎯 Quiz</option>
+              <option value="show1vs100Lobby()" ${m.action==='show1vs100Lobby()'?'selected':''}>⚡ 1 contre 100</option>
+            </select>
           </div>` : ''}
         </div>
         <div class="hub-gate-controls">
@@ -490,8 +500,28 @@ function renderHub(pane) {
           <span class="hub-live-label">⚡ THE SYSTEM</span>
           <span class="hub-live-date">${today}</span>
         </div>
-        <div class="hub-live-gates" id="mod-list">
-          ${gatesHtml}
+        <div style="display:flex;gap:.75rem;align-items:flex-start;">
+          <!-- Colonne gauche : placeholder statique (hunter card + arena) -->
+          <div style="width:130px;flex-shrink:0;">
+            <div style="background:#0f0f1a;border:1px solid rgba(168,85,247,.25);border-radius:.7rem;padding:.65rem;margin-bottom:.55rem;">
+              <div style="font-size:.47rem;letter-spacing:.2em;color:rgba(168,85,247,.55);text-transform:uppercase;margin-bottom:.3rem">CHASSEUR</div>
+              <div style="font-size:.85rem;font-weight:700;color:#fff;margin-bottom:.45rem">Profil joueur</div>
+              <div style="height:4px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:.35rem"><div style="width:62%;height:100%;background:#a855f7;border-radius:4px"></div></div>
+              <div style="font-size:.5rem;color:rgba(255,255,255,.22)">🔥 Streak • XP total</div>
+            </div>
+            <div style="font-size:.48rem;letter-spacing:.16em;color:rgba(255,255,255,.18);text-transform:uppercase;margin-bottom:.3rem">⚔ ARÈNE</div>
+            <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:.55rem;padding:.5rem .6rem;">
+              <div style="font-size:.62rem;font-weight:700;color:#ef4444">⚡ 1 CONTRE 100</div>
+              <div style="font-size:.5rem;color:rgba(255,255,255,.22);margin-top:.15rem">S-Rang • +500 XP</div>
+            </div>
+          </div>
+          <!-- Colonne droite : quêtes configurables -->
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.48rem;letter-spacing:.16em;color:rgba(255,255,255,.18);text-transform:uppercase;margin-bottom:.45rem">⚔ QUÊTES JOURNALIÈRES</div>
+            <div class="hub-live-gates" id="mod-list">
+              ${gatesHtml}
+            </div>
+          </div>
         </div>
       </div>
       <div class="btn-row">
@@ -521,6 +551,15 @@ function renderHub(pane) {
         <div class="frow"><label class="flabel">XP</label><input type="text" id="nm-xp" placeholder="+100 XP"></div>
         <div class="frow"><label class="flabel">Couleur</label><input type="color" id="nm-color" value="#7c6aff" style="width:60px;height:34px;border-radius:.4rem;border:1px solid var(--border);background:var(--surface2);cursor:pointer"></div>
       </div>
+      <div class="frow"><label class="flabel">🎮 Jeu lié (action)</label>
+        <select id="nm-action">
+          <option value="">— Aucun —</option>
+          <option value="goAnec()">💡 Anecdote du Jour</option>
+          <option value="goEnigme()">🔐 Crack le Code (Énigme)</option>
+          <option value="renderPlayChoice();show('screen-play');updateNav('bn-play');">🎯 Quiz</option>
+          <option value="show1vs100Lobby()">⚡ 1 contre 100</option>
+        </select>
+      </div>
       <div class="btn-row"><button class="btn btn-primary" onclick="addMod()">➕ Ajouter au Hub</button></div>
     </div>
   `;
@@ -528,15 +567,16 @@ function renderHub(pane) {
 }
 
 function addMod() {
-  const icon  = document.getElementById('nm-icon').value.trim() || '⭐';
-  const title = document.getElementById('nm-title').value.trim();
-  const desc  = document.getElementById('nm-desc').value.trim();
-  const type  = document.getElementById('nm-type').value;
-  const rank  = document.getElementById('nm-rank').value.trim() || 'C';
-  const xp    = document.getElementById('nm-xp').value.trim();
-  const color = document.getElementById('nm-color').value;
+  const icon   = document.getElementById('nm-icon').value.trim() || '⭐';
+  const title  = document.getElementById('nm-title').value.trim();
+  const desc   = document.getElementById('nm-desc').value.trim();
+  const type   = document.getElementById('nm-type').value;
+  const rank   = document.getElementById('nm-rank').value.trim() || 'C';
+  const xp     = document.getElementById('nm-xp').value.trim();
+  const color  = document.getElementById('nm-color').value;
+  const action = document.getElementById('nm-action').value;
   if (!title) { toast('Donne un titre au module.','err'); return; }
-  hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, enabled:true });
+  hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, action, enabled:true });
   renderHub(document.getElementById('pane'));
   toast('Module ajouté — pense à sauvegarder !','ok');
 }
@@ -809,7 +849,7 @@ async function loadUsers(q) {
   const {data,error}=await query;
   const el=document.getElementById('u-table');
   if(!el)return;
-  if(error){el.innerHTML=`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
+  if(error){el.innerHTML<`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
   el.innerHTML=`
     <div class="tbl-wrap"><table>
       <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
@@ -863,7 +903,7 @@ ALTER TABLE public.duels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anecdotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_enigmas ENABLE ROW LEVEL SECURITY;
 
--- Lecture publique pour le contenu
+-- Lecture publique pour le content
 CREATE POLICY "Lecture anecdotes" ON public.anecdotes FOR SELECT USING (true);
 CREATE POLICY "Lecture enigmes" ON public.daily_enigmas FOR SELECT USING (true);
 
@@ -902,7 +942,7 @@ async function testConn() {
   const el=document.getElementById('conn-result');
   el.textContent='Test en cours…';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
-  if(error) el.innerHTML<`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
+  if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
   else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
 }
 
@@ -955,83 +995,4 @@ async function accounts(pane) {
       <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
       <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="doChangePw()">Enregistrer</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('change-pw-box').style.display='none'">Annuler</button>
-      </div>
-    </div>
-  `;
-}
-
-async function createAdminAccount() {
-  const id   = document.getElementById('new-acct-id').value.trim().toLowerCase();
-  const name = document.getElementById('new-acct-name').value.trim();
-  const pw   = document.getElementById('new-acct-pw').value;
-  if (!id || !pw)    { toast('Remplis ID et mot de passe.','err'); return; }
-  if (pw.length < 8) { toast('Mot de passe trop court (8 chars min).','err'); return; }
-  const accts = await loadAdminAccounts();
-  if (accts.find(a=>a.id===id)) { toast('Cet ID existe déjà.','err'); return; }
-  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-  const hash = await pbkdf2Hash(pw, salt);
-  accts.push({ id, display_name: name||id, salt, hash, active:true, created_at: new Date().toISOString() });
-  await saveAdminAccounts(accts);
-  toast('Compte créé !','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-async function toggleAccount(id, activate) {
-  const accts = await loadAdminAccounts();
-  const a = accts.find(x=>x.id===id); if(a) a.active = activate;
-  await saveAdminAccounts(accts);
-  toast(activate ? 'Compte activé.' : 'Compte désactivé.','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-async function deleteAccount(id) {
-  if (!confirm(`Supprimer le compte "${id}" ?`)) return;
-  await saveAdminAccounts((await loadAdminAccounts()).filter(a=>a.id!==id));
-  toast('Compte supprimé.','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-function showChangePw(id) {
-  document.getElementById('change-pw-box').style.display = 'block';
-  document.getElementById('cpw-id').value   = id;
-  document.getElementById('cpw-name').textContent = id;
-  document.getElementById('cpw-pw').value  = '';
-  document.getElementById('cpw-pw2').value = '';
-  document.getElementById('change-pw-box').scrollIntoView({behavior:'smooth'});
-}
-
-async function doChangePw() {
-  const id  = document.getElementById('cpw-id').value;
-  const pw  = document.getElementById('cpw-pw').value;
-  const pw2 = document.getElementById('cpw-pw2').value;
-  if (pw.length < 8) { toast('Mot de passe trop court.','err'); return; }
-  if (pw !== pw2)    { toast('Les mots de passe ne correspondent pas.','err'); return; }
-  const accts = await loadAdminAccounts();
-  const a = accts.find(x=>x.id===id);
-  if (!a) { toast('Compte introuvable.','err'); return; }
-  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-  a.salt = salt; a.hash = await pbkdf2Hash(pw, salt);
-  await saveAdminAccounts(accts);
-  toast('Mot de passe changé !','ok');
-  document.getElementById('change-pw-box').style.display = 'none';
-}
-
-// ═══════════════════════════════════════
-// Utils
-// ═══════════════════════════════════════
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-let _toTimer;
-function toast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='show '+type;
-  clearTimeout(_toTimer); _toTimer=setTimeout(()=>t.className='',3200);
-}
-
-// ── Boot ──
-boot();
-</script>
-</body>
-</html>
+        <b
