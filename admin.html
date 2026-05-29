@@ -106,7 +106,7 @@ tr:hover td{background:var(--surface2)}
 /* ── Setup box ── */
 .setup-box{background:#12201a;border:1px solid #1e4a2a;border-radius:.75rem;padding:1.25rem}
 .setup-box h4{color:#86efac;margin-bottom:.75rem;font-size:.9rem}
-.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow-x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
+.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow/x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
 
 /* ── Toast ── */
 #toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:.65rem;padding:.65rem 1.1rem;font-size:.875rem;z-index:9999;transform:translateY(120px);transition:transform .28s;max-width:300px;pointer-events:none}
@@ -131,6 +131,39 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 .login-btn:hover{background:var(--accent2)}
 .login-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:.5rem;min-height:1.2em}
+
+/* ── Hub live preview ── */
+.hub-live-wrap{background:#0a0a18;border-radius:1rem;border:1px solid rgba(124,106,255,.2);padding:1.25rem 1rem;max-width:480px;margin:0 auto 1.25rem}
+.hub-live-header{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0 .9rem;border-bottom:1px solid rgba(124,106,255,.12);margin-bottom:.9rem}
+.hub-live-label{font-family:'Space Grotesk',monospace;font-size:.62rem;font-weight:800;letter-spacing:.22em;color:#a855f7;text-transform:uppercase}
+.hub-live-date{font-size:.6rem;color:rgba(255,255,255,.3);font-family:monospace}
+.hub-live-gates{display:flex;flex-direction:column;gap:.6rem}
+.hub-gate-row{display:flex;align-items:center;gap:.4rem}
+.hub-gate-row-handle{cursor:grab;color:rgba(255,255,255,.2);font-size:1.1rem;padding:.2rem .15rem;flex-shrink:0;user-select:none;-webkit-user-select:none;transition:color .15s}
+.hub-gate-row-handle:hover{color:#a855f7}
+.hub-gate-row-handle:active{cursor:grabbing}
+.hub-gate-card{flex:1;background:#0f0f1a;border:1px solid rgba(255,255,255,.07);border-left:3px solid var(--gc,#a855f7);border-radius:.75rem;padding:.7rem .9rem;position:relative;overflow:hidden;transition:border-color .2s,opacity .2s}
+.hub-gate-card.off{opacity:.35}
+.hub-gate-card.dragging{opacity:.2;border-style:dashed}
+.hub-gate-card.drag-over{box-shadow:0 0 0 2px #a855f744}
+.hub-gate-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem}
+.hub-gate-rank{font-family:monospace;font-size:.52rem;font-weight:800;letter-spacing:.12em;border:1px solid;border-radius:3px;padding:.08rem .3rem;text-transform:uppercase;border-color:var(--gc,#a855f7);color:var(--gc,#a855f7)}
+.hub-gate-xp{font-size:.58rem;color:rgba(255,255,255,.25);font-family:monospace}
+.hub-gate-body{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
+.hub-gate-icon{font-size:1.3rem;width:1.8rem;text-align:center;flex-shrink:0}
+.hub-gate-name{font-size:.82rem;font-weight:700;color:#fff}
+.hub-gate-desc{font-size:.67rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
+.hub-gate-enter{font-size:.6rem;font-weight:700;letter-spacing:.1em;color:var(--gc,#a855f7);text-transform:uppercase;text-align:right}
+.hub-gate-type{font-size:.57rem;font-weight:700;padding:.06rem .3rem;border-radius:999px;margin-left:.3rem}
+.hub-gate-controls{display:flex;flex-direction:column;align-items:center;gap:.3rem;flex-shrink:0}
+.hub-gate-ctrl-btn{background:none;border:1px solid var(--border);border-radius:.3rem;cursor:pointer;color:var(--text2);padding:.08rem .28rem;font-size:.7rem;line-height:1.4;transition:all .15s}
+.hub-gate-ctrl-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.hub-gate-ctrl-btn:disabled{opacity:.2;cursor:default}
+.hub-gate-del{background:none;border:none;cursor:pointer;color:var(--red);font-size:.85rem;padding:.1rem;opacity:.5;line-height:1;transition:opacity .15s}
+.hub-gate-del:hover{opacity:1}
+.hub-edit-row{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;padding-top:.3rem;border-top:1px solid rgba(255,255,255,.06);margin-top:.3rem}
+.hub-edit-row input[type=text]{font-size:.72rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.35rem;color:#fff;padding:.18rem .4rem;font-family:inherit}
+.hub-edit-row input[type=color]{width:26px;height:24px;padding:.08rem;border-radius:.3rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer}
 </style>
 </head>
 <body>
@@ -171,7 +204,7 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
     <div class="tab" onclick="go('content',this)">✍️ Contenu</div>
     <div class="tab" onclick="go('flags',this)">🚩 Fonctions</div>
     <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
-    <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
+    <div class="tab" onclick="go 'users',this)">👥 Utilisateurs</div>
     <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
     <div class="tab" onclick="go('accounts',this)">👤 Comptes</div>
   </div>
@@ -395,119 +428,169 @@ async function hub(pane) {
 }
 
 function renderHub(pane) {
-  pane.innerHTML = [
-    '<div class="card">',
-    '<h3>🏠 Modules du Hub</h3>',
-    '<p class="hint">Glisse <strong>⠷</strong> pour réordonner. Le toggle active/désactive. Les <em>Quêtes</em> sont personnalisables (icône, titre, couleur). Sauvegarde pour appliquer au site.</p>',
-    '<div class="hub-preview-list" id="mod-list">',
-    hubMods.map((m,i) => modHtml(m,i)).join(''),
-    '</div>',
-    '<div class="btn-row">',
-    '<button class="btn btn-primary" onclick="saveHub()">💾 Sauvegarder</button>',
-    '<button class="btn btn-ghost" onclick="resetHub()">↺ Défaut</button>',
-    '</div></div>',
-    '<div class="card" style="border-color:#1e3a2a">',
-    '<h3 style="color:#86efac">💡 Légende</h3>',
-    '<div style="display:grid;gap:.4rem;font-size:.82rem;color:var(--text2)">',
-    '<div><span style="background:#7c6aff22;color:#7c6aff;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Quête</span> Porte journalière — icône, titre et couleur personnalisables.</div>',
-    '<div><span style="background:#ef444422;color:#ef4444;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Section</span> Bloc entier du Hub — activer/désactiver uniquement.</div>',
-    '<div><span style="background:#64748b22;color:#64748b;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Portail</span> WIP — visible ou masqué.</div>',
-    '</div></div>'
-  ].join('');
+  const today = new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'});
+  const typeColors = {gate:'#7c6aff', section:'#ef4444', locked:'#64748b'};
+  const typeLabels = {gate:'Quête', section:'Section', locked:'Portail'};
+
+  const gatesHtml = hubMods.map((m,i) => {
+    const gc = m.color || '#a855f7';
+    const tc = typeColors[m.type] || '#a855f7';
+    const tl = typeLabels[m.type] || m.type;
+    const isGate = m.type === 'gate';
+    const n = hubMods.length;
+    return `
+      <div class="hub-gate-row" id="mi${i}" draggable="true" data-idx="${i}">
+        <span class="hub-gate-row-handle" title="Glisser pour réordonner">⠿</span>
+        <div class="hub-gate-card${m.enabled?'':' off'}" style="--gc:${gc}">
+          <div class="hub-gate-hd">
+            <div style="display:flex;align-items:center;gap:.35rem">
+              <span class="hub-gate-rank">${esc(m.rank||'?')}</span>
+              ${m.xp ? `<span class="hub-gate-xp">${esc(m.xp)}</span>` : ''}
+              <span class="hub-gate-type" style="background:${tc}22;color:${tc}">${tl}</span>
+            </div>
+            <label class="toggle" style="transform:scale(.8)" title="${m.enabled?'Désactiver':'Activer'}">
+              <input type="checkbox"${m.enabled?' checked':''} onchange="togMod(${i},this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="hub-gate-body">
+            <span class="hub-gate-icon">${esc(m.icon||'⭐')}</span>
+            <div>
+              <div class="hub-gate-name">${esc(m.title||'')}</div>
+              <div class="hub-gate-desc">${esc(m.desc||'')}</div>
+            </div>
+          </div>
+          <div class="hub-gate-enter">▶ ENTRER</div>
+          ${isGate ? `
+          <div class="hub-edit-row">
+            <input type="text" value="${esc(m.icon||'')}" style="width:44px;text-align:center" placeholder="🎯" oninput="upd(${i},'icon',this.value)" title="Icône">
+            <input type="text" value="${esc(m.title||'')}" placeholder="Titre" oninput="upd(${i},'title',this.value)" style="flex:1;min-width:80px">
+            <input type="text" value="${esc(m.desc||'')}" placeholder="Description" oninput="upd(${i},'desc',this.value)" style="flex:2;min-width:100px">
+            <input type="color" value="${gc}" oninput="upd(${i},'color',this.value);this.closest('.hub-gate-card').style.setProperty('--gc',this.value)" title="Couleur">
+          </div>` : ''}
+        </div>
+        <div class="hub-gate-controls">
+          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},-1)" title="Monter" ${i===0?'disabled':''}>▲</button>
+          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},1)" title="Descendre" ${i===n-1?'disabled':''}>▼</button>
+          <button class="hub-gate-del" onclick="delMod(${i})" title="Supprimer">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  pane.innerHTML = `
+    <div class="card">
+      <h3>🏠 Hub — Aperçu live</h3>
+      <p class="hint" style="margin-bottom:1rem">
+        Tu vois exactement le hub tel qu'il apparaît aux utilisateurs.
+        <strong>Glisse ⠿</strong> ou utilise <strong>▲▼</strong> pour réordonner.
+        Toggle = activer/désactiver. 🗑 = supprimer. Les champs sous les <em>Quêtes</em> permettent de personnaliser icône, titre, description et couleur.
+      </p>
+      <div class="hub-live-wrap">
+        <div class="hub-live-header">
+          <span class="hub-live-label">⚡ THE SYSTEM</span>
+          <span class="hub-live-date">${today}</span>
+        </div>
+        <div class="hub-live-gates" id="mod-list">
+          ${gatesHtml}
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveHub()">💾 Sauvegarder</button>
+        <button class="btn btn-ghost" onclick="resetHub()">↺ Défaut</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ Ajouter un module</h3>
+      <div class="fgrid">
+        <div class="frow"><label class="flabel">Icône (emoji)</label><input type="text" id="nm-icon" placeholder="🎯" style="width:70px"></div>
+        <div class="frow"><label class="flabel">Titre</label><input type="text" id="nm-title" placeholder="Nom du module"></div>
+      </div>
+      <div class="frow"><label class="flabel">Description</label><input type="text" id="nm-desc" placeholder="Courte description"></div>
+      <div class="fgrid">
+        <div class="frow"><label class="flabel">Type</label>
+          <select id="nm-type">
+            <option value="gate">Quête (porte journalière)</option>
+            <option value="section">Section</option>
+            <option value="locked">Portail (WIP)</option>
+          </select>
+        </div>
+        <div class="frow"><label class="flabel">Rang</label><input type="text" id="nm-rank" placeholder="C" style="width:60px"></div>
+      </div>
+      <div class="fgrid">
+        <div class="frow"><label class="flabel">XP</label><input type="text" id="nm-xp" placeholder="+100 XP"></div>
+        <div class="frow"><label class="flabel">Couleur</label><input type="color" id="nm-color" value="#7c6aff" style="width:60px;height:34px;border-radius:.4rem;border:1px solid var(--border);background:var(--surface2);cursor:pointer"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="addMod()">➕ Ajouter au Hub</button></div>
+    </div>
+  `;
   enableDnD();
 }
 
-function modHtml(m, i) {
-  const typeLabels = {gate:'Quête', section:'Section', locked:'Portail'};
-  const typeColors = {gate:'#7c6aff', section:'#ef4444', locked:'#64748b'};
-  const col = m.color || '#7c6aff';
-  const tc = typeColors[m.type] || '#7c6aff';
-  const isGate = m.type === 'gate';
-  const parts = [
-    '<div class="hub-card'+(m.enabled?'':' off')+'" id="mi'+i+'" draggable="true" data-idx="'+i+'">',
-    '<span class="hub-drag" title="Glisser pour réordonner">⠷</span>',
-    '<div class="hub-card-inner">',
-    '<div class="hub-card-top">',
-    '<span class="hub-rank" style="background:'+col+'22;color:'+col+'">'  +esc(m.rank||'?')+'</span>',
-    (m.xp ? '<span class="hub-xp">'+esc(m.xp)+'</span>' : ''),
-    '<span class="hub-type-tag" style="background:'+tc+'22;color:'+tc+'">'+(typeLabels[m.type]||m.type)+'</span>',
-    '</div>',
-    '<div class="hub-card-title">',
-    '<span style="font-size:1.15rem;line-height:1">'+esc(m.icon||'⭐')+'</span>',
-    '<span style="font-size:.88rem;font-weight:700">'+esc(m.title||'')+'</span>',
-    '</div>',
-    '<div class="hub-card-desc">'+esc(m.desc||'')+'</div>',
-  ];
-  if (isGate) {
-    parts.push(
-      '<div class="hub-card-edit">',
-      '<input type="text" value="'+esc(m.icon||'')+'" style="width:48px;text-align:center" placeholder="🎯" oninput="upd('+i+',\'icon\',this.value)" title="Icône">',
-      '<input type="text" value="'+esc(m.title||'')+'" placeholder="Titre" oninput="upd('+i+',\'title\',this.value)" style="flex:1;min-width:90px">',
-      '<input type="color" value="'+col+'" oninput="upd('+i+',\'color\',this.value)" title="Couleur">',
-      '</div>'
-    );
-  }
-  parts.push(
-    '</div>',
-    '<div class="hub-card-actions">',
-    '<label class="toggle" title="'+(m.enabled?'Désactiver':'Activer')+'">',
-    '<input type="checkbox"'+(m.enabled?' checked':'')+' onchange="togMod('+i+',this.checked)">',
-    '<span class="slider"></span></label>',
-    '</div></div>'
-  );
-  return parts.join('');
+function addMod() {
+  const icon  = document.getElementById('nm-icon').value.trim() || '⭐';
+  const title = document.getElementById('nm-title').value.trim();
+  const desc  = document.getElementById('nm-desc').value.trim();
+  const type  = document.getElementById('nm-type').value;
+  const rank  = document.getElementById('nm-rank').value.trim() || 'C';
+  const xp    = document.getElementById('nm-xp').value.trim();
+  const color = document.getElementById('nm-color').value;
+  if (!title) { toast('Donne un titre au module.','err'); return; }
+  hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, enabled:true });
+  renderHub(document.getElementById('pane'));
+  toast('Module ajouté — pense à sauvegarder !','ok');
+}
+
+function moveHub(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= hubMods.length) return;
+  [hubMods[i], hubMods[j]] = [hubMods[j], hubMods[i]];
+  renderHub(document.getElementById('pane'));
+}
+
+function delMod(i) {
+  if (!confirm('Supprimer "' + (hubMods[i]?.title||'ce module') + '" ?')) return;
+  hubMods.splice(i, 1);
+  renderHub(document.getElementById('pane'));
+  toast('Module supprimé — pense à sauvegarder.','ok');
 }
 
 function enableDnD() {
   const list = document.getElementById('mod-list');
   if (!list) return;
   let dragged = null;
-  list.querySelectorAll('.hub-card').forEach(item => {
+  list.querySelectorAll('.hub-gate-row').forEach(item => {
     item.addEventListener('dragstart', e => {
       dragged = item;
       e.dataTransfer.effectAllowed = 'move';
-      requestAnimationFrame(() => item.classList.add('dragging'));
+      requestAnimationFrame(() => item.querySelector('.hub-gate-card')?.classList.add('dragging'));
     });
     item.addEventListener('dragend', () => {
-      if (dragged) dragged.classList.remove('dragging');
-      list.querySelectorAll('.hub-card').forEach(el => el.classList.remove('drag-over'));
+      list.querySelectorAll('.hub-gate-card').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
       const newOrder = [];
-      list.querySelectorAll('.hub-card').forEach(el => {
+      list.querySelectorAll('.hub-gate-row').forEach(el => {
         const idx = parseInt(el.dataset.idx);
-        if (!isNaN(idx) && hubMods[idx]) newOrder.push(Object.assign({}, hubMods[idx]));
+        if (!isNaN(idx) && hubMods[idx]) newOrder.push({...hubMods[idx]});
       });
-      if (newOrder.length === hubMods.length) {
-        hubMods = newOrder;
-        list.innerHTML = hubMods.map((m,i) => modHtml(m,i)).join('');
-        enableDnD();
-      }
+      if (newOrder.length === hubMods.length) hubMods = newOrder;
+      renderHub(document.getElementById('pane'));
       dragged = null;
     });
     item.addEventListener('dragover', e => {
       e.preventDefault();
       if (!dragged || dragged === item) return;
-      list.querySelectorAll('.hub-card').forEach(el => el.classList.remove('drag-over'));
-      item.classList.add('drag-over');
+      list.querySelectorAll('.hub-gate-card').forEach(el => el.classList.remove('drag-over'));
+      item.querySelector('.hub-gate-card')?.classList.add('drag-over');
       const rect = item.getBoundingClientRect();
       list.insertBefore(dragged, e.clientY > rect.top + rect.height/2 ? item.nextSibling : item);
     });
     item.addEventListener('dragleave', e => {
-      if (!item.contains(e.relatedTarget)) item.classList.remove('drag-over');
+      if (!item.contains(e.relatedTarget)) item.querySelector('.hub-gate-card')?.classList.remove('drag-over');
     });
   });
 }
 
-function upd(i, k, v) { hubMods[i][k] = v; }
-function togMod(i, v) {
-  hubMods[i].enabled = v;
-  const el = document.getElementById('mi'+i);
-  if (el) el.classList.toggle('off', !v);
-}
-function resetHub() {
-  if (!confirm('Réinitialiser les modules Hub par défaut ?')) return;
-  hubMods = HUB_DEFAULT.map(m => Object.assign({}, m));
-  renderHub(document.getElementById('pane'));
-}
+
 async function saveHub() {
   const {error} = await sb.from('app_config').upsert({key:'hub_modules',value:JSON.stringify(hubMods)},{onConflict:'key'});
   if (error) toast('Erreur: '+error.message,'err');
@@ -819,7 +902,7 @@ async function testConn() {
   const el=document.getElementById('conn-result');
   el.textContent='Test en cours…';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
-  if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
+  if(error) el.innerHTML<`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
   else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
 }
 
