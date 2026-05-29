@@ -117,24 +117,49 @@ tr:hover td{background:var(--surface2)}
 /* ── Code inline ── */
 code{background:var(--surface2);padding:.1rem .4rem;border-radius:.3rem;font-size:.82rem;font-family:monospace}
 a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:underline}
+
+/* ── Login screen ── */
+#login-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1.25rem;padding:2rem;background:var(--bg)}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;width:100%;max-width:380px}
+.login-box h2{font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;text-align:center;color:var(--accent2)}
+.login-logo{font-size:2.5rem;text-align:center;margin-bottom:.5rem}
+.login-field{margin-bottom:.9rem}
+.login-field label{font-size:.78rem;color:var(--text2);display:block;margin-bottom:.35rem}
+.login-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:.5rem;color:var(--text);padding:.55rem .8rem;font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.login-field input:focus{outline:none;border-color:var(--accent)}
+.login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:.5rem;padding:.65rem;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:.5rem;transition:background .2s}
+.login-btn:hover{background:var(--accent2)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:.5rem;min-height:1.2em}
 </style>
 </head>
 <body>
 
 <div id="loading"><div class="spinner"></div><div style="color:var(--text2);margin-top:.5rem">Vérification de session…</div></div>
 
-<div id="auth-error" style="display:none">
-  <div style="font-size:3rem">🔒</div>
-  <h2 style="margin:.5rem 0">Accès refusé</h2>
-  <p style="color:var(--text2)">Cette page est réservée à l'administrateur.</p>
-  <a href="/" style="color:var(--accent2);margin-top:1.5rem;display:inline-block">← Retour au site</a>
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">⚙️</div>
+    <h2>Admin — Le Curioscope</h2>
+    <div class="login-field">
+      <label>ID de connexion</label>
+      <input type="text" id="li-id" placeholder="votre_id" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="li-pw" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="login-btn" id="li-btn" onclick="doLogin()">Se connecter</button>
+    <div class="login-err" id="li-err"></div>
+  </div>
 </div>
 
 <div id="app">
   <div class="topbar">
     <h1>⚙️ Admin <span style="color:var(--text2);font-weight:400">Le Curioscope</span></h1>
     <div class="right">
-      <span id="user-email-lbl" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <span id="user-name-lbl" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       <a href="/" style="color:var(--accent2)">← Voir le site</a>
       <button class="btn btn-ghost btn-sm" onclick="doSignOut()">Déco</button>
     </div>
@@ -148,6 +173,7 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
     <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
     <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
     <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
+    <div class="tab" onclick="go('accounts',this)">👤 Comptes</div>
   </div>
 
   <div class="content" id="pane"></div>
@@ -161,39 +187,124 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 // ═══════════════════════════════════════
 const SB_URL  = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
-const ADMIN_EMAIL = 'nymeraroman@gmail.com';
 const APP_URL = 'https://lecurioscope.pages.dev';
 const TODAY  = () => new Date().toISOString().slice(0,10);
+const SESSION_KEY = 'adminSess_v1';
 
 const sb = supabase.createClient(SB_URL, SB_ANON);
-let me = null;
+let me = null; // {id, display_name}
 
 // ═══════════════════════════════════════
-// Auth
+// Auth — ID / mot de passe (PBKDF2)
 // ═══════════════════════════════════════
+async function pbkdf2Hash(password, salt) {
+  const enc = new TextEncoder();
+  const keyMat = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits   = await crypto.subtle.deriveBits(
+    { name:'PBKDF2', salt: enc.encode(salt), iterations:120000, hash:'SHA-256' }, keyMat, 256
+  );
+  return btoa(String.fromCharCode(...new Uint8Array(bits)));
+}
+
+async function loadAdminAccounts() {
+  const { data } = await sb.from('app_config').select('value').eq('key','admin_accounts').maybeSingle();
+  if (!data?.value) return [];
+  try { const p = JSON.parse(data.value); return Array.isArray(p) ? p : []; }
+  catch(e) { return []; }
+}
+
+async function saveAdminAccounts(accounts) {
+  await sb.from('app_config').upsert({ key:'admin_accounts', value: JSON.stringify(accounts) }, { onConflict:'key' });
+}
+
 async function boot() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session || session.user.email !== ADMIN_EMAIL) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('auth-error').style.display = 'flex';
-    return;
+  // Session existante ?
+  const sess = sessionStorage.getItem(SESSION_KEY);
+  if (sess) {
+    try { me = JSON.parse(sess); showApp(); return; } catch(e) {}
   }
-  me = session.user;
-  document.getElementById('user-email-lbl').textContent = me.email;
+  // Aucun compte → premier démarrage
+  const accounts = await loadAdminAccounts();
   document.getElementById('loading').style.display = 'none';
+  if (accounts.length === 0) { showFirstSetup(); }
+  else { document.getElementById('login-screen').style.display = 'flex'; }
+}
+
+function showApp() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  document.getElementById('user-name-lbl').textContent = me.display_name || me.id;
   go('stats', document.querySelector('.tab'));
 }
 
-async function doSignOut() {
-  await sb.auth.signOut();
-  window.location.href = APP_URL;
+async function doLogin() {
+  const id  = document.getElementById('li-id').value.trim().toLowerCase();
+  const pw  = document.getElementById('li-pw').value;
+  const err = document.getElementById('li-err');
+  const btn = document.getElementById('li-btn');
+  if (!id || !pw) { err.textContent = 'Remplis les deux champs.'; return; }
+  btn.disabled = true; btn.textContent = 'Connexion…'; err.textContent = '';
+  try {
+    const accounts = await loadAdminAccounts();
+    const acct = accounts.find(a => a.id === id && a.active !== false);
+    if (!acct) { err.textContent = 'ID inconnu ou compte désactivé.'; btn.disabled=false; btn.textContent='Se connecter'; return; }
+    const hash = await pbkdf2Hash(pw, acct.salt);
+    if (hash !== acct.hash) { err.textContent = 'Mot de passe incorrect.'; btn.disabled=false; btn.textContent='Se connecter'; return; }
+    me = { id: acct.id, display_name: acct.display_name || acct.id };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(me));
+    showApp();
+  } catch(e) {
+    err.textContent = 'Erreur réseau. Réessaie.';
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
+function doSignOut() {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.reload();
+}
+
+function showFirstSetup() {
+  document.querySelector('.login-box').innerHTML = `
+    <div class="login-logo">🛡️</div>
+    <h2>Créer le premier compte</h2>
+    <p style="font-size:.8rem;color:var(--text2);text-align:center;margin-bottom:1.25rem">
+      Aucun compte admin trouvé. Crée le tien pour accéder au panel.
+    </p>
+    <div class="login-field"><label>ID de connexion</label><input type="text" id="setup-id" placeholder="arnaud" /></div>
+    <div class="login-field"><label>Nom affiché</label><input type="text" id="setup-name" placeholder="Arnaud" /></div>
+    <div class="login-field"><label>Mot de passe (8 chars min)</label><input type="password" id="setup-pw" placeholder="••••••••" /></div>
+    <div class="login-field"><label>Confirmer</label><input type="password" id="setup-pw2" placeholder="••••••••" /></div>
+    <button class="login-btn" id="setup-btn" onclick="doFirstSetup()">Créer le compte</button>
+    <div class="login-err" id="setup-err"></div>
+  `;
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function doFirstSetup() {
+  const id   = document.getElementById('setup-id').value.trim().toLowerCase();
+  const name = document.getElementById('setup-name').value.trim();
+  const pw   = document.getElementById('setup-pw').value;
+  const pw2  = document.getElementById('setup-pw2').value;
+  const err  = document.getElementById('setup-err');
+  const btn  = document.getElementById('setup-btn');
+  if (!id || !pw)    { err.textContent='Remplis tous les champs.'; return; }
+  if (pw !== pw2)    { err.textContent='Les mots de passe ne correspondent pas.'; return; }
+  if (pw.length < 8) { err.textContent='Mot de passe trop court (8 chars min).'; return; }
+  btn.disabled = true; btn.textContent = 'Création…';
+  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+  const hash = await pbkdf2Hash(pw, salt);
+  await saveAdminAccounts([{ id, display_name: name||id, salt, hash, active:true, created_at: new Date().toISOString() }]);
+  me = { id, display_name: name||id };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(me));
+  showApp();
 }
 
 // ═══════════════════════════════════════
 // Tab router
 // ═══════════════════════════════════════
-const TABS = { stats, hub, content: contentTab, flags, banner, users, setup };
+const TABS = { stats, hub, content: contentTab, flags, banner, users, setup, accounts };
 function go(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -710,6 +821,118 @@ async function testConn() {
   const {data,error}=await sb.from('app_config').select('key').limit(1);
   if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
   else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
+}
+
+// ═══════════════════════════════════════
+// Comptes Admin
+// ═══════════════════════════════════════
+async function accounts(pane) {
+  const accts = await loadAdminAccounts();
+  const rows = accts.map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span style="font-weight:700">${esc(a.id)}</span>
+        ${a.display_name && a.display_name !== a.id ? `<span style="color:var(--text2);font-size:.82rem"> — ${esc(a.display_name)}</span>` : ''}
+        ${!a.active ? '<span class="badge" style="background:var(--red);color:#fff;margin-left:.4rem">Désactivé</span>' : ''}
+        ${a.id === me.id ? '<span class="badge badge-admin" style="margin-left:.4rem">Moi</span>' : ''}
+        <span style="color:var(--text2);font-size:.72rem;margin-left:.5rem">${a.created_at ? a.created_at.slice(0,10) : ''}</span>
+      </div>
+      <div style="display:flex;gap:.4rem;flex-shrink:0">
+        ${a.id !== me.id ? `
+          <button class="btn btn-ghost btn-sm" onclick="toggleAccount('${esc(a.id)}',${!a.active})">${a.active?'Désactiver':'Activer'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAccount('${esc(a.id)}')">Suppr.</button>
+        ` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="showChangePw('${esc(a.id)}')">🔑 MDP</button>
+      </div>
+    </div>
+  `).join('');
+
+  pane.innerHTML = `
+    <div class="card">
+      <h3>👤 Comptes Admin</h3>
+      <p class="hint">Gère les accès au panel. Login = ID + mot de passe, haché avec PBKDF2-SHA256.</p>
+      <div id="accts-list">
+        ${accts.length ? rows : '<p style="color:var(--text2);font-size:.82rem">Aucun compte.</p>'}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ Nouveau compte</h3>
+      <div class="fgrid">
+        <div class="frow"><label class="flabel">ID de connexion</label><input type="text" id="new-acct-id" placeholder="jean" /></div>
+        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acct-name" placeholder="Jean Dupont" /></div>
+      </div>
+      <div class="frow"><label class="flabel">Mot de passe (8 chars min)</label><input type="password" id="new-acct-pw" placeholder="••••••••" /></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button></div>
+    </div>
+
+    <div id="change-pw-box" style="display:none" class="card">
+      <h3>🔑 Changer le mot de passe — <span id="cpw-name" style="color:var(--text2)"></span></h3>
+      <input type="hidden" id="cpw-id" />
+      <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
+      <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="doChangePw()">Enregistrer</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('change-pw-box').style.display='none'">Annuler</button>
+      </div>
+    </div>
+  `;
+}
+
+async function createAdminAccount() {
+  const id   = document.getElementById('new-acct-id').value.trim().toLowerCase();
+  const name = document.getElementById('new-acct-name').value.trim();
+  const pw   = document.getElementById('new-acct-pw').value;
+  if (!id || !pw)    { toast('Remplis ID et mot de passe.','err'); return; }
+  if (pw.length < 8) { toast('Mot de passe trop court (8 chars min).','err'); return; }
+  const accts = await loadAdminAccounts();
+  if (accts.find(a=>a.id===id)) { toast('Cet ID existe déjà.','err'); return; }
+  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+  const hash = await pbkdf2Hash(pw, salt);
+  accts.push({ id, display_name: name||id, salt, hash, active:true, created_at: new Date().toISOString() });
+  await saveAdminAccounts(accts);
+  toast('Compte créé !','ok');
+  go('accounts', document.querySelector('.tab.active'));
+}
+
+async function toggleAccount(id, activate) {
+  const accts = await loadAdminAccounts();
+  const a = accts.find(x=>x.id===id); if(a) a.active = activate;
+  await saveAdminAccounts(accts);
+  toast(activate ? 'Compte activé.' : 'Compte désactivé.','ok');
+  go('accounts', document.querySelector('.tab.active'));
+}
+
+async function deleteAccount(id) {
+  if (!confirm(`Supprimer le compte "${id}" ?`)) return;
+  await saveAdminAccounts((await loadAdminAccounts()).filter(a=>a.id!==id));
+  toast('Compte supprimé.','ok');
+  go('accounts', document.querySelector('.tab.active'));
+}
+
+function showChangePw(id) {
+  document.getElementById('change-pw-box').style.display = 'block';
+  document.getElementById('cpw-id').value   = id;
+  document.getElementById('cpw-name').textContent = id;
+  document.getElementById('cpw-pw').value  = '';
+  document.getElementById('cpw-pw2').value = '';
+  document.getElementById('change-pw-box').scrollIntoView({behavior:'smooth'});
+}
+
+async function doChangePw() {
+  const id  = document.getElementById('cpw-id').value;
+  const pw  = document.getElementById('cpw-pw').value;
+  const pw2 = document.getElementById('cpw-pw2').value;
+  if (pw.length < 8) { toast('Mot de passe trop court.','err'); return; }
+  if (pw !== pw2)    { toast('Les mots de passe ne correspondent pas.','err'); return; }
+  const accts = await loadAdminAccounts();
+  const a = accts.find(x=>x.id===id);
+  if (!a) { toast('Compte introuvable.','err'); return; }
+  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+  a.salt = salt; a.hash = await pbkdf2Hash(pw, salt);
+  await saveAdminAccounts(accts);
+  toast('Mot de passe changé !','ok');
+  document.getElementById('change-pw-box').style.display = 'none';
 }
 
 // ═══════════════════════════════════════
