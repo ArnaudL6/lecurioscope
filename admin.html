@@ -73,20 +73,25 @@ textarea{resize:vertical;min-height:75px}
 @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 
 /* ── Module items (hub) ── */
-.mod-item{background:var(--surface2);border:1px solid var(--border);border-radius:.75rem;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem;transition:opacity .2s,border-color .15s,box-shadow .15s}
-.mod-item.off{opacity:.4}
-.mod-item.dragging{opacity:.3;border-style:dashed;pointer-events:none}
-.mod-item.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px #7c6aff44}
-.drag-handle{cursor:grab;font-size:1.2rem;color:var(--text2);padding:.25rem .35rem;border-radius:.35rem;flex-shrink:0;user-select:none;-webkit-user-select:none}
-.drag-handle:hover{color:var(--accent2);background:rgba(124,106,255,.12)}
-.drag-handle:active{cursor:grabbing}
-.mod-bullet{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:2px solid}
-.mod-main{display:flex;flex-direction:column;gap:.4rem;flex:1;min-width:0}
-.mod-title-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.mod-type-tag{font-size:.64rem;font-weight:700;padding:.1rem .4rem;border-radius:999px}
-.mod-inputs{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
-.mod-inputs input[type=text]{min-width:80px}
-.mod-actions{flex-shrink:0}
+.hub-preview-list{display:flex;flex-direction:column;gap:.55rem}
+.hub-card{background:var(--surface2);border-radius:.875rem;border:1px solid var(--border);border-left:3px solid var(--border);padding:.8rem .9rem;display:flex;align-items:flex-start;gap:.7rem;transition:opacity .2s,box-shadow .15s}
+.hub-card.off{opacity:.3}
+.hub-card.dragging{opacity:.25;border-left-style:dashed;pointer-events:none}
+.hub-card.drag-over{box-shadow:0 0 0 2px #7c6aff44;background:rgba(124,106,255,.05)}
+.hub-drag{cursor:grab;color:var(--text2);font-size:1.15rem;padding:.2rem .3rem;border-radius:.35rem;user-select:none;-webkit-user-select:none;flex-shrink:0;margin-top:.1rem}
+.hub-drag:hover{color:var(--accent2);background:rgba(124,106,255,.12)}
+.hub-drag:active{cursor:grabbing}
+.hub-card-inner{flex:1;min-width:0}
+.hub-card-top{display:flex;align-items:center;gap:.4rem;margin-bottom:.28rem;flex-wrap:wrap}
+.hub-rank{font-size:.58rem;font-weight:800;padding:.08rem .38rem;border-radius:999px;letter-spacing:.05em}
+.hub-xp{font-size:.63rem;font-weight:700;color:var(--text2)}
+.hub-type-tag{font-size:.6rem;font-weight:700;padding:.08rem .38rem;border-radius:999px}
+.hub-card-title{display:flex;align-items:center;gap:.45rem;margin-bottom:.18rem}
+.hub-card-desc{font-size:.72rem;color:var(--text2);margin-bottom:.2rem}
+.hub-card-edit{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.28rem;align-items:center}
+.hub-card-edit input[type=text]{font-size:.74rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.4rem;color:var(--text);padding:.2rem .45rem}
+.hub-card-edit input[type=color]{width:30px;height:28px;padding:.12rem;border-radius:.35rem;background:rgba(255,255,255,.04);border:1px solid var(--border);cursor:pointer}
+.hub-card-actions{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;padding-top:.1rem}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th{text-align:left;padding:.55rem .7rem;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -259,11 +264,11 @@ async function stats(pane) {
 // Hub Config
 // ═══════════════════════════════════════
 const HUB_DEFAULT = [
-  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true},
+  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote surprenante du jour",type:'gate',enabled:true},
   {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true},
   {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true},
-  {id:'arena',title:'Arène — 1 contre 100',icon:'⚩',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true},
-  {id:'mystery',title:'Mystère de la Semaine',icon:'🔍',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true},
+  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true},
+  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true},
   {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true},
 ];
 let hubMods = null;
@@ -281,17 +286,17 @@ function renderHub(pane) {
   pane.innerHTML = [
     '<div class="card">',
     '<h3>🏠 Modules du Hub</h3>',
-    '<p class="hint">Glisse <strong>⠿</strong> pour réordonner. Le toggle active/désactive. Les <em>Quêtes</em> sont personnalisables (icône, titre, couleur). Sauvegarde pour appliquer au site.</p>',
-    '<div id="mod-list">'+hubMods.map((m,i)=>modHtml(m,i)).join('')+'</div>',
+    '<p class="hint">Glisse <strong>⣿</strong> pour réordonner. Toggle active/désactive. Les <em>Quêtes</em> sont personnalisables (icône, titre, couleur). Sauvegarde pour appliquer au site.</p>',
+    '<div id="mod-list" class="hub-preview-list">'+hubMods.map((m,i)=>modHtml(m,i)).join('')+'</div>',
     '<div class="btn-row">',
     '<button class="btn btn-primary" onclick="saveHub()">💾 Sauvegarder</button>',
     '<button class="btn btn-ghost" onclick="resetHub()">↺ Défaut</button>',
     '</div></div>',
     '<div class="card" style="border-color:#1e3a2a">',
-    '<h3 style="color:#86efac">💡 Légende</h3>',
+    '<h3 style="color:#86efac">📚 Légende</h3>',
     '<div style="display:grid;gap:.4rem;font-size:.82rem;color:var(--text2)">',
-    '<div><span style="background:#7c6aff22;color:#7c6aff;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Quête</span> Porte journalière (anecdote, quiz, énigme) — icône, titre et couleur personnalisables.</div>',
-    '<div><span style="background:#ef444422;color:#ef4444;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Section</span> Bloc entier du Hub (Arène, Mystère…) — activer/désactiver uniquement.</div>',
+    '<div><span style="background:#7c6aff22;color:#7c6aff;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Quête</span> Porte journalière — icône, titre et couleur personnalisables.</div>',
+    '<div><span style="background:#ef444422;color:#ef4444;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Section</span> Bloc entier (Arène, Mystère…) — activer/désactiver uniquement.</div>',
     '<div><span style="background:#64748b22;color:#64748b;padding:.1rem .4rem;border-radius:999px;font-size:.7rem;font-weight:700">Portail</span> WIP — visible ou masqué.</div>',
     '</div></div>'
   ].join('');
@@ -301,34 +306,40 @@ function renderHub(pane) {
 function modHtml(m, i) {
   const typeLabels = {gate:'Quête',section:'Section',locked:'Portail'};
   const isGate = m.type === 'gate';
+  const col = m.color || '#7c6aff';
+  const typeColor = m.type==='gate' ? '#7c6aff' : m.type==='section' ? '#ef4444' : '#64748b';
   const parts = [
-    '<div class="mod-item'+(m.enabled?'':' off')+'" id="mi'+i+'" draggable="true" data-idx="'+i+'">',
-    '<span class="drag-handle" title="Glisser pour réordonner">⠿</span>',
-    '<div class="mod-bullet" style="background:'+( m.color||'#7c6aff')+'22;border-color:'+(m.color||'#7c6aff')+'">'+esc(m.icon||'⭐')+'</div>',
-    '<div class="mod-main">',
-    '<div class="mod-title-row">',
-    '<strong style="font-size:.88rem">'+esc(m.title||'')+'</strong>',
-    '<span class="mod-type-tag" style="background:'+(m.color||'#7c6aff')+'22;color:'+(m.color||'#7c6aff')+'">'+(typeLabels[m.type]||m.type)+'</span>',
-    (m.xp ? '<span style="font-size:.68rem;color:var(--text2)">'+esc(m.xp)+'</span>' : ''),
+    '<div class="hub-card'+(m.enabled?'':' off')+'" id="mi'+i+'" draggable="true" data-idx="'+i+'" style="border-left-color:'+col+'">',
+    '<span class="hub-drag" title="Glisser pour réordonner">⣿</span>',
+    '<div class="hub-card-inner">',
+    '<div class="hub-card-top">',
+    '<span class="hub-rank" style="background:'+col+'22;color:'+col+'">'+esc(m.rank||'?')+'-RANG</span>',
+    '<span class="hub-xp">'+esc(m.xp||'')+'</span>',
+    '<span class="hub-type-tag" style="background:'+typeColor+'22;color:'+typeColor+'">'+( typeLabels[m.type]||m.type)+'</span>',
     '</div>',
-    '<div style="font-size:.76rem;color:var(--text2)">'+esc(m.desc||'')+'</div>',
+    '<div class="hub-card-title">',
+    '<span style="font-size:1.3rem;line-height:1">'+esc(m.icon||'▪')+'</span>',
+    '<strong style="font-size:.92rem">'+esc(m.title||'')+'</strong>',
+    '</div>',
+    '<div class="hub-card-desc">'+esc(m.desc||'')+'</div>',
   ];
   if (isGate) {
     parts.push(
-      '<div class="mod-inputs">',
-      '<input type="text" value="'+esc(m.icon||'')+'" style="width:52px;text-align:center" placeholder="🎯" oninput="upd('+i+',\'icon\',this.value)" title="Icône">',
-      '<input type="text" value="'+esc(m.title||'')+'" placeholder="Titre" oninput="upd('+i+',\'title\',this.value)" style="flex:1;min-width:100px">',
-      '<input type="color" value="'+(m.color||'#7c6aff')+'" oninput="upd('+i+',\'color\',this.value)" style="width:36px;height:32px;padding:.2rem;border-radius:.4rem;background:var(--surface2);border:1px solid var(--border);cursor:pointer" title="Couleur">',
+      '<div class="hub-card-edit">',
+      '<input type="text" value="'+esc(m.icon||'')+'" style="width:48px;text-align:center" placeholder="🎯" oninput="upd('+i+','icon',this.value)" title="Icône">',
+      '<input type="text" value="'+esc(m.title||'')+'" placeholder="Titre" oninput="upd('+i+','title',this.value)" style="flex:1;min-width:90px">',
+      '<input type="color" value="'+(m.color||'#7c6aff')+'" oninput="upd('+i+','color',this.value);this.closest('.hub-card').style.borderLeftColor=this.value" title="Couleur">',
       '</div>'
     );
   }
   parts.push(
     '</div>',
-    '<div class="mod-actions">',
+    '<div class="hub-card-actions">',
     '<label class="toggle" title="'+(m.enabled?'Désactiver':'Activer')+'">',
     '<input type="checkbox"'+(m.enabled?' checked':'')+' onchange="togMod('+i+',this.checked)">',
     '<span class="slider"></span></label>',
-    '</div></div>'
+    '</div>',
+    '</div>'
   );
   return parts.join('');
 }
@@ -337,7 +348,7 @@ function enableDnD() {
   const list = document.getElementById('mod-list');
   if (!list) return;
   let dragged = null;
-  list.querySelectorAll('.mod-item').forEach(item => {
+  list.querySelectorAll('.hub-card').forEach(item => {
     item.addEventListener('dragstart', e => {
       dragged = item;
       e.dataTransfer.effectAllowed = 'move';
@@ -345,9 +356,9 @@ function enableDnD() {
     });
     item.addEventListener('dragend', () => {
       if (dragged) dragged.classList.remove('dragging');
-      list.querySelectorAll('.mod-item').forEach(el => el.classList.remove('drag-over'));
+      list.querySelectorAll('.hub-card').forEach(el => el.classList.remove('drag-over'));
       const newOrder = [];
-      list.querySelectorAll('.mod-item').forEach(el => {
+      list.querySelectorAll('.hub-card').forEach(el => {
         const idx = parseInt(el.dataset.idx);
         if (!isNaN(idx) && hubMods[idx]) newOrder.push(Object.assign({},hubMods[idx]));
       });
@@ -361,7 +372,7 @@ function enableDnD() {
     item.addEventListener('dragover', e => {
       e.preventDefault();
       if (!dragged || dragged === item) return;
-      list.querySelectorAll('.mod-item').forEach(el => el.classList.remove('drag-over'));
+      list.querySelectorAll('.hub-card').forEach(el => el.classList.remove('drag-over'));
       item.classList.add('drag-over');
       const rect = item.getBoundingClientRect();
       list.insertBefore(dragged, e.clientY > rect.top + rect.height/2 ? item.nextSibling : item);
