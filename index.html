@@ -190,7 +190,7 @@
           <button class="react-btn" id="react-down" onclick="setReaction('down')">👎 <span id="react-down-count">0</span></button>
         </div>
         <button class="btn-share" id="btn-quiz-today" onclick="triggerTodayQuiz()" style="display:none;">🧠 Quiz</button>
-        <button class="btn-historique-anec" onclick="goHistoire()" title="Voir l'historique des anecdotes">🏛ï¸ Historique</button>
+        <button class="btn-historique-anec" onclick="goHistoire()" title="Voir l'historique des anecdotes">🏛️ Historique</button>
       </div>
       <div class="anec-footer">
         <div class="anec-note" id="anec-note"></div>
@@ -350,7 +350,7 @@
     <div class="prof-top-bar">
       <button class="btn-back" onclick="goBack()">← Retour</button>
       <div class="prof-top-actions">
-        <button class="prof-edit-name-btn" onclick="openAccountSettings()">⚙ï¸ Paramètres</button>
+        <button class="prof-edit-name-btn" onclick="openAccountSettings()">⚙️ Paramètres</button>
         <button class="prof-logout-btn" onclick="doSignOut()">Déconnexion</button>
       </div>
     </div>
@@ -359,7 +359,7 @@
     <div class="acct-modal-bd" id="acct-modal-bd" style="display:none;" onclick="if(event.target===this)closeAccountSettings()">
       <div class="acct-modal-card">
         <div class="acct-modal-head">
-          <span class="acct-modal-title">⚙ï¸ Paramètres</span>
+          <span class="acct-modal-title">⚙️ Paramètres</span>
           <button class="acct-modal-close" onclick="closeAccountSettings()">✕</button>
         </div>
 
@@ -368,7 +368,7 @@
           <button class="acct-tab active" onclick="switchAcctTab('profil',this)">👤 Profil</button>
           <button class="acct-tab" onclick="switchAcctTab('compte',this)">🔒 Compte</button>
           <button class="acct-tab" onclick="switchAcctTab('notifs',this)">🔔 Notifs</button>
-          <button class="acct-tab" onclick="switchAcctTab('danger',this)">⚠ï¸ Danger</button>
+          <button class="acct-tab" onclick="switchAcctTab('danger',this)">⚠️ Danger</button>
         </div>
 
         <!-- Onglet Profil -->
@@ -444,7 +444,7 @@
                 <span class="acct-toggle-slider"></span>
               </label>
               <label class="acct-toggle-row">
-                <span class="acct-toggle-label">⚔ï¸ Invitations de duel</span>
+                <span class="acct-toggle-label">⚔️ Invitations de duel</span>
                 <input type="checkbox" class="acct-toggle-cb" id="notif-pref-duel" checked onchange="saveNotifPref('duel',this.checked)"/>
                 <span class="acct-toggle-slider"></span>
               </label>
@@ -472,7 +472,7 @@
           <div class="acct-section acct-danger-zone">
             <div class="acct-section-title" style="color:var(--err)">Supprimer le compte</div>
             <div class="acct-section-desc">Toutes tes données seront supprimées définitivement. Cette action est irréversible.</div>
-            <button class="acct-btn-danger" onclick="confirmDeleteAccount()">🗑ï¸ Supprimer mon compte</button>
+            <button class="acct-btn-danger" onclick="confirmDeleteAccount()">🗑️ Supprimer mon compte</button>
           </div>
         </div>
 
@@ -576,7 +576,7 @@
           <button class="hist-chip active" onclick="filterHist('all',this)">Tout</button>
           <button class="hist-chip" onclick="filterHist('read',this)">Lu ✓</button>
           <button class="hist-chip" onclick="filterHist('unread',this)">À lire</button>
-          <button class="hist-chip" onclick="filterHist('fav',this)">❤ï¸ Favoris</button>
+          <button class="hist-chip" onclick="filterHist('fav',this)">❤️ Favoris</button>
         </div>
       </div>
       <div id="hist-screen-list"></div>
@@ -654,7 +654,7 @@
   <!-- ── Share modal ──────────────────────────────────────────────────────── -->
   <div class="share-bd" id="share-bd" onclick="if(event.target===this)closeShare()">
     <div class="share-modal">
-      <div class="share-modal-title">✈ï¸ Partager l'anecdote</div>
+      <div class="share-modal-title">✈︎ Partager l'anecdote</div>
       <div class="share-preview-box">
         <div class="share-preview-theme" id="share-preview-theme"></div>
         <div class="share-preview-txt" id="share-preview-txt"></div>
