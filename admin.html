@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin â Le Curioscope</title>
+<title>Admin — Le Curioscope</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
@@ -15,12 +15,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;font-size:15px}
 
-/* ââ Auth screens ââ */
+/* ── Auth screens ── */
 #loading,#auth-error{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1rem;text-align:center;padding:2rem}
 .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ââ Layout ââ */
+/* ── Layout ── */
 #app{display:none;min-height:100vh}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:1rem}
 .topbar h1{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.5rem;white-space:nowrap}
@@ -32,18 +32,18 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
 .content{padding:1.5rem;max-width:960px;margin:0 auto}
 
-/* ââ Cards ââ */
+/* ── Cards ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:.75rem;padding:1.25rem;margin-bottom:1rem}
 .card h3{font-size:.9rem;font-weight:700;margin-bottom:1rem;color:var(--accent2);display:flex;align-items:center;gap:.5rem}
 .card p.hint{font-size:.8rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
 
-/* ââ Stats grid ââ */
+/* ── Stats grid ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.75rem;margin-bottom:1.25rem}
 .stat{background:var(--surface2);border:1px solid var(--border);border-radius:.75rem;padding:1rem;text-align:center}
 .stat .val{font-size:1.9rem;font-weight:800;color:var(--accent2);display:block;line-height:1}
 .stat .lbl{font-size:.72rem;color:var(--text2);margin-top:.4rem;line-height:1.3}
 
-/* ââ Buttons ââ */
+/* ── Buttons ── */
 .btn{padding:.5rem 1rem;border:none;border-radius:.5rem;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
 .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
@@ -52,7 +52,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
 
-/* ââ Toggle ââ */
+/* ── Toggle ── */
 .toggle{position:relative;display:inline-block;width:42px;height:23px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle .slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:23px;transition:.25s}
@@ -60,7 +60,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .toggle input:checked+.slider{background:var(--accent)}
 .toggle input:checked+.slider:before{transform:translateX(19px)}
 
-/* ââ Form ââ */
+/* ── Form ── */
 .frow{margin-bottom:.75rem}
 .frow label,.flabel{font-size:.78rem;color:var(--text2);display:block;margin-bottom:.3rem}
 input[type=text],input[type=date],textarea,select{
@@ -72,7 +72,7 @@ textarea{resize:vertical;min-height:75px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 
-/* ââ/* ── Module items (hub) ── */
+/* ── Module items (hub) ── */
 .mod-item{background:var(--surface2);border:1px solid var(--border);border-radius:.75rem;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem;transition:opacity .2s,border-color .15s,box-shadow .15s}
 .mod-item.off{opacity:.4}
 .mod-item.dragging{opacity:.3;border-style:dashed;pointer-events:none}
@@ -87,8 +87,6 @@ textarea{resize:vertical;min-height:75px}
 .mod-inputs{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
 .mod-inputs input[type=text]{min-width:80px}
 .mod-actions{flex-shrink:0}
-
-/* ── Table ── */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th{text-align:left;padding:.55rem .7rem;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -99,51 +97,51 @@ tr:hover td{background:var(--surface2)}
 .badge-mod{background:#f59e0b;color:#000}
 .badge-user{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 
-/* ââ Setup box ââ */
+/* ── Setup box ── */
 .setup-box{background:#12201a;border:1px solid #1e4a2a;border-radius:.75rem;padding:1.25rem}
 .setup-box h4{color:#86efac;margin-bottom:.75rem;font-size:.9rem}
 .setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow-x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
 
-/* ââ Toast ââ */
+/* ── Toast ── */
 #toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:.65rem;padding:.65rem 1.1rem;font-size:.875rem;z-index:9999;transform:translateY(120px);transition:transform .28s;max-width:300px;pointer-events:none}
 #toast.show{transform:translateY(0)}
 #toast.ok{border-color:var(--green);color:var(--green)}
 #toast.err{border-color:var(--red);color:var(--red)}
 
-/* ââ Code inline ââ */
+/* ── Code inline ── */
 code{background:var(--surface2);padding:.1rem .4rem;border-radius:.3rem;font-size:.82rem;font-family:monospace}
 a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div><div style="color:var(--text2);margin-top:.5rem">VÃ©rification de sessionâ¦</div></div>
+<div id="loading"><div class="spinner"></div><div style="color:var(--text2);margin-top:.5rem">Vérification de session…</div></div>
 
 <div id="auth-error" style="display:none">
-  <div style="font-size:3rem">ð</div>
-  <h2 style="margin:.5rem 0">AccÃ¨s refusÃ©</h2>
-  <p style="color:var(--text2)">Cette page est rÃ©servÃ©e Ã  l'administrateur.</p>
-  <a href="/" style="color:var(--accent2);margin-top:1.5rem;display:inline-block">â Retour au site</a>
+  <div style="font-size:3rem">🔒</div>
+  <h2 style="margin:.5rem 0">Accès refusé</h2>
+  <p style="color:var(--text2)">Cette page est réservée à l'administrateur.</p>
+  <a href="/" style="color:var(--accent2);margin-top:1.5rem;display:inline-block">← Retour au site</a>
 </div>
 
 <div id="app">
   <div class="topbar">
-    <h1>âï¸ Admin <span style="color:var(--text2);font-weight:400">Le Curioscope</span></h1>
+    <h1>⚙️ Admin <span style="color:var(--text2);font-weight:400">Le Curioscope</span></h1>
     <div class="right">
       <span id="user-email-lbl" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-      <a href="/" style="color:var(--accent2)">â Voir le site</a>
-      <button class="btn btn-ghost btn-sm" onclick="doSignOut()">DÃ©co</button>
+      <a href="/" style="color:var(--accent2)">← Voir le site</a>
+      <button class="btn btn-ghost btn-sm" onclick="doSignOut()">Déco</button>
     </div>
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="go('stats',this)">ð Stats</div>
-    <div class="tab" onclick="go('hub',this)">ð  Hub</div>
-    <div class="tab" onclick="go('content',this)">âï¸ Contenu</div>
-    <div class="tab" onclick="go('flags',this)">ð© Fonctions</div>
-    <div class="tab" onclick="go('banner',this)">ð¢ BanniÃ¨re</div>
-    <div class="tab" onclick="go('users',this)">ð¥ Utilisateurs</div>
-    <div class="tab" onclick="go('setup',this)">ð ï¸ Setup</div>
+    <div class="tab active" onclick="go('stats',this)">📊 Stats</div>
+    <div class="tab" onclick="go('hub',this)">🏠 Hub</div>
+    <div class="tab" onclick="go('content',this)">✍️ Contenu</div>
+    <div class="tab" onclick="go('flags',this)">🚩 Fonctions</div>
+    <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
+    <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
+    <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
   </div>
 
   <div class="content" id="pane"></div>
@@ -152,9 +150,9 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 <div id="toast"></div>
 
 <script>
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Config
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 const SB_URL  = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
 const ADMIN_EMAIL = 'licour.arnaud@gmail.com';
@@ -164,9 +162,9 @@ const TODAY  = () => new Date().toISOString().slice(0,10);
 const sb = supabase.createClient(SB_URL, SB_ANON);
 let me = null;
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Auth
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function boot() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session || session.user.email !== ADMIN_EMAIL) {
@@ -186,21 +184,21 @@ async function doSignOut() {
   window.location.href = APP_URL;
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Tab router
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 const TABS = { stats, hub, content: contentTab, flags, banner, users, setup };
 function go(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const pane = document.getElementById('pane');
-  pane.innerHTML = '<div style="color:var(--text2);text-align:center;padding:3rem">Chargementâ¦</div>';
+  pane.innerHTML = '<div style="color:var(--text2);text-align:center;padding:3rem">Chargement…</div>';
   TABS[name]?.(pane);
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Stats
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function stats(pane) {
   const today = TODAY();
   const [usersR, duelsR, anecR, enigR] = await Promise.all([
@@ -219,37 +217,37 @@ async function stats(pane) {
 
   pane.innerHTML = `
     <div class="stats-grid">
-      <div class="stat"><span class="val">${usersR.count ?? 'â'}</span><span class="lbl">Chasseurs inscrits</span></div>
-      <div class="stat"><span class="val">${duelsR.count ?? 'â'}</span><span class="lbl">Duels actifs</span></div>
-      <div class="stat"><span class="val">${anecR.count ? 'â' : 'â'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
-      <div class="stat"><span class="val">${enigR.count ? 'â' : 'â'}</span><span class="lbl">Ãnigme aujourd'hui</span></div>
+      <div class="stat"><span class="val">${usersR.count ?? '—'}</span><span class="lbl">Chasseurs inscrits</span></div>
+      <div class="stat"><span class="val">${duelsR.count ?? '—'}</span><span class="lbl">Duels actifs</span></div>
+      <div class="stat"><span class="val">${anecR.count ? '✅' : '❌'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
+      <div class="stat"><span class="val">${enigR.count ? '✅' : '❌'}</span><span class="lbl">Énigme aujourd'hui</span></div>
     </div>
 
     <div class="card">
-      <h3>ð¥ Derniers inscrits</h3>
+      <h3>👥 Derniers inscrits</h3>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Pseudo</th><th>RÃ´le</th><th>Streak record</th><th>Inscription</th></tr></thead>
+        <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
         <tbody>
           ${(recentUsers||[]).map(u=>`<tr>
-            <td>${esc(u.username||'â')}</td>
+            <td>${esc(u.username||'—')}</td>
             <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
             <td>${u.streak_record||0}j</td>
-            <td style="color:var(--text2)">${u.joined ? new Date(u.joined).toLocaleDateString('fr-FR') : 'â'}</td>
+            <td style="color:var(--text2)">${u.joined ? new Date(u.joined).toLocaleDateString('fr-FR') : '—'}</td>
           </tr>`).join('')}
         </tbody>
       </table></div>
     </div>
 
     <div class="card">
-      <h3>ð° DerniÃ¨res anecdotes</h3>
+      <h3>📰 Dernières anecdotes</h3>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Date</th><th>ThÃ¨me</th><th>Extrait</th><th>Auteur</th></tr></thead>
+        <thead><tr><th>Date</th><th>Thème</th><th>Extrait</th><th>Auteur</th></tr></thead>
         <tbody>
           ${(recentAnec||[]).map(a=>`<tr>
             <td><code>${a.date}</code></td>
-            <td>${esc(a.theme||'â')}</td>
-            <td style="color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((a.anecdote||'').slice(0,80))}â¦</td>
-            <td>${esc(a.chooser||'â')}</td>
+            <td>${esc(a.theme||'—')}</td>
+            <td style="color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((a.anecdote||'').slice(0,80))}…</td>
+            <td>${esc(a.chooser||'—')}</td>
           </tr>`).join('')}
         </tbody>
       </table></div>
@@ -257,7 +255,6 @@ async function stats(pane) {
   `;
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
 // ═══════════════════════════════════════
 // Hub Config
 // ═══════════════════════════════════════
@@ -391,8 +388,9 @@ async function saveHub() {
   else toast('Hub sauvegardé ✓','ok');
 }
 
+// ═══════════════════════════════════════
 // Content
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function contentTab(pane) {
   const today = TODAY();
   const [{data:ta},{data:te}] = await Promise.all([
@@ -402,45 +400,45 @@ async function contentTab(pane) {
 
   pane.innerHTML = `
     <div class="card">
-      <h3>ð Aujourd'hui â ${today}</h3>
+      <h3>📅 Aujourd'hui — ${today}</h3>
       <div class="fgrid">
         <div style="background:var(--surface2);padding:.75rem;border-radius:.5rem">
           <div class="flabel">Anecdote du jour</div>
-          <div style="font-size:.875rem">${ta ? 'â '+esc((ta.anecdote||'').slice(0,60))+'â¦' : 'â Aucune pour aujourd\'hui'}</div>
+          <div style="font-size:.875rem">${ta ? '✅ '+esc((ta.anecdote||'').slice(0,60))+'…' : '❌ Aucune pour aujourd\'hui'}</div>
         </div>
         <div style="background:var(--surface2);padding:.75rem;border-radius:.5rem">
-          <div class="flabel">Ãnigme du jour</div>
-          <div style="font-size:.875rem">${te ? 'â '+esc((te.question||'').slice(0,60))+'â¦' : 'â Aucune pour aujourd\'hui'}</div>
+          <div class="flabel">Énigme du jour</div>
+          <div style="font-size:.875rem">${te ? '✅ '+esc((te.question||'').slice(0,60))+'…' : '❌ Aucune pour aujourd\'hui'}</div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h3>â Nouvelle anecdote</h3>
+      <h3>➕ Nouvelle anecdote</h3>
       <div class="fgrid">
         <div class="frow"><label>Date</label><input type="date" id="a-date" value="${today}"></div>
-        <div class="frow"><label>ThÃ¨me</label>
+        <div class="frow"><label>Thème</label>
           <select id="a-theme">
             <option>Science</option><option>Histoire</option><option>Nature</option>
             <option>Technologie</option><option>Culture</option><option>Sport</option>
-            <option>GÃ©ographie</option><option>Psychologie</option><option>Divers</option>
+            <option>Géographie</option><option>Psychologie</option><option>Divers</option>
           </select>
         </div>
       </div>
-      <div class="frow"><label>IcÃ´ne (emoji)</label><input type="text" id="a-icon" placeholder="ð¬" style="max-width:100px"></div>
+      <div class="frow"><label>Icône (emoji)</label><input type="text" id="a-icon" placeholder="🔬" style="max-width:100px"></div>
       <div class="frow"><label>Tag</label><input type="text" id="a-tag" placeholder="ex: biologie"></div>
-      <div class="frow"><label>Anecdote (texte principal)</label><textarea id="a-body" rows="4" placeholder="Saviez-vous queâ¦"></textarea></div>
-      <div class="frow"><label>Note / complÃ©ment (optionnel)</label><textarea id="a-note" rows="2" placeholder="DÃ©tail ou contexte supplÃ©mentaireâ¦"></textarea></div>
+      <div class="frow"><label>Anecdote (texte principal)</label><textarea id="a-body" rows="4" placeholder="Saviez-vous que…"></textarea></div>
+      <div class="frow"><label>Note / complément (optionnel)</label><textarea id="a-note" rows="2" placeholder="Détail ou contexte supplémentaire…"></textarea></div>
       <div class="frow"><label>Sources (optionnel)</label><input type="text" id="a-sources" placeholder="Wikipedia, Nature, etc."></div>
       <div class="frow"><label>Auteur / chooser</label><input type="text" id="a-chooser" placeholder="ton pseudo"></div>
       <button class="btn btn-primary" onclick="submitAnec()">Publier l'anecdote</button>
     </div>
 
     <div class="card">
-      <h3>â Nouvelle Ã©nigme</h3>
+      <h3>➕ Nouvelle énigme</h3>
       <div class="fgrid">
         <div class="frow"><label>Date</label><input type="date" id="e-date" value="${today}"></div>
-        <div class="frow"><label>CatÃ©gorie</label>
+        <div class="frow"><label>Catégorie</label>
           <select id="e-cat">
             <option value="logique">Logique</option><option value="maths">Maths</option>
             <option value="culture">Culture</option><option value="science">Science</option>
@@ -448,15 +446,15 @@ async function contentTab(pane) {
           </select>
         </div>
       </div>
-      <div class="frow"><label>DifficultÃ©</label>
+      <div class="frow"><label>Difficulté</label>
         <select id="e-diff"><option value="facile">Facile</option><option value="moyen" selected>Moyen</option><option value="difficile">Difficile</option></select>
       </div>
-      <div class="frow"><label>Question</label><textarea id="e-q" rows="3" placeholder="Quel estâ¦"></textarea></div>
-      <div class="frow"><label>RÃ©ponse</label><input type="text" id="e-a" placeholder="La bonne rÃ©ponse"></div>
-      <div class="frow"><label>Indice (optionnel)</label><input type="text" id="e-hint" placeholder="Un petit indiceâ¦"></div>
-      <div class="frow"><label>Explication</label><textarea id="e-exp" rows="2" placeholder="Pourquoi cette rÃ©ponse ?"></textarea></div>
-      <div class="frow"><label>Fun fact (optionnel)</label><input type="text" id="e-ff" placeholder="Anecdote liÃ©eâ¦"></div>
-      <button class="btn btn-primary" onclick="submitEnig()">Publier l'Ã©nigme</button>
+      <div class="frow"><label>Question</label><textarea id="e-q" rows="3" placeholder="Quel est…"></textarea></div>
+      <div class="frow"><label>Réponse</label><input type="text" id="e-a" placeholder="La bonne réponse"></div>
+      <div class="frow"><label>Indice (optionnel)</label><input type="text" id="e-hint" placeholder="Un petit indice…"></div>
+      <div class="frow"><label>Explication</label><textarea id="e-exp" rows="2" placeholder="Pourquoi cette réponse ?"></textarea></div>
+      <div class="frow"><label>Fun fact (optionnel)</label><input type="text" id="e-ff" placeholder="Anecdote liée…"></div>
+      <button class="btn btn-primary" onclick="submitEnig()">Publier l'énigme</button>
     </div>
   `;
 }
@@ -467,20 +465,20 @@ async function submitAnec() {
   const {error}=await sb.from('anecdotes').insert({
     date:document.getElementById('a-date').value,
     theme:document.getElementById('a-theme').value,
-    icon:document.getElementById('a-icon').value||'ð¡',
+    icon:document.getElementById('a-icon').value||'💡',
     tag:document.getElementById('a-tag').value||null,
     anecdote:body,
     note:document.getElementById('a-note').value||null,
     sources:document.getElementById('a-sources').value||null,
     chooser:document.getElementById('a-chooser').value||'admin',
   });
-  toast(error?'Erreur: '+error.message:'Anecdote publiÃ©e â', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Anecdote publiée ✓', error?'err':'ok');
 }
 
 async function submitEnig() {
   const q=document.getElementById('e-q').value.trim();
   const a=document.getElementById('e-a').value.trim();
-  if(!q||!a){toast('Question et rÃ©ponse requises','err');return;}
+  if(!q||!a){toast('Question et réponse requises','err');return;}
   const {error}=await sb.from('daily_enigmas').insert({
     date:document.getElementById('e-date').value,
     category:document.getElementById('e-cat').value,
@@ -493,20 +491,20 @@ async function submitEnig() {
     chooser:'admin',
     chooser_id:me.id,
   });
-  toast(error?'Erreur: '+error.message:'Ãnigme publiÃ©e â', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Énigme publiée ✓', error?'err':'ok');
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Feature Flags
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 const FLAGS = [
-  {key:'feature_duels',label:'âï¸ Duels',desc:'Mode duel entre joueurs'},
-  {key:'feature_vs100',label:'ð 1 contre 100',desc:'Mode 1 contre 100'},
-  {key:'feature_mystery',label:'ð Weekly Mystery',desc:'EnquÃªte hebdomadaire'},
-  {key:'feature_quiz',label:'ð¯ Quiz',desc:'Mode quiz quotidien'},
-  {key:'feature_notifs',label:'ð Notifications',desc:'SystÃ¨me de notifications'},
-  {key:'feature_xp',label:'â¡ SystÃ¨me XP & Rangs',desc:'Gains XP et rangs Solo Leveling'},
-  {key:'feature_enigme',label:'ð§© Ãnigme',desc:'Ãnigme quotidienne'},
+  {key:'feature_duels',label:'⚔️ Duels',desc:'Mode duel entre joueurs'},
+  {key:'feature_vs100',label:'🌍 1 contre 100',desc:'Mode 1 contre 100'},
+  {key:'feature_mystery',label:'🔍 Weekly Mystery',desc:'Enquête hebdomadaire'},
+  {key:'feature_quiz',label:'🎯 Quiz',desc:'Mode quiz quotidien'},
+  {key:'feature_notifs',label:'🔔 Notifications',desc:'Système de notifications'},
+  {key:'feature_xp',label:'⚡ Système XP & Rangs',desc:'Gains XP et rangs Solo Leveling'},
+  {key:'feature_enigme',label:'🧩 Énigme',desc:'Énigme quotidienne'},
 ];
 
 async function flags(pane) {
@@ -514,8 +512,8 @@ async function flags(pane) {
   const map={}; (data||[]).forEach(r=>map[r.key]=r.value==='true');
   pane.innerHTML=`
     <div class="card">
-      <h3>ð© Feature Flags</h3>
-      <p class="hint">Active ou dÃ©sactive des fonctionnalitÃ©s pour tous les utilisateurs en temps rÃ©el.</p>
+      <h3>🚩 Feature Flags</h3>
+      <p class="hint">Active ou désactive des fonctionnalités pour tous les utilisateurs en temps réel.</p>
       ${FLAGS.map(f=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid var(--border)">
           <div>
@@ -530,12 +528,12 @@ async function flags(pane) {
 
 async function saveFlag(key,val) {
   const {error}=await sb.from('app_config').upsert({key,value:String(val)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'SauvegardÃ© â', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Sauvegardé ✓', error?'err':'ok');
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Banner
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function banner(pane) {
   const {data}=await sb.from('app_config').select('value').eq('key','site_banner').single();
   let b={enabled:false,message:'',type:'info'};
@@ -544,26 +542,26 @@ async function banner(pane) {
 
   pane.innerHTML=`
     <div class="card">
-      <h3>ð¢ BanniÃ¨re du site</h3>
-      <p class="hint">Affiche un message Ã  tous les utilisateurs sur le hub. Utile pour annoncer une maintenance, un Ã©vÃ©nement, etc.</p>
+      <h3>📢 Bannière du site</h3>
+      <p class="hint">Affiche un message à tous les utilisateurs sur le hub. Utile pour annoncer une maintenance, un événement, etc.</p>
       <div class="frow" style="display:flex;align-items:center;gap:.75rem">
         <label class="toggle"><input type="checkbox" id="b-on" ${b.enabled?'checked':''}><span class="slider"></span></label>
-        <span style="font-size:.9rem">BanniÃ¨re active</span>
+        <span style="font-size:.9rem">Bannière active</span>
       </div>
-      <div class="frow"><label>Message</label><textarea id="b-msg" rows="3" placeholder="Ex: Maintenance prÃ©vue samedi Ã  22hâ¦" oninput="updPreview()">${esc(b.message||'')}</textarea></div>
+      <div class="frow"><label>Message</label><textarea id="b-msg" rows="3" placeholder="Ex: Maintenance prévue samedi à 22h…" oninput="updPreview()">${esc(b.message||'')}</textarea></div>
       <div class="frow"><label>Type</label>
         <select id="b-type" onchange="updPreview()">
-          <option value="info" ${b.type==='info'?'selected':''}>â¹ï¸ Info (bleu)</option>
-          <option value="warning" ${b.type==='warning'?'selected':''}>â ï¸ Avertissement (orange)</option>
-          <option value="success" ${b.type==='success'?'selected':''}>â Bonne nouvelle (vert)</option>
-          <option value="error" ${b.type==='error'?'selected':''}>ð¨ Urgent (rouge)</option>
+          <option value="info" ${b.type==='info'?'selected':''}>ℹ️ Info (bleu)</option>
+          <option value="warning" ${b.type==='warning'?'selected':''}>⚠️ Avertissement (orange)</option>
+          <option value="success" ${b.type==='success'?'selected':''}>✅ Bonne nouvelle (vert)</option>
+          <option value="error" ${b.type==='error'?'selected':''}>🚨 Urgent (rouge)</option>
         </select>
       </div>
       <div class="frow">
-        <div class="flabel">AperÃ§u</div>
+        <div class="flabel">Aperçu</div>
         <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem">${esc(b.message||'Aucun message')}</div>
       </div>
-      <button class="btn btn-primary" onclick="saveBanner()">ð¾ Sauvegarder</button>
+      <button class="btn btn-primary" onclick="saveBanner()">💾 Sauvegarder</button>
     </div>
   `;
 }
@@ -579,18 +577,18 @@ function updPreview() {
 async function saveBanner() {
   const b={enabled:document.getElementById('b-on').checked,message:document.getElementById('b-msg').value,type:document.getElementById('b-type').value};
   const {error}=await sb.from('app_config').upsert({key:'site_banner',value:JSON.stringify(b)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'BanniÃ¨re sauvegardÃ©e â', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Bannière sauvegardée ✓', error?'err':'ok');
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Users
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function users(pane) {
   pane.innerHTML=`
     <div class="card">
-      <h3>ð¥ Utilisateurs</h3>
-      <div class="frow"><input type="text" id="u-search" placeholder="Rechercher par pseudoâ¦" oninput="uSearch(this.value)"></div>
-      <div id="u-table"><div style="color:var(--text2)">Chargementâ¦</div></div>
+      <h3>👥 Utilisateurs</h3>
+      <div class="frow"><input type="text" id="u-search" placeholder="Rechercher par pseudo…" oninput="uSearch(this.value)"></div>
+      <div id="u-table"><div style="color:var(--text2)">Chargement…</div></div>
     </div>
   `;
   loadUsers('');
@@ -605,13 +603,13 @@ async function loadUsers(q) {
   if(error){el.innerHTML=`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
   el.innerHTML=`
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Pseudo</th><th>RÃ´le</th><th>Streak record</th><th>Inscription</th></tr></thead>
+      <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
       <tbody>
         ${(data||[]).map(u=>`<tr>
-          <td>${esc(u.username||'â')}</td>
+          <td>${esc(u.username||'—')}</td>
           <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
           <td>${u.streak_record||0} j</td>
-          <td style="color:var(--text2)">${u.joined?new Date(u.joined).toLocaleDateString('fr-FR'):'â'}</td>
+          <td style="color:var(--text2)">${u.joined?new Date(u.joined).toLocaleDateString('fr-FR'):'—'}</td>
         </tr>`).join('')}
       </tbody>
     </table></div>
@@ -621,36 +619,36 @@ async function loadUsers(q) {
 let _uTimer;
 function uSearch(q){clearTimeout(_uTimer);_uTimer=setTimeout(()=>loadUsers(q),280);}
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Setup (first-time)
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 async function setup(pane) {
   pane.innerHTML=`
     <div class="card">
-      <h3>ð ï¸ Premier dÃ©marrage â Setup</h3>
-      <p class="hint">CrÃ©e la table <code>app_config</code> dans Supabase pour que le Hub Config, les Feature Flags et la BanniÃ¨re fonctionnent. ExÃ©cute ce SQL dans l'Ã©diteur SQL de Supabase.</p>
+      <h3>🛠️ Premier démarrage — Setup</h3>
+      <p class="hint">Crée la table <code>app_config</code> dans Supabase pour que le Hub Config, les Feature Flags et la Bannière fonctionnent. Exécute ce SQL dans l'éditeur SQL de Supabase.</p>
       <div class="setup-box">
-        <h4>1. CrÃ©er la table app_config</h4>
+        <h4>1. Créer la table app_config</h4>
         <pre id="sql-create">CREATE TABLE IF NOT EXISTS public.app_config (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- SÃ©curitÃ© : lecture publique, Ã©criture admin seulement
+-- Sécurité : lecture publique, écriture admin seulement
 ALTER TABLE public.app_config ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Lecture publique" ON public.app_config
   FOR SELECT USING (true);
 
-CREATE POLICY "Ãcriture admin seulement" ON public.app_config
+CREATE POLICY "Écriture admin seulement" ON public.app_config
   FOR ALL USING (auth.email() = 'licour.arnaud@gmail.com');
 </pre>
-        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-create')">ð Copier</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-create')">📋 Copier</button>
       </div>
       <div class="setup-box" style="margin-top:1rem">
-        <h4>2. SÃ©curiser les autres tables (RLS)</h4>
-        <pre id="sql-rls">-- VÃ©rifier que le RLS est activÃ© sur chaque table sensible
+        <h4>2. Sécuriser les autres tables (RLS)</h4>
+        <pre id="sql-rls">-- Vérifier que le RLS est activé sur chaque table sensible
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.duels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anecdotes ENABLE ROW LEVEL SECURITY;
@@ -660,26 +658,26 @@ ALTER TABLE public.daily_enigmas ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Lecture anecdotes" ON public.anecdotes FOR SELECT USING (true);
 CREATE POLICY "Lecture enigmes" ON public.daily_enigmas FOR SELECT USING (true);
 
--- Insertion anecdotes/Ã©nigmes : admin seulement
+-- Insertion anecdotes/énigmes : admin seulement
 CREATE POLICY "Insert anecdotes admin" ON public.anecdotes
   FOR INSERT WITH CHECK (auth.email() = 'licour.arnaud@gmail.com');
 CREATE POLICY "Insert enigmes admin" ON public.daily_enigmas
   FOR INSERT WITH CHECK (auth.email() = 'licour.arnaud@gmail.com');
 </pre>
-        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-rls')">ð Copier</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-rls')">📋 Copier</button>
       </div>
       <div class="setup-box" style="margin-top:1rem;border-color:#4a1e1e;background:#1a0a0a">
-        <h4 style="color:#fca5a5">â ï¸ SÃ©curitÃ© â ClÃ© service role dans le code</h4>
+        <h4 style="color:#fca5a5">⚠️ Sécurité — Clé service role dans le code</h4>
         <p style="font-size:.82rem;color:var(--text2);line-height:1.5">
-          La fonction <code>getAdminKey()</code> dans <code>admin.js</code> contient la clÃ© <strong>service role</strong> encodÃ©e en char codes.
-          Cette clÃ© donne un accÃ¨s total sans RLS Ã  ta base de donnÃ©es. Elle est visible par n'importe qui en inspectant le JS.<br><br>
-          <strong>Action recommandÃ©e :</strong> Supprime cette fonction et utilise les policies RLS ci-dessus Ã  la place.
-          Tu peux rÃ©gÃ©nÃ©rer la clÃ© service role dans Supabase Settings â API si besoin.
+          La fonction <code>getAdminKey()</code> dans <code>admin.js</code> contient la clé <strong>service role</strong> encodée en char codes.
+          Cette clé donne un accès total sans RLS à ta base de données. Elle est visible par n'importe qui en inspectant le JS.<br><br>
+          <strong>Action recommandée :</strong> Supprime cette fonction et utilise les policies RLS ci-dessus à la place.
+          Tu peux régénérer la clé service role dans Supabase Settings → API si besoin.
         </p>
       </div>
     </div>
     <div class="card">
-      <h3>â Tester la connexion</h3>
+      <h3>✅ Tester la connexion</h3>
       <button class="btn btn-primary" onclick="testConn()">Tester app_config</button>
       <div id="conn-result" style="margin-top:.75rem;font-size:.85rem;color:var(--text2)"></div>
     </div>
@@ -688,20 +686,20 @@ CREATE POLICY "Insert enigmes admin" ON public.daily_enigmas
 
 function copySQL(id) {
   const txt=document.getElementById(id)?.textContent||'';
-  navigator.clipboard?.writeText(txt).then(()=>toast('SQL copiÃ© !','ok'));
+  navigator.clipboard?.writeText(txt).then(()=>toast('SQL copié !','ok'));
 }
 
 async function testConn() {
   const el=document.getElementById('conn-result');
-  el.textContent='Test en coursâ¦';
+  el.textContent='Test en cours…';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
-  if(error) el.innerHTML=`<span style="color:var(--red)">â ${esc(error.message)}<br>â La table n'existe pas encore. ExÃ©cute le SQL ci-dessus.</span>`;
-  else el.innerHTML<`<span style="color:var(--green)">â app_config accessible ! ${data?.length ? data.length+' entrÃ©e(s)' : 'Table vide'}</span>`;
+  if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
+  else el.innerHTML<`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
 }
 
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 // Utils
-// âââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let _toTimer;
@@ -711,7 +709,7 @@ function toast(msg,type='ok'){
   clearTimeout(_toTimer); _toTimer=setTimeout(()=>t.className='',3200);
 }
 
-// ââ Boot ââ
+// ── Boot ──
 boot();
 </script>
 </body>
