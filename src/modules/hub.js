@@ -510,5 +510,16 @@ export async function showHub(){
 </div>`;
 
   show('screen-hub');updateNav('');
+  // Force 2-column layout via JS (bypass CSS cache)
+  hub.style.maxWidth='none';
+  const cols=hub.querySelector('.sl-hub-cols');
+  if(cols&&window.innerWidth>=768){
+    cols.style.display='flex';cols.style.flexDirection='row';
+    cols.style.gap='1.5rem';cols.style.alignItems='flex-start';
+    const l=cols.querySelector('.sl-hub-left');
+    if(l){l.style.width='340px';l.style.flexShrink='0';}
+    const ri=cols.querySelector('.sl-hub-right');
+    if(ri){ri.style.flex='1';ri.style.minWidth='0';}
+  }
   setTimeout(()=>{const mw=document.getElementById('hub-mystery-wrap');if(mw)buildWeeklyMystery(mw);},200);
 }
