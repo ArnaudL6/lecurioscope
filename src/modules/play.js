@@ -5,6 +5,8 @@ import { _sendNotif } from './notifs.js';
 const LEAGUE_DIFF={1:{label:'Facile',cls:'easy',correct:8,wrong:-25},2:{label:'Moyen',cls:'medium',correct:20,wrong:-12},3:{label:'Difficile',cls:'hard',correct:40,wrong:-5}};
 const LEAGUE_Q_COUNT=10;
 let _lgState=null;
+let _playModsCache=null;
+
 
 export function goPlay(){
   state.prevScreen=document.querySelector('.screen.on')?.id||'screen-anec';
@@ -45,32 +47,43 @@ export async function buildLeagueDashboard(){
   await loadFriends();
 }
 
-export function renderPlayChoice(){
+export async function renderPlayChoice(){
   document.getElementById('multi-title-txt').innerHTML='<em>Jouer</em>';
   document.getElementById('multi-sub').textContent='';
   const backBtn=document.querySelector('#screen-multi .btn-back');
   if(backBtn)backBtn.style.display='block';
-  document.getElementById('multi-content').innerHTML=''
-    +'<div class="sl-play-gates">'
-    +'<div class="sl-play-gate" onclick="goSoloPlay()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#34d399;border-color:#34d399;">C-RANG</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎯</span><span class="sl-arena-name">SOLO</span></div>'
-    +'<div class="sl-arena-desc">Teste tes connaissances sur les anecdotes.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
-    +'</div>'
-    +'<div class="sl-play-gate" onclick="goMultiPlay()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#fbbf24;border-color:#fbbf24;">B-RANG</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">🎮</span><span class="sl-arena-name">PARTIE PRIV\u00c9E</span></div>'
-    +'<div class="sl-arena-desc">Affronte tes amis en temps r\u00e9el.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
-    +'</div>'
-    +'<div class="sl-play-gate" onclick="showDuelLobby()">'
-    +'<div class="sl-play-gate-hd"><span class="sl-arena-tag" style="color:#f97316;border-color:#f97316;">A-RANG</span></div>'
-    +'<div class="sl-play-gate-bd"><span class="sl-arena-ico">\u2694\ufe0f</span><span class="sl-arena-name">DUEL QUIZ</span></div>'
-    +'<div class="sl-arena-desc">Tour par tour, choisis le th\u00e8me, bats ton adversaire.</div>'
-    +'<div style="text-align:right;margin-top:.6rem;"><span class="sl-arena-enter">► ENTRER</span></div>'
-    +'</div>'
-    +'</div>';
+  document.getElementById('multi-content').innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink3);">⏳</div>';
+
+  if(!_playModsCache){
+    try{
+      const{data}=await sb.from('app_config').select('value').eq('key','play_modes').maybeSingle();
+      if(data?.value)_playModsCache=JSON.parse(data.value);
+    }catch(_){}
+    if(!_playModsCache)_playModsCache=[];
+  }
+
+  const MODES=[
+    {id:'solo',  icon:'🎯',title:'Solo',         tagline:'Teste tes connaissances seul',       color:'#34d399',action:'goSoloPlay()'},
+    {id:'prive', icon:'🎮',title:'Partie Privée', tagline:'Affronte tes amis en temps réel',    color:'#fbbf24',action:'goMultiPlay()'},
+    {id:'duel',  icon:'⚔️',title:'Duel Quiz',     tagline:'Tour par tour, bats ton adversaire', color:'#f97316',action:'showDuelLobby()'},
+    {id:'vs100', icon:'🌍',title:'1 contre 100',  tagline:'Multijoueur temps réel massif',      color:'#ef4444',action:'show1vs100Lobby()'},
+    {id:'ligue', icon:'🏆',title:'Ligue',         tagline:'Classement hebdomadaire',            color:'#a855f7',action:'goLigue()'},
+  ];
+
+  const cfg=_playModsCache;
+  const visible=MODES.filter(m=>{const c=cfg.find(x=>x.id===m.id);return !c||c.enabled!==false;});
+  const cards=visible.map(m=>
+    '<div class="play-mode-card" onclick="'+m.action+'" style="--mc:'+m.color+'">'+
+    '<div class="play-mode-accent"></div>'+
+    '<div class="play-mode-icon">'+m.icon+'</div>'+
+    '<div class="play-mode-info">'+
+      '<div class="play-mode-title">'+m.title+'</div>'+
+      '<div class="play-mode-tagline">'+m.tagline+'</div>'+
+    '</div>'+
+    '<div class="play-mode-cta">Jouer →</div>'+
+    '</div>'
+  ).join('');
+  document.getElementById('multi-content').innerHTML='<div class="play-mode-grid">'+cards+'</div>';
 }
 
 export async function goSoloPlay(){
