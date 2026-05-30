@@ -445,7 +445,7 @@ function popXP(amount,anchorEl){
 
 
 // Deep link profil uniquement (ex: /profil/uuid)
-window.addEventListener('hashchange', _handleHashRouting);
+window.addEventListener('hashchange', _handleHashRouting);
 
 
 // Banniere site
@@ -469,4 +469,4 @@ async function loadSiteBanner(){
     document.documentElement.style.setProperty("--banner-h","38px");
   }catch(e){}
 }
-setTimeout(loadSiteBanner,900);                                                                                                                                 
+setTimeout(loadSiteBanner,900);
