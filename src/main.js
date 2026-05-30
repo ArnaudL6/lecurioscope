@@ -52,6 +52,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
     else if(path==='enigme'){goEnigme();}
     else if(path==='quiz'){goPlay();}
     else if(path==='duels'){goPlay();setTimeout(showDuelLobby,100);}
+    else if(path==='ligue'){goLigue();}
     else if(path==='vs100'){show1vs100Lobby();}
     else if(path==='mystere'){showHub();setTimeout(showMysteryDetail,200);}
     else if(path==='profile'||path==='profil'){goProfile();}
