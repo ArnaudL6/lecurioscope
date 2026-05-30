@@ -16,9 +16,13 @@ import { state, sb } from './shared.js';
 
 export function _handleHashRouting(){
   const hash=window.location.hash;
-  // Deep link profil uniquement — les autres routes gérées par pathname
+  // Deep link: profil d'un autre utilisateur
   const m=hash.match(/^\/profil\/([a-f0-9-]{36})$/i) || hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
   if(m){viewUserProfile(m[1]);return;}
+  // Navigation vers une section par hash (#anecdote, #enigme, etc.)
+  const SECTIONS=['hub','anecdote','quiz','enigme','mystere','duels','vs100','profil','notifs','admin'];
+  const sec=(hash||'').replace(/^#/,'').toLowerCase().split('/')[0];
+  if(sec&&SECTIONS.includes(sec))show(sec);
 }
 
 // Make all functions globally available for inline HTML handlers
@@ -43,26 +47,19 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
     } else {state.currentUser.email=session.user.email||'';}
   }
   updateHeader();
+  loadNavConfig();
   // Précharger l'anecdote en arrière-plan sans l'afficher
   loadTodayBackground();
   if(state.currentUser){
-    // SPA routing par pathname (Cloudflare sert index.html pour toutes les routes via _redirects)
-    const path=window.location.pathname.replace(/^\/|\/$/g,'').toLowerCase();
-    if(path==='le-saviez-vous'){goAnec();}
-    else if(path==='enigme'){goEnigme();}
-    else if(path==='quiz'){goPlay();}
-    else if(path==='duels'){goPlay();setTimeout(showDuelLobby,100);}
-    else if(path==='ligue'){goLigue();}
-    else if(path==='vs100'){show1vs100Lobby();}
-    else if(path==='mystere'){showHub();setTimeout(showMysteryDetail,200);}
-    else if(path==='profile'||path==='profil'){goProfile();}
-    else{showHub();}
+    showHub();
     loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
     show('screen-login');
   }
 
+// ════════════════════════════════════════════════════════════════════════════
 // v2 FEATURES
+// ════════════════════════════════════════════════════════════════════════════
 
 // ── Streak ──────────────────────────────────────────────────────────────────
 // state.userStreak declared at top
@@ -451,7 +448,53 @@ function popXP(amount,anchorEl){
 
 
 window.addEventListener('hashchange',_handleHashRouting);
+// Déclencher au chargement si hash présent (après auth)
+document.addEventListener('DOMContentLoaded',()=>setTimeout(_handleHashRouting,800));
+// ══════════════════════════════â
+_handleHashRouting();
+  window.addEventListener('hashchange',_handleHashRouting);
 
+
+// Nav config (header tabs + bottom bar)
+async function loadNavConfig(){
+  try{
+    const[{data:hd},{data:bn}]=await Promise.all([
+      sb.from('app_config').select('value').eq('key','nav_header').maybeSingle(),
+      sb.from('app_config').select('value').eq('key','nav_bottom').maybeSingle(),
+    ]);
+    if(hd?.value){
+      const tabs=JSON.parse(hd.value);
+      tabs.forEach(t=>{
+        const el=document.getElementById('top-tab-'+t.id);
+        if(!el)return;
+        if(t.hidden){el.style.display='none';return;}else{el.style.display='';}
+        const lbl=el.querySelector('.logo-txt');
+        if(lbl&&t.label)lbl.innerHTML=t.label;
+        if(t.url)el.onclick=()=>{location.href=t.url;};
+        const wipBadge=el.querySelector('[data-wip]');
+        if(t.wip){
+          el.style.opacity='.45';el.style.cursor='not-allowed';el.title='Bientôt disponible';
+          if(!wipBadge){const b=document.createElement('span');b.setAttribute('data-wip','1');b.textContent='WIP';b.style.cssText='font-size:.48rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#f97316;color:#fff;border-radius:999px;padding:.1rem .4rem;margin-left:.25rem;';el.appendChild(b);}
+        }else{
+          el.style.opacity='';el.style.cursor='';el.title='';
+          if(wipBadge)wipBadge.remove();
+        }
+      });
+    }
+    if(bn?.value){
+      const btns=JSON.parse(bn.value);
+      const idMap={anec:'bn-anec',play:'bn-play',league:'bn-league',profil:'bn-profil'};
+      btns.forEach(b=>{
+        const el=document.getElementById(idMap[b.id]||('bn-'+b.id));
+        if(!el)return;
+        const ic=el.querySelector('.bn-icon');const lb=el.querySelector('.bn-label');
+        if(ic&&b.icon)ic.textContent=b.icon;
+        if(lb&&b.label)lb.textContent=b.label;
+        if(b.url)el.onclick=()=>{location.href=b.url;};
+      });
+    }
+  }catch(e){}
+}
 
 // Banniere site
 async function loadSiteBanner(){
@@ -464,7 +507,7 @@ async function loadSiteBanner(){
     if(!el){el=document.createElement("div");el.id="site-banner";document.body.insertBefore(el,document.body.firstChild);}
     var colors={info:"#3b82f6",warning:"#f59e0b",success:"#22c55e",error:"#ef4444"};
     var c=colors[b.type]||"#3b82f6";
-    el.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9999;padding:.6rem 1rem;background:"+c+"18;border-bottom:2px solid "+c+";display:flex;align-items:center;justify-content:center;gap:.6rem;font-size:.82rem;font-weight:600;color:"+c;
+    el.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9999;padding:.6rem 1rem;background:"+c+"18;border-bottom:2px solid "+c+";display:flex;align-items:center;justify-content:center;gap:.6rem;font-size:.82rem;font-weight:600;font-family:'Space Grotesk',sans-serif;"+"color:"+c;
     var icon=document.createElement("span");icon.textContent=b.type==="warning"?"WARNING":b.type==="error"?"ERROR":"INFO";
     var msg=document.createElement("span");msg.textContent=b.message;
     var btn=document.createElement("button");btn.textContent="x";
