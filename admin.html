@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Le Curioscope</title>
+<title>Admin â Le Curioscope</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,12 +17,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,-apple-system,sans-serif;min-height:100vh;font-size:15px}
 
-/* ── Auth screens ── */
+/* ââ Auth screens ââ */
 #loading,#auth-error{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1rem;text-align:center;padding:2rem}
 .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── Layout ── */
+/* ââ Layout ââ */
 #app{display:none;min-height:100vh}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:1rem}
 .topbar h1{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.5rem;white-space:nowrap}
@@ -34,18 +34,18 @@ body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-u
 .tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
 .content{padding:1.5rem;max-width:960px;margin:0 auto}
 
-/* ── Cards ── */
+/* ââ Cards ââ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:.75rem;padding:1.25rem;margin-bottom:1rem}
 .card h3{font-size:.9rem;font-weight:700;margin-bottom:1rem;color:var(--accent2);display:flex;align-items:center;gap:.5rem}
 .card p.hint{font-size:.8rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
 
-/* ── Stats grid ── */
+/* ââ Stats grid ââ */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.75rem;margin-bottom:1.25rem}
 .stat{background:var(--surface2);border:1px solid var(--border);border-radius:.75rem;padding:1rem;text-align:center}
 .stat .val{font-size:1.9rem;font-weight:800;color:var(--accent2);display:block;line-height:1}
 .stat .lbl{font-size:.72rem;color:var(--text2);margin-top:.4rem;line-height:1.3}
 
-/* ── Buttons ── */
+/* ââ Buttons ââ */
 .btn{padding:.5rem 1rem;border:none;border-radius:.5rem;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
 .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
@@ -54,7 +54,7 @@ body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-u
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
 
-/* ── Toggle ── */
+/* ââ Toggle ââ */
 .toggle{position:relative;display:inline-block;width:42px;height:23px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle .slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:23px;transition:.25s}
@@ -62,7 +62,7 @@ body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-u
 .toggle input:checked+.slider{background:var(--accent)}
 .toggle input:checked+.slider:before{transform:translateX(19px)}
 
-/* ── Form ── */
+/* ââ Form ââ */
 .frow{margin-bottom:.75rem}
 .frow label,.flabel{font-size:.78rem;color:var(--text2);display:block;margin-bottom:.3rem}
 input[type=text],input[type=date],textarea,select{
@@ -74,7 +74,7 @@ textarea{resize:vertical;min-height:75px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
 
-/* ── Hub preview cards ── */
+/* ââ Hub preview cards ââ */
 .hub-preview-list{display:flex;flex-direction:column;gap:.55rem}
 .hub-card{background:var(--surface2);border-radius:.875rem;border:1px solid var(--border);border-left:3px solid var(--border);padding:.8rem .9rem;display:flex;align-items:flex-start;gap:.7rem;transition:opacity .2s,box-shadow .15s}
 .hub-card.off{opacity:.3}
@@ -94,7 +94,7 @@ textarea{resize:vertical;min-height:75px}
 .hub-card-edit input[type=text]{font-size:.74rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.4rem;color:var(--text);padding:.2rem .45rem}
 .hub-card-edit input[type=color]{width:30px;height:28px;padding:.12rem;border-radius:.35rem;background:rgba(255,255,255,.04);border:1px solid var(--border);cursor:pointer}
 .hub-card-actions{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;padding-top:.1rem}
-/* ── Table ── */
+/* ââ Table ââ */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th{text-align:left;padding:.55rem .7rem;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -105,22 +105,22 @@ tr:hover td{background:var(--surface2)}
 .badge-mod{background:#f59e0b;color:#000}
 .badge-user{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 
-/* ── Setup box ── */
+/* ââ Setup box ââ */
 .setup-box{background:#12201a;border:1px solid #1e4a2a;border-radius:.75rem;padding:1.25rem}
 .setup-box h4{color:#86efac;margin-bottom:.75rem;font-size:.9rem}
 .setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow-x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
 
-/* ── Toast ── */
+/* ââ Toast ââ */
 #toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:.65rem;padding:.65rem 1.1rem;font-size:.875rem;z-index:9999;transform:translateY(120px);transition:transform .28s;max-width:300px;pointer-events:none}
 #toast.show{transform:translateY(0)}
 #toast.ok{border-color:var(--green);color:var(--green)}
 #toast.err{border-color:var(--red);color:var(--red)}
 
-/* ── Code inline ── */
+/* ââ Code inline ââ */
 code{background:var(--surface2);padding:.1rem .4rem;border-radius:.3rem;font-size:.82rem;font-family:monospace}
 a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:underline}
 
-/* ── Login screen ── */
+/* ââ Login screen ââ */
 #login-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1.25rem;padding:2rem;background:var(--bg)}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;width:100%;max-width:380px}
 .login-box h2{font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;text-align:center;color:var(--accent2)}
@@ -134,7 +134,7 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 .login-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:.5rem;min-height:1.2em}
 
-/* ── Hub live preview ── */
+/* ââ Hub live preview ââ */
 .hub-live-wrap{background:#0a0a18;border-radius:1rem;border:1px solid rgba(124,106,255,.2);padding:1.25rem 1rem;margin:0 0 1.25rem}
 .hub-live-cols{display:flex;gap:1.25rem;align-items:flex-start;}
 .hub-live-left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:.6rem;}
@@ -184,19 +184,19 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div><div style="color:var(--text2);margin-top:.5rem">Vérification de session…</div></div>
+<div id="loading"><div class="spinner"></div><div style="color:var(--text2);margin-top:.5rem">VÃ©rification de sessionâ¦</div></div>
 
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">⚙️</div>
-    <h2>Admin — Le Curioscope</h2>
+    <div class="login-logo">âï¸</div>
+    <h2>Admin â Le Curioscope</h2>
     <div class="login-field">
       <label>ID de connexion</label>
       <input type="text" id="li-id" placeholder="votre_id" autocomplete="username" />
     </div>
     <div class="login-field">
       <label>Mot de passe</label>
-      <input type="password" id="li-pw" placeholder="••••••••" autocomplete="current-password"
+      <input type="password" id="li-pw" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="current-password"
         onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
     <button class="login-btn" id="li-btn" onclick="doLogin()">Se connecter</button>
@@ -206,25 +206,25 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 
 <div id="app">
   <div class="topbar">
-    <h1>⚙️ Admin <span style="color:var(--text2);font-weight:400">Le Curioscope</span></h1>
+    <h1>âï¸ Admin <span style="color:var(--text2);font-weight:400">Le Curioscope</span></h1>
     <div class="right">
       <span id="user-name-lbl" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-      <a href="/" style="color:var(--accent2)">← Voir le site</a>
-      <button class="btn btn-ghost btn-sm" onclick="doSignOut()">Déco</button>
+      <a href="/" style="color:var(--accent2)">â Voir le site</a>
+      <button class="btn btn-ghost btn-sm" onclick="doSignOut()">DÃ©co</button>
     </div>
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="go('stats',this)">📊 Stats</div>
-    <div class="tab" onclick="go('hub',this)">🏠 Hub</div>
-    <div class="tab" onclick="go('content',this)">✍️ Contenu</div>
-    <div class="tab" onclick="go('flags',this)">🚩 Fonctions</div>
-    <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
-    <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
-    <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
-    <div class="tab" onclick="go('playConfig',this)">🎮 Jouer</div>
-    <div class="tab" onclick="go('navConfig',this)">🧭 Navigation</div>
-    <div class="tab" onclick="go('accounts',this)">👤 Comptes</div>
+    <div class="tab active" onclick="go('stats',this)">ð Stats</div>
+    <div class="tab" onclick="go('hub',this)">ð  Hub</div>
+    <div class="tab" onclick="go('content',this)">âï¸ Contenu</div>
+    <div class="tab" onclick="go('flags',this)">ð© Fonctions</div>
+    <div class="tab" onclick="go('banner',this)">ð¢ BanniÃ¨re</div>
+    <div class="tab" onclick="go('users',this)">ð¥ Utilisateurs</div>
+    <div class="tab" onclick="go('setup',this)">ð ï¸ Setup</div>
+    <div class="tab" onclick="go('playConfig',this)">ð® Jouer</div>
+    <div class="tab" onclick="go('navConfig',this)">ð§­ Navigation</div>
+    <div class="tab" onclick="go('accounts',this)">ð¤ Comptes</div>
   </div>
 
   <div class="content" id="pane"></div>
@@ -233,16 +233,16 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 <div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Config
-// ═══════════════════════════════════════
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
+// âââââââââââââââââââââââââââââââââââââââ
 // Utilitaires
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function toast(msg,type){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.className='toast '+(type||'ok');t.style.display='block';setTimeout(()=>{t.style.display='none';},2800);}
-function copySQL(id){const el=document.getElementById(id);if(!el)return;navigator.clipboard.writeText(el.textContent).then(()=>toast('SQL copié ✓','ok'));}
+function copySQL(id){const el=document.getElementById(id);if(!el)return;navigator.clipboard.writeText(el.textContent).then(()=>toast('SQL copiÃ© â','ok'));}
 
 
 const SB_URL  = 'https://zryrfmothjhywkklmniw.supabase.co';
@@ -254,9 +254,9 @@ const SESSION_KEY = 'adminSess_v1';
 const sb = supabase.createClient(SB_URL, SB_ANON);
 let me = null; // {id, display_name}
 
-// ═══════════════════════════════════════
-// Auth — ID / mot de passe (PBKDF2)
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
+// Auth â ID / mot de passe (PBKDF2)
+// âââââââââââââââââââââââââââââââââââââââ
 async function pbkdf2Hash(password, salt) {
   const enc = new TextEncoder();
   const keyMat = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
@@ -283,7 +283,7 @@ async function boot() {
   if (sess) {
     try { me = JSON.parse(sess); showApp(); return; } catch(e) {}
   }
-  // Aucun compte → premier démarrage
+  // Aucun compte â premier dÃ©marrage
   const accounts = await loadAdminAccounts();
   document.getElementById('loading').style.display = 'none';
   if (accounts.length === 0) { showFirstSetup(); }
@@ -304,11 +304,11 @@ async function doLogin() {
   const err = document.getElementById('li-err');
   const btn = document.getElementById('li-btn');
   if (!id || !pw) { err.textContent = 'Remplis les deux champs.'; return; }
-  btn.disabled = true; btn.textContent = 'Connexion…'; err.textContent = '';
+  btn.disabled = true; btn.textContent = 'Connexionâ¦'; err.textContent = '';
   try {
     const accounts = await loadAdminAccounts();
     const acct = accounts.find(a => a.id === id && a.active !== false);
-    if (!acct) { err.textContent = 'ID inconnu ou compte désactivé.'; btn.disabled=false; btn.textContent='Se connecter'; return; }
+    if (!acct) { err.textContent = 'ID inconnu ou compte dÃ©sactivÃ©.'; btn.disabled=false; btn.textContent='Se connecter'; return; }
     const hash = await pbkdf2Hash(pw, acct.salt);
     if (hash !== acct.hash) { err.textContent = 'Mot de passe incorrect.'; btn.disabled=false; btn.textContent='Se connecter'; return; }
     me = { id: acct.id, display_name: acct.display_name || acct.id };
@@ -327,16 +327,16 @@ function doSignOut() {
 
 function showFirstSetup() {
   document.querySelector('.login-box').innerHTML = `
-    <div class="login-logo">🛠️</div>
-    <h2>Créer le premier compte</h2>
+    <div class="login-logo">ð ï¸</div>
+    <h2>CrÃ©er le premier compte</h2>
     <p style="font-size:.8rem;color:var(--text2);text-align:center;margin-bottom:1.25rem">
-      Aucun compte admin trouvé. Crée le tien pour accéder au panel.
+      Aucun compte admin trouvÃ©. CrÃ©e le tien pour accÃ©der au panel.
     </p>
     <div class="login-field"><label>ID de connexion</label><input type="text" id="setup-id" placeholder="arnaud" /></div>
-    <div class="login-field"><label>Nom affiché</label><input type="text" id="setup-name" placeholder="Arnaud" /></div>
-    <div class="login-field"><label>Mot de passe (8 chars min)</label><input type="password" id="setup-pw" placeholder="••••••••" /></div>
-    <div class="login-field"><label>Confirmer</label><input type="password" id="setup-pw2" placeholder="••••••••" /></div>
-    <button class="login-btn" id="setup-btn" onclick="doFirstSetup()">Créer le compte</button>
+    <div class="login-field"><label>Nom affichÃ©</label><input type="text" id="setup-name" placeholder="Arnaud" /></div>
+    <div class="login-field"><label>Mot de passe (8 chars min)</label><input type="password" id="setup-pw" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" /></div>
+    <div class="login-field"><label>Confirmer</label><input type="password" id="setup-pw2" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" /></div>
+    <button class="login-btn" id="setup-btn" onclick="doFirstSetup()">CrÃ©er le compte</button>
     <div class="login-err" id="setup-err"></div>
   `;
   document.getElementById('login-screen').style.display = 'flex';
@@ -352,7 +352,7 @@ async function doFirstSetup() {
   if (!id || !pw)    { err.textContent='Remplis tous les champs.'; return; }
   if (pw !== pw2)    { err.textContent='Les mots de passe ne correspondent pas.'; return; }
   if (pw.length < 8) { err.textContent='Mot de passe trop court (8 chars min).'; return; }
-  btn.disabled = true; btn.textContent = 'Création…';
+  btn.disabled = true; btn.textContent = 'CrÃ©ationâ¦';
   const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
   const hash = await pbkdf2Hash(pw, salt);
   await saveAdminAccounts([{ id, display_name: name||id, salt, hash, active:true, created_at: new Date().toISOString() }]);
@@ -361,21 +361,21 @@ async function doFirstSetup() {
   showApp();
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Tab router
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 const TABS = { stats, hub, content: contentTab, flags, banner, users, setup, accounts, playConfig, navConfig };
 function go(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const pane = document.getElementById('pane');
-  pane.innerHTML = '<div style="color:var(--text2);text-align:center;padding:3rem">Chargement…</div>';
+  pane.innerHTML = '<div style="color:var(--text2);text-align:center;padding:3rem">Chargementâ¦</div>';
   TABS[name]?.(pane);
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Stats
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function stats(pane) {
   const today = TODAY();
   const [usersR, duelsR, anecR, enigR] = await Promise.all([
@@ -394,37 +394,37 @@ async function stats(pane) {
 
   pane.innerHTML = `
     <div class="stats-grid">
-      <div class="stat"><span class="val">${usersR.count ?? '—'}</span><span class="lbl">Chasseurs inscrits</span></div>
-      <div class="stat"><span class="val">${duelsR.count ?? '—'}</span><span class="lbl">Duels actifs</span></div>
-      <div class="stat"><span class="val">${anecR.count ? '✅' : '❩L'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
-      <div class="stat"><span class="val">${enigR.count ? '✅' : '❩L'}</span><span class="lbl">Énigme aujourd'hui</span></div>
+      <div class="stat"><span class="val">${usersR.count ?? 'â'}</span><span class="lbl">Chasseurs inscrits</span></div>
+      <div class="stat"><span class="val">${duelsR.count ?? 'â'}</span><span class="lbl">Duels actifs</span></div>
+      <div class="stat"><span class="val">${anecR.count ? 'â' : 'â©L'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
+      <div class="stat"><span class="val">${enigR.count ? 'â' : 'â©L'}</span><span class="lbl">Ãnigme aujourd'hui</span></div>
     </div>
 
     <div class="card">
-      <h3>👥 Derniers inscrits</h3>
+      <h3>ð¥ Derniers inscrits</h3>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
+        <thead><tr><th>Pseudo</th><th>RÃ´le</th><th>Streak record</th><th>Inscription</th></tr></thead>
         <tbody>
           ${(recentUsers||[]).map(u=>`<tr>
-            <td>${esc(u.username||'—')}</td>
+            <td>${esc(u.username||'â')}</td>
             <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
             <td>${u.streak_record||0}j</td>
-            <td style="color:var(--text2)">${u.joined ? new Date(u.joined).toLocaleDateString('fr-FR') : '—'}</td>
+            <td style="color:var(--text2)">${u.joined ? new Date(u.joined).toLocaleDateString('fr-FR') : 'â'}</td>
           </tr>`).join('')}
         </tbody>
       </table></div>
     </div>
 
     <div class="card">
-      <h3>📰 Dernières anecdotes</h3>
+      <h3>ð° DerniÃ¨res anecdotes</h3>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Date</th><th>Thème</th><th>Extrait</th><th>Auteur</th></tr></thead>
+        <thead><tr><th>Date</th><th>ThÃ¨me</th><th>Extrait</th><th>Auteur</th></tr></thead>
         <tbody>
           ${(recentAnec||[]).map(a=>`<tr>
             <td><code>${a.date}</code></td>
-            <td>${esc(a.theme||'—')}</td>
-            <td style="color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((a.anecdote||'').slice(0,80))}…</td>
-            <td>${esc(a.chooser||'—')}</td>
+            <td>${esc(a.theme||'â')}</td>
+            <td style="color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((a.anecdote||'').slice(0,80))}â¦</td>
+            <td>${esc(a.chooser||'â')}</td>
           </tr>`).join('')}
         </tbody>
       </table></div>
@@ -432,16 +432,16 @@ async function stats(pane) {
   `;
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Hub Config
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 const HUB_DEFAULT = [
-  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true,action:'goAnec()'},
-  {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true,action:'goEnigme()'},
-  {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true,action:"renderPlayChoice();show('screen-play');updateNav('bn-play');"},
-  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true,action:'show1vs100Lobby()'},
-  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true,action:''},
-  {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true,action:''},
+  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'ð¡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true,action:'goAnec()'},
+  {id:'daily-enigme',title:'Crack le Code !',icon:'ð',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Ãnigme quotidienne',type:'gate',enabled:true,action:'goEnigme()'},
+  {id:'daily-quiz',title:'Quiz',icon:'ð¯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true,action:"renderPlayChoice();show('screen-play');updateNav('bn-play');"},
+  {id:'arena',title:'ArÃ¨ne â 1 contre 100',icon:'â¡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps rÃ©el',type:'section',enabled:true,action:'show1vs100Lobby()'},
+  {id:'mystery',title:'MystÃ¨re de la Semaine',icon:'ðµ',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'EnquÃªte hebdomadaire',type:'section',enabled:true,action:''},
+  {id:'locked',title:'Portails VerrouillÃ©s',icon:'ð',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections Ã  venir (WIP)',type:'locked',enabled:true,action:''},
 ];
 let hubMods = null;
 
@@ -457,7 +457,7 @@ async function hub(pane) {
 function renderHub(pane) {
   const today = new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'});
   const typeColors = {gate:'#7c6aff', section:'#ef4444', locked:'#64748b'};
-  const typeLabels = {gate:'Quête', section:'Section', locked:'Portail'};
+  const typeLabels = {gate:'QuÃªte', section:'Section', locked:'Portail'};
 
   function makeCard(m, i) {
     const gc = m.color || '#a855f7';
@@ -467,7 +467,7 @@ function renderHub(pane) {
     const n = hubMods.length;
     return `
       <div class="hub-gate-row" id="mi${i}" draggable="true" data-idx="${i}">
-        <span class="hub-gate-row-handle" title="Glisser pour réordonner">⠿</span>
+        <span class="hub-gate-row-handle" title="Glisser pour rÃ©ordonner">â ¿</span>
         <div class="hub-gate-card${m.enabled?'':' off'}" style="--gc:${gc}">
           <div class="hub-gate-hd">
             <div style="display:flex;align-items:center;gap:.35rem">
@@ -475,31 +475,31 @@ function renderHub(pane) {
               ${m.xp ? `<span class="hub-gate-xp">${esc(m.xp)}</span>` : ''}
               <span class="hub-gate-type" style="background:${tc}22;color:${tc}">${tl}</span>
             </div>
-            <label class="toggle" style="transform:scale(.8)" title="${m.enabled?'Désactiver':'Activer'}">
+            <label class="toggle" style="transform:scale(.8)" title="${m.enabled?'DÃ©sactiver':'Activer'}">
               <input type="checkbox"${m.enabled?' checked':''} onchange="togMod(${i},this.checked)">
               <span class="slider"></span>
             </label>
           </div>
           <div class="hub-gate-body">
-            <span class="hub-gate-icon">${esc(m.icon||'⭐')}</span>
+            <span class="hub-gate-icon">${esc(m.icon||'â­')}</span>
             <div>
               <div class="hub-gate-name">${esc(m.title||'')}</div>
               <div class="hub-gate-desc">${esc(m.desc||'')}</div>
             </div>
           </div>
-          <div class="hub-gate-enter">▶ ENTRER</div>
+          <div class="hub-gate-enter">â¶ ENTRER</div>
           ${isGate ? `
           <div class="hub-edit-row">
-            <input type="text" value="${esc(m.icon||'')}" style="width:44px;text-align:center" placeholder="🎯" oninput="upd(${i},'icon',this.value)" title="Icône">
+            <input type="text" value="${esc(m.icon||'')}" style="width:44px;text-align:center" placeholder="ð¯" oninput="upd(${i},'icon',this.value)" title="IcÃ´ne">
             <input type="text" value="${esc(m.title||'')}" placeholder="Titre" oninput="upd(${i},'title',this.value)" style="flex:1;min-width:80px">
             <input type="text" value="${esc(m.desc||'')}" placeholder="Description" oninput="upd(${i},'desc',this.value)" style="flex:2;min-width:100px">
             <input type="color" value="${gc}" oninput="upd(${i},'color',this.value);this.closest('.hub-gate-card').style.setProperty('--gc',this.value)" title="Couleur">
           </div>` : ''}
         </div>
         <div class="hub-gate-controls">
-          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},-1)" title="Monter" ${i===0?'disabled':''}>▲</button>
-          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},1)" title="Descendre" ${i===n-1?'disabled':''}>▼</button>
-          <button class="hub-gate-del" onclick="delMod(${i})" title="Supprimer">🗑</button>
+          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},-1)" title="Monter" ${i===0?'disabled':''}>â²</button>
+          <button class="hub-gate-ctrl-btn" onclick="moveHub(${i},1)" title="Descendre" ${i===n-1?'disabled':''}>â¼</button>
+          <button class="hub-gate-del" onclick="delMod(${i})" title="Supprimer">ð</button>
         </div>
       </div>`;
   }
@@ -511,15 +511,15 @@ function renderHub(pane) {
 
   pane.innerHTML = `
     <div class="card">
-      <h3>🏠 Hub — Aperçu live</h3>
+      <h3>ð  Hub â AperÃ§u live</h3>
       <p class="hint" style="margin-bottom:1rem">
-        Tu vois exactement le hub tel qu'il apparaît aux utilisateurs.
-        <strong>Glisse ⠿</strong> ou utilise <strong>▲▼</strong> pour réordonner.
-        Toggle = activer/désactiver. 🗑 = supprimer.
+        Tu vois exactement le hub tel qu'il apparaÃ®t aux utilisateurs.
+        <strong>Glisse â ¿</strong> ou utilise <strong>â²â¼</strong> pour rÃ©ordonner.
+        Toggle = activer/dÃ©sactiver. ð = supprimer.
       </p>
       <div class="hub-live-wrap">
         <div class="hub-live-header">
-          <span class="hub-live-label">⚡ THE SYSTEM</span>
+          <span class="hub-live-label">â¡ THE SYSTEM</span>
           <span class="hub-live-date">${today}</span>
         </div>
         <div class="hub-live-cols">
@@ -531,34 +531,34 @@ function renderHub(pane) {
               </div>
               <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:.3rem;">XP TOTAL &nbsp;<span style="color:#a855f7;font-weight:700;">12 450</span></div>
               <div class="hub-mock-xp-bar"><div class="hub-mock-xp-fill"></div></div>
-              <div class="hub-mock-streak">🔥 7 jours de streak</div>
+              <div class="hub-mock-streak">ð¥ 7 jours de streak</div>
             </div>
-            <div class="hub-live-col-label">Arène &amp; Sections</div>
+            <div class="hub-live-col-label">ArÃ¨ne &amp; Sections</div>
             <div class="hub-live-gates" id="mod-list-sections">${sectionsHtml}</div>
           </div>
           <div class="hub-live-right">
-            <div class="hub-live-col-label">Quêtes journalières</div>
+            <div class="hub-live-col-label">QuÃªtes journaliÃ¨res</div>
             <div class="hub-live-gates" id="mod-list-gates">${gatesHtml}</div>
           </div>
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveHub()">💾 Sauvegarder</button>
-        <button class="btn btn-ghost" onclick="resetHub()">↺ Défaut</button>
+        <button class="btn btn-primary" onclick="saveHub()">ð¾ Sauvegarder</button>
+        <button class="btn btn-ghost" onclick="resetHub()">âº DÃ©faut</button>
       </div>
     </div>
 
     <div class="card">
-      <h3>➕ Ajouter un module</h3>
+      <h3>â Ajouter un module</h3>
       <div class="fgrid">
-        <div class="frow"><label class="flabel">Icône (emoji)</label><input type="text" id="nm-icon" placeholder="🎯" style="width:70px"></div>
+        <div class="frow"><label class="flabel">IcÃ´ne (emoji)</label><input type="text" id="nm-icon" placeholder="ð¯" style="width:70px"></div>
         <div class="frow"><label class="flabel">Titre</label><input type="text" id="nm-title" placeholder="Nom du module"></div>
       </div>
       <div class="frow"><label class="flabel">Description</label><input type="text" id="nm-desc" placeholder="Courte description"></div>
       <div class="fgrid">
         <div class="frow"><label class="flabel">Type</label>
           <select id="nm-type">
-            <option value="gate">Quête (porte journalière)</option>
+            <option value="gate">QuÃªte (porte journaliÃ¨re)</option>
             <option value="section">Section</option>
             <option value="locked">Portail (WIP)</option>
           </select>
@@ -569,14 +569,14 @@ function renderHub(pane) {
         <div class="frow"><label class="flabel">XP</label><input type="text" id="nm-xp" placeholder="+100 XP"></div>
         <div class="frow"><label class="flabel">Couleur</label><input type="color" id="nm-color" value="#7c6aff" style="width:60px;height:34px;border-radius:.4rem;border:1px solid var(--border);background:var(--surface2);cursor:pointer"></div>
       </div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="addMod()">➕ Ajouter au Hub</button></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="addMod()">â Ajouter au Hub</button></div>
     </div>
   `;
   enableDnD();
 }
 
 function addMod() {
-  const icon   = document.getElementById('nm-icon').value.trim() || '⭐';
+  const icon   = document.getElementById('nm-icon').value.trim() || 'â­';
   const title  = document.getElementById('nm-title').value.trim();
   const desc   = document.getElementById('nm-desc').value.trim();
   const type   = document.getElementById('nm-type').value;
@@ -587,7 +587,7 @@ function addMod() {
   if (!title) { toast('Donne un titre au module.','err'); return; }
   hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, action, enabled:true });
   renderHub(document.getElementById('pane'));
-  toast('Module ajouté — pense à sauvegarder !','ok');
+  toast('Module ajoutÃ© â pense Ã  sauvegarder !','ok');
 }
 
 function moveHub(i, dir) {
@@ -601,7 +601,7 @@ function delMod(i) {
   if (!confirm('Supprimer "' + (hubMods[i]?.title||'ce module') + '" ?')) return;
   hubMods.splice(i, 1);
   renderHub(document.getElementById('pane'));
-  toast('Module supprimé — pense à sauvegarder.','ok');
+  toast('Module supprimÃ© â pense Ã  sauvegarder.','ok');
 }
 
 function enableDnD() {
@@ -657,25 +657,25 @@ function upd(i, key, val) {
 }
 
 function resetHub() {
-  if (!confirm('Réinitialiser le hub aux valeurs par défaut ?')) return;
+  if (!confirm('RÃ©initialiser le hub aux valeurs par dÃ©faut ?')) return;
   hubMods = HUB_DEFAULT.map(m => ({...m}));
   renderHub(document.getElementById('pane'));
-  toast('Hub réinitialisé — pense à sauvegarder.','ok');
+  toast('Hub rÃ©initialisÃ© â pense Ã  sauvegarder.','ok');
 }
 
 async function saveHub() {
   const {error} = await sb.from('app_config').upsert({key:'hub_modules',value:JSON.stringify(hubMods)},{onConflict:'key'});
   if (error) toast('Erreur: '+error.message,'err');
-  else toast('Hub sauvegardé ✓','ok');
+  else toast('Hub sauvegardÃ© â','ok');
 }
 
-// ── Play Config ──────────────────────────────────────────────────────────────
+// ââ Play Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const PLAY_MODES_DEFAULT = [
-  {id:'solo',  label:'🎯 Solo',          desc:'Quiz de révision sur les anecdotes lues', enabled:true},
-  {id:'prive', label:'🎮 Partie Privée', desc:'Multijoueur avec tes amis via code salle', enabled:true},
-  {id:'duel',  label:'⚔️ Duel Quiz',     desc:'Tour par tour, choisis le thème',          enabled:true},
-  {id:'vs100', label:'🌍 1 contre 100',  desc:'Mode massif temps réel (Arena)',            enabled:true},
-  {id:'ligue', label:'🏆 Ligue',         desc:'Classement hebdomadaire',                   enabled:true},
+  {id:'solo',  label:'ð¯ Solo',          desc:'Quiz de rÃ©vision sur les anecdotes lues', enabled:true},
+  {id:'prive', label:'ð® Partie PrivÃ©e', desc:'Multijoueur avec tes amis via code salle', enabled:true},
+  {id:'duel',  label:'âï¸ Duel Quiz',     desc:'Tour par tour, choisis le thÃ¨me',          enabled:true},
+  {id:'vs100', label:'ð 1 contre 100',  desc:'Mode massif temps rÃ©el (Arena)',            enabled:true},
+  {id:'ligue', label:'ð Ligue',         desc:'Classement hebdomadaire',                   enabled:true},
 ];
 let _playMods = null;
 
@@ -691,8 +691,8 @@ async function playConfig(pane) {
   });
   pane.innerHTML = `
     <div class="card">
-      <h3>🎮 Modes de jeu — Activer / Désactiver</h3>
-      <p class="hint">Active ou désactive chaque mode sur la page Jouer.</p>
+      <h3>ð® Modes de jeu â Activer / DÃ©sactiver</h3>
+      <p class="hint">Active ou dÃ©sactive chaque mode sur la page Jouer.</p>
       ${modes.map(m=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border)">
           <div>
@@ -702,7 +702,7 @@ async function playConfig(pane) {
           <label class="toggle"><input type="checkbox" data-play-id="${m.id}" ${m.enabled?'checked':''} onchange="playToggle('${m.id}',this.checked)"><span class="slider"></span></label>
         </div>`).join('')}
       <div class="btn-row" style="margin-top:1rem">
-        <button class="btn btn-primary" onclick="savePlayModes()">💾 Sauvegarder</button>
+        <button class="btn btn-primary" onclick="savePlayModes()">ð¾ Sauvegarder</button>
       </div>
     </div>`;
 }
@@ -717,22 +717,22 @@ async function savePlayModes() {
   const data = Array.from(document.querySelectorAll('[data-play-id]')).map(cb=>({id:cb.dataset.playId, enabled:cb.checked}));
   _playMods = data;
   const {error} = await sb.from('app_config').upsert({key:'play_modes',value:JSON.stringify(data)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Modes de jeu sauvegardés ✓', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Modes de jeu sauvegardÃ©s â', error?'err':'ok');
 }
 
-// ── Nav Config ───────────────────────────────────────────────────────────────
+// ââ Nav Config âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const NAV_HEADER_DEFAULT = [
   {id:'anec',       label:'Le saviez-vous ?', url:'/le-saviez-vous', wip:false},
   {id:'maisdismoi', label:'Mais dis moi ?',   url:'',                wip:true},
-  {id:'ephemeride', label:'Éphéméride',       url:'',                wip:true},
+  {id:'ephemeride', label:'ÃphÃ©mÃ©ride',       url:'',                wip:true},
   {id:'enigme',     label:'Crack le code !',  url:'/enigme',         wip:true},
   {id:'motmal',     label:"T'as dit quoi ?!", url:'',                wip:true},
 ];
 const NAV_BOTTOM_DEFAULT = [
-  {id:'anec',   icon:'🏠', label:'Hub',    url:'/'},
-  {id:'play',   icon:'🎮', label:'Jouer',  url:'/quiz'},
-  {id:'league', icon:'🏆', label:'Ligue',  url:'/ligue'},
-  {id:'profil', icon:'👤', label:'Profil', url:'/profile'},
+  {id:'anec',   icon:'ð ', label:'Hub',    url:'/'},
+  {id:'play',   icon:'ð®', label:'Jouer',  url:'/quiz'},
+  {id:'league', icon:'ð', label:'Ligue',  url:'/ligue'},
+  {id:'profil', icon:'ð¤', label:'Profil', url:'/profile'},
 ];
 let _navH = null, _navB = null;
 
@@ -749,8 +749,8 @@ async function navConfig(pane) {
   const btns = NAV_BOTTOM_DEFAULT.map(def => ({...def, ...(_navB.find(b=>b.id===def.id)||{})}));
   pane.innerHTML = `
     <div class="card">
-      <h3>📑 Header — Onglets du haut</h3>
-      <p class="hint">WIP = badge orange + désactivé.</p>
+      <h3>ð Header â Onglets du haut</h3>
+      <p class="hint">WIP = badge orange + dÃ©sactivÃ©.</p>
       <table style="width:100%;border-collapse:collapse;font-size:.82rem">
         <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
           <th style="padding:.4rem .5rem">Label</th><th style="padding:.4rem .5rem">URL</th><th style="padding:.4rem .5rem;text-align:center">WIP</th>
@@ -762,13 +762,13 @@ async function navConfig(pane) {
           </tr>`).join('')}
         </tbody>
       </table>
-      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavH()">💾 Sauvegarder header</button></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavH()">ð¾ Sauvegarder header</button></div>
     </div>
     <div class="card">
-      <h3>📱 Bottom bar</h3>
+      <h3>ð± Bottom bar</h3>
       <table style="width:100%;border-collapse:collapse;font-size:.82rem">
         <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase">
-          <th style="padding:.4rem .5rem">Icône</th><th style="padding:.4rem .5rem">Label</th><th style="padding:.4rem .5rem">URL</th>
+          <th style="padding:.4rem .5rem">IcÃ´ne</th><th style="padding:.4rem .5rem">Label</th><th style="padding:.4rem .5rem">URL</th>
         </tr></thead><tbody>
           ${btns.map(b=>`<tr style="border-top:1px solid var(--border)">
             <td style="padding:.5rem"><input type="text" value="${esc(b.icon)}" style="width:54px;text-align:center;font-size:1.1rem" oninput="updNB('${b.id}','icon',this.value)"></td>
@@ -777,25 +777,25 @@ async function navConfig(pane) {
           </tr>`).join('')}
         </tbody>
       </table>
-      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavB()">💾 Sauvegarder bottom bar</button></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavB()">ð¾ Sauvegarder bottom bar</button></div>
     </div>`;
 }
 
 function updNH(id,field,val){const t=_navH.find(x=>x.id===id);if(t)t[field]=val;}
 function updNB(id,field,val){const b=_navB.find(x=>x.id===id);if(b)b[field]=val;}
-async function saveNavH(){const{error}=await sb.from('app_config').upsert({key:'nav_header',value:JSON.stringify(_navH)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Header sauvegardé ✓',error?'err':'ok');}
-async function saveNavB(){const{error}=await sb.from('app_config').upsert({key:'nav_bottom',value:JSON.stringify(_navB)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Bottom bar sauvegardée ✓',error?'err':'ok');}
+async function saveNavH(){const{error}=await sb.from('app_config').upsert({key:'nav_header',value:JSON.stringify(_navH)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Header sauvegardÃ© â',error?'err':'ok');}
+async function saveNavB(){const{error}=await sb.from('app_config').upsert({key:'nav_bottom',value:JSON.stringify(_navB)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Bottom bar sauvegardÃ©e â',error?'err':'ok');}
 
 
 async function saveHub() {
   const {error} = await sb.from('app_config').upsert({key:'hub_modules',value:JSON.stringify(hubMods)},{onConflict:'key'});
   if (error) toast('Erreur: '+error.message,'err');
-  else toast('Hub sauvegardé ✓','ok');
+  else toast('Hub sauvegardÃ© â','ok');
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Content
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function contentTab(pane) {
   const today = TODAY();
   const [{data:ta},{data:te}] = await Promise.all([
@@ -805,45 +805,45 @@ async function contentTab(pane) {
 
   pane.innerHTML = `
     <div class="card">
-      <h3>📅 Aujourd'hui — ${today}</h3>
+      <h3>ð Aujourd'hui â ${today}</h3>
       <div class="fgrid">
         <div style="background:var(--surface2);padding:.75rem;border-radius:.5rem">
           <div class="flabel">Anecdote du jour</div>
-          <div style="font-size:.875rem">${ta ? '✅ '+esc((ta.anecdote||'').slice(0,60))+'…' : '❌ Aucune pour aujourd\'hui'}</div>
+          <div style="font-size:.875rem">${ta ? 'â '+esc((ta.anecdote||'').slice(0,60))+'â¦' : 'â Aucune pour aujourd\'hui'}</div>
         </div>
         <div style="background:var(--surface2);padding:.75rem;border-radius:.5rem">
-          <div class="flabel">Énigme du jour</div>
-          <div style="font-size:.875rem">${te ? '✅ '+esc((te.question||'').slice(0,60))+'…' : '❌ Aucune pour aujourd\'hui'}</div>
+          <div class="flabel">Ãnigme du jour</div>
+          <div style="font-size:.875rem">${te ? 'â '+esc((te.question||'').slice(0,60))+'â¦' : 'â Aucune pour aujourd\'hui'}</div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h3>➕ Nouvelle anecdote</h3>
+      <h3>â Nouvelle anecdote</h3>
       <div class="fgrid">
         <div class="frow"><label>Date</label><input type="date" id="a-date" value="${today}"></div>
-        <div class="frow"><label>Thème</label>
+        <div class="frow"><label>ThÃ¨me</label>
           <select id="a-theme">
             <option>Science</option><option>Histoire</option><option>Nature</option>
             <option>Technologie</option><option>Culture</option><option>Sport</option>
-            <option>Géographie</option><option>Psychologie</option><option>Divers</option>
+            <option>GÃ©ographie</option><option>Psychologie</option><option>Divers</option>
           </select>
         </div>
       </div>
-      <div class="frow"><label>Icône (emoji)</label><input type="text" id="a-icon" placeholder="🔬" style="max-width:100px"></div>
+      <div class="frow"><label>IcÃ´ne (emoji)</label><input type="text" id="a-icon" placeholder="ð¬" style="max-width:100px"></div>
       <div class="frow"><label>Tag</label><input type="text" id="a-tag" placeholder="ex: biologie"></div>
-      <div class="frow"><label>Anecdote (texte principal)</label><textarea id="a-body" rows="4" placeholder="Saviez-vous que…"></textarea></div>
-      <div class="frow"><label>Note / complément (optionnel)</label><textarea id="a-note" rows="2" placeholder="Détail ou contexte supplémentaire…"></textarea></div>
+      <div class="frow"><label>Anecdote (texte principal)</label><textarea id="a-body" rows="4" placeholder="Saviez-vous queâ¦"></textarea></div>
+      <div class="frow"><label>Note / complÃ©ment (optionnel)</label><textarea id="a-note" rows="2" placeholder="DÃ©tail ou contexte supplÃ©mentaireâ¦"></textarea></div>
       <div class="frow"><label>Sources (optionnel)</label><input type="text" id="a-sources" placeholder="Wikipedia, Nature, etc."></div>
       <div class="frow"><label>Auteur / chooser</label><input type="text" id="a-chooser" placeholder="ton pseudo"></div>
       <button class="btn btn-primary" onclick="submitAnec()">Publier l'anecdote</button>
     </div>
 
     <div class="card">
-      <h3>➕ Nouvelle énigme</h3>
+      <h3>â Nouvelle Ã©nigme</h3>
       <div class="fgrid">
         <div class="frow"><label>Date</label><input type="date" id="e-date" value="${today}"></div>
-        <div class="frow"><label>Catégorie</label>
+        <div class="frow"><label>CatÃ©gorie</label>
           <select id="e-cat">
             <option value="logique">Logique</option><option value="maths">Maths</option>
             <option value="culture">Culture</option><option value="science">Science</option>
@@ -851,15 +851,15 @@ async function contentTab(pane) {
           </select>
         </div>
       </div>
-      <div class="frow"><label>Difficulté</label>
+      <div class="frow"><label>DifficultÃ©</label>
         <select id="e-diff"><option value="facile">Facile</option><option value="moyen" selected>Moyen</option><option value="difficile">Difficile</option></select>
       </div>
-      <div class="frow"><label>Question</label><textarea id="e-q" rows="3" placeholder="Quel est…"></textarea></div>
-      <div class="frow"><label>Réponse</label><input type="text" id="e-a" placeholder="La bonne réponse"></div>
-      <div class="frow"><label>Indice (optionnel)</label><input type="text" id="e-hint" placeholder="Un petit indice…"></div>
-      <div class="frow"><label>Explication</label><textarea id="e-exp" rows="2" placeholder="Pourquoi cette réponse ?"></textarea></div>
-      <div class="frow"><label>Fun fact (optionnel)</label><input type="text" id="e-ff" placeholder="Anecdote liée…"></div>
-      <button class="btn btn-primary" onclick="submitEnig()">Publier l'énigme</button>
+      <div class="frow"><label>Question</label><textarea id="e-q" rows="3" placeholder="Quel estâ¦"></textarea></div>
+      <div class="frow"><label>RÃ©ponse</label><input type="text" id="e-a" placeholder="La bonne rÃ©ponse"></div>
+      <div class="frow"><label>Indice (optionnel)</label><input type="text" id="e-hint" placeholder="Un petit indiceâ¦"></div>
+      <div class="frow"><label>Explication</label><textarea id="e-exp" rows="2" placeholder="Pourquoi cette rÃ©ponse ?"></textarea></div>
+      <div class="frow"><label>Fun fact (optionnel)</label><input type="text" id="e-ff" placeholder="Anecdote liÃ©eâ¦"></div>
+      <button class="btn btn-primary" onclick="submitEnig()">Publier l'Ã©nigme</button>
     </div>
   `;
 }
@@ -870,20 +870,20 @@ async function submitAnec() {
   const {error}=await sb.from('anecdotes').insert({
     date:document.getElementById('a-date').value,
     theme:document.getElementById('a-theme').value,
-    icon:document.getElementById('a-icon').value||'💡',
+    icon:document.getElementById('a-icon').value||'ð¡',
     tag:document.getElementById('a-tag').value||null,
     anecdote:body,
     note:document.getElementById('a-note').value||null,
     sources:document.getElementById('a-sources').value||null,
     chooser:document.getElementById('a-chooser').value||'admin',
   });
-  toast(error?'Erreur: '+error.message:'Anecdote publiée ✓', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Anecdote publiÃ©e â', error?'err':'ok');
 }
 
 async function submitEnig() {
   const q=document.getElementById('e-q').value.trim();
   const a=document.getElementById('e-a').value.trim();
-  if(!q||!a){toast('Question et réponse requises','err');return;}
+  if(!q||!a){toast('Question et rÃ©ponse requises','err');return;}
   const {error}=await sb.from('daily_enigmas').insert({
     date:document.getElementById('e-date').value,
     category:document.getElementById('e-cat').value,
@@ -896,20 +896,20 @@ async function submitEnig() {
     chooser:'admin',
     chooser_id:me.id,
   });
-  toast(error?'Erreur: '+error.message:'Énigme publiée ✓', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'Ãnigme publiÃ©e â', error?'err':'ok');
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Feature Flags
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 const FLAGS = [
-  {key:'feature_duels',label:'⚔️ Duels',desc:'Mode duel entre joueurs'},
-  {key:'feature_vs100',label:'🌍 1 contre 100',desc:'Mode 1 contre 100'},
-  {key:'feature_mystery',label:'🔍 Weekly Mystery',desc:'Enquête hebdomadaire'},
-  {key:'feature_quiz',label:'🎯 Quiz',desc:'Mode quiz quotidien'},
-  {key:'feature_notifs',label:'🔔 Notifications',desc:'Système de notifications'},
-  {key:'feature_xp',label:'⚡ Système XP & Rangs',desc:'Gains XP et rangs Solo Leveling'},
-  {key:'feature_enigme',label:'🧩 Énigme',desc:'Énigme quotidienne'},
+  {key:'feature_duels',label:'âï¸ Duels',desc:'Mode duel entre joueurs'},
+  {key:'feature_vs100',label:'ð 1 contre 100',desc:'Mode 1 contre 100'},
+  {key:'feature_mystery',label:'ð Weekly Mystery',desc:'EnquÃªte hebdomadaire'},
+  {key:'feature_quiz',label:'ð¯ Quiz',desc:'Mode quiz quotidien'},
+  {key:'feature_notifs',label:'ð Notifications',desc:'SystÃ¨me de notifications'},
+  {key:'feature_xp',label:'â¡ SystÃ¨me XP & Rangs',desc:'Gains XP et rangs Solo Leveling'},
+  {key:'feature_enigme',label:'ð§© Ãnigme',desc:'Ãnigme quotidienne'},
 ];
 
 async function flags(pane) {
@@ -917,8 +917,8 @@ async function flags(pane) {
   const map={}; (data||[]).forEach(r=>map[r.key]=r.value==='true');
   pane.innerHTML=`
     <div class="card">
-      <h3>🚩 Feature Flags</h3>
-      <p class="hint">Active ou désactive des fonctionnalités pour tous les utilisateurs en temps réel.</p>
+      <h3>ð© Feature Flags</h3>
+      <p class="hint">Active ou dÃ©sactive des fonctionnalitÃ©s pour tous les utilisateurs en temps rÃ©el.</p>
       ${FLAGS.map(f=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid var(--border)">
           <div>
@@ -933,12 +933,12 @@ async function flags(pane) {
 
 async function saveFlag(key,val) {
   const {error}=await sb.from('app_config').upsert({key,value:String(val)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Sauvegardé ✓', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'SauvegardÃ© â', error?'err':'ok');
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Banner
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function banner(pane) {
   const {data}=await sb.from('app_config').select('value').eq('key','site_banner').single();
   let b={enabled:false,message:'',type:'info'};
@@ -947,26 +947,26 @@ async function banner(pane) {
 
   pane.innerHTML=`
     <div class="card">
-      <h3>📢 Bannière du site</h3>
-      <p class="hint">Affiche un message à tous les utilisateurs sur le hub. Utile pour annoncer une maintenance, un événement, etc.</p>
+      <h3>ð¢ BanniÃ¨re du site</h3>
+      <p class="hint">Affiche un message Ã  tous les utilisateurs sur le hub. Utile pour annoncer une maintenance, un Ã©vÃ©nement, etc.</p>
       <div class="frow" style="display:flex;align-items:center;gap:.75rem">
         <label class="toggle"><input type="checkbox" id="b-on" ${b.enabled?'checked':''}><span class="slider"></span></label>
-        <span style="font-size:.9rem">Bannière active</span>
+        <span style="font-size:.9rem">BanniÃ¨re active</span>
       </div>
-      <div class="frow"><label>Message</label><textarea id="b-msg" rows="3" placeholder="Ex: Maintenance prévue samedi à 22h…" oninput="updPreview()">${esc(b.message||'')}</textarea></div>
+      <div class="frow"><label>Message</label><textarea id="b-msg" rows="3" placeholder="Ex: Maintenance prÃ©vue samedi Ã  22hâ¦" oninput="updPreview()">${esc(b.message||'')}</textarea></div>
       <div class="frow"><label>Type</label>
         <select id="b-type" onchange="updPreview()">
-          <option value="info" ${b.type==='info'?'selected':''}>ℹ️ Info (bleu)</option>
-          <option value="warning" ${b.type==='warning'?'selected':''}>⚠️ Avertissement (orange)</option>
-          <option value="success" ${b.type==='success'?'selected':''}>✅ Bonne nouvelle (vert)</option>
-          <option value="error" ${b.type==='error'?'selected':''}>🚨 Urgent (rouge)</option>
+          <option value="info" ${b.type==='info'?'selected':''}>â¹ï¸ Info (bleu)</option>
+          <option value="warning" ${b.type==='warning'?'selected':''}>â ï¸ Avertissement (orange)</option>
+          <option value="success" ${b.type==='success'?'selected':''}>â Bonne nouvelle (vert)</option>
+          <option value="error" ${b.type==='error'?'selected':''}>ð¨ Urgent (rouge)</option>
         </select>
       </div>
       <div class="frow">
-        <div class="flabel">Aperçu</div>
+        <div class="flabel">AperÃ§u</div>
         <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem">${esc(b.message||'Aucun message')}</div>
       </div>
-      <button class="btn btn-primary" onclick="saveBanner()">💾 Sauvegarder</button>
+      <button class="btn btn-primary" onclick="saveBanner()">ð¾ Sauvegarder</button>
     </div>
   `;
 }
@@ -982,18 +982,18 @@ function updPreview() {
 async function saveBanner() {
   const b={enabled:document.getElementById('b-on').checked,message:document.getElementById('b-msg').value,type:document.getElementById('b-type').value};
   const {error}=await sb.from('app_config').upsert({key:'site_banner',value:JSON.stringify(b)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Bannière sauvegardée ✓', error?'err':'ok');
+  toast(error?'Erreur: '+error.message:'BanniÃ¨re sauvegardÃ©e â', error?'err':'ok');
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Users
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function users(pane) {
   pane.innerHTML=`
     <div class="card">
-      <h3>👥 Utilisateurs</h3>
-      <div class="frow"><input type="text" id="u-search" placeholder="Rechercher par pseudo…" oninput="uSearch(this.value)"></div>
-      <div id="u-table"><div style="color:var(--text2)">Chargement…</div></div>
+      <h3>ð¥ Utilisateurs</h3>
+      <div class="frow"><input type="text" id="u-search" placeholder="Rechercher par pseudoâ¦" oninput="uSearch(this.value)"></div>
+      <div id="u-table"><div style="color:var(--text2)">Chargementâ¦</div></div>
     </div>
   `;
   loadUsers('');
@@ -1008,13 +1008,13 @@ async function loadUsers(q) {
   if(error){el.innerHTML<`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
   el.innerHTML=`
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
+      <thead><tr><th>Pseudo</th><th>RÃ´le</th><th>Streak record</th><th>Inscription</th></tr></thead>
       <tbody>
         ${(data||[]).map(u=>`<tr>
-          <td>${esc(u.username||'—')}</td>
+          <td>${esc(u.username||'â')}</td>
           <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
           <td>${u.streak_record||0} j</td>
-          <td style="color:var(--text2)">${u.joined?new Date(u.joined).toLocaleDateString('fr-FR'):'—'}</td>
+          <td style="color:var(--text2)">${u.joined?new Date(u.joined).toLocaleDateString('fr-FR'):'â'}</td>
         </tr>`).join('')}
       </tbody>
     </table></div>
@@ -1024,36 +1024,36 @@ async function loadUsers(q) {
 let _uTimer;
 function uSearch(q){clearTimeout(_uTimer);_uTimer=setTimeout(()=>loadUsers(q),280);}
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Setup (first-time)
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function setup(pane) {
   pane.innerHTML=`
     <div class="card">
-      <h3>🛠️ Premier démarrage — Setup</h3>
-      <p class="hint">Crée la table <code>app_config</code> dans Supabase pour que le Hub Config, les Feature Flags et la Bannière fonctionnent. Exécute ce SQL dans l'éditeur SQL de Supabase.</p>
+      <h3>ð ï¸ Premier dÃ©marrage â Setup</h3>
+      <p class="hint">CrÃ©e la table <code>app_config</code> dans Supabase pour que le Hub Config, les Feature Flags et la BanniÃ¨re fonctionnent. ExÃ©cute ce SQL dans l'Ã©diteur SQL de Supabase.</p>
       <div class="setup-box">
-        <h4>1. Créer la table app_config</h4>
+        <h4>1. CrÃ©er la table app_config</h4>
         <pre id="sql-create">CREATE TABLE IF NOT EXISTS public.app_config (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Sécurité : lecture publique, écriture admin seulement
+-- SÃ©curitÃ© : lecture publique, Ã©criture admin seulement
 ALTER TABLE public.app_config ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Lecture publique" ON public.app_config
   FOR SELECT USING (true);
 
-CREATE POLICY "Écriture admin seulement" ON public.app_config
+CREATE POLICY "Ãcriture admin seulement" ON public.app_config
   FOR ALL USING (auth.email() = 'nymeraroman@gmail.com');
 </pre>
-        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-create')">📋 Copier</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-create')">ð Copier</button>
       </div>
       <div class="setup-box" style="margin-top:1rem">
-        <h4>2. Sécuriser les autres tables (RLS)</h4>
-        <pre id="sql-rls">-- Vérifier que le RLS est activé sur chaque table sensible
+        <h4>2. SÃ©curiser les autres tables (RLS)</h4>
+        <pre id="sql-rls">-- VÃ©rifier que le RLS est activÃ© sur chaque table sensible
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.duels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anecdotes ENABLE ROW LEVEL SECURITY;
@@ -1063,26 +1063,26 @@ ALTER TABLE public.daily_enigmas ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Lecture anecdotes" ON public.anecdotes FOR SELECT USING (true);
 CREATE POLICY "Lecture enigmes" ON public.daily_enigmas FOR SELECT USING (true);
 
--- Insertion anecdotes/énigmes : admin seulement
+-- Insertion anecdotes/Ã©nigmes : admin seulement
 CREATE POLICY "Insert anecdotes admin" ON public.anecdotes
   FOR INSERT WITH CHECK (auth.email() = 'nymeraroman@gmail.com');
 CREATE POLICY "Insert enigmes admin" ON public.daily_enigmas
   FOR INSERT WITH CHECK (auth.email() = 'nymeraroman@gmail.com');
 </pre>
-        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-rls')">📋 Copier</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySQL('sql-rls')">ð Copier</button>
       </div>
       <div class="setup-box" style="margin-top:1rem;border-color:#4a1e1e;background:#1a0a0a">
-        <h4 style="color:#fca5a5">⚠️ Sécurité — Clé service role dans le code</h4>
+        <h4 style="color:#fca5a5">â ï¸ SÃ©curitÃ© â ClÃ© service role dans le code</h4>
         <p style="font-size:.82rem;color:var(--text2);line-height:1.5">
-          La fonction <code>getAdminKey()</code> dans <code>admin.js</code> contient la clé <strong>service role</strong> encodée en char codes.
-          Cette clé donne un accès total sans RLS à ta base de données. Elle est visible par n'importe qui en inspectant le JS.<br><br>
-          <strong>Action recommandée :</strong> Supprime cette fonction et utilise les policies RLS ci-dessus à la place.
-          Tu peux régénérer la clé service role dans Supabase Settings → API si besoin.
+          La fonction <code>getAdminKey()</code> dans <code>admin.js</code> contient la clÃ© <strong>service role</strong> encodÃ©e en char codes.
+          Cette clÃ© donne un accÃ¨s total sans RLS Ã  ta base de donnÃ©es. Elle est visible par n'importe qui en inspectant le JS.<br><br>
+          <strong>Action recommandÃ©e :</strong> Supprime cette fonction et utilise les policies RLS ci-dessus Ã  la place.
+          Tu peux rÃ©gÃ©nÃ©rer la clÃ© service role dans Supabase Settings â API si besoin.
         </p>
       </div>
     </div>
     <div class="card">
-      <h3>✅ Tester la connexion</h3>
+      <h3>â Tester la connexion</h3>
       <button class="btn btn-primary" onclick="testConn()">Tester app_config</button>
       <div id="conn-result" style="margin-top:.75rem;font-size:.85rem;color:var(--text2)"></div>
     </div>
@@ -1091,67 +1091,67 @@ CREATE POLICY "Insert enigmes admin" ON public.daily_enigmas
 
 function copySQL(id) {
   const txt=document.getElementById(id)?.textContent||'';
-  navigator.clipboard?.writeText(txt).then(()=>toast('SQL copié !','ok'));
+  navigator.clipboard?.writeText(txt).then(()=>toast('SQL copiÃ© !','ok'));
 }
 
 async function testConn() {
   const el=document.getElementById('conn-result');
-  el.textContent='Test en cours…';
+  el.textContent='Test en coursâ¦';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
-  if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
-  else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
+  if(error) el.innerHTML=`<span style="color:var(--red)">â ${esc(error.message)}<br>â La table n'existe pas encore. ExÃ©cute le SQL ci-dessus.</span>`;
+  else el.innerHTML=`<span style="color:var(--green)">â app_config accessible ! ${data?.length ? data.length+' entrÃ©e(s)' : 'Table vide'}</span>`;
 }
 
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 // Comptes Admin
-// ═══════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââ
 async function accounts(pane) {
   const accts = await loadAdminAccounts();
   const rows = accts.map(a => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)">
       <div>
         <span style="font-weight:700">${esc(a.id)}</span>
-        ${a.display_name && a.display_name !== a.id ? `<span style="color:var(--text2);font-size:.82rem"> — ${esc(a.display_name)}</span>` : ''}
-        ${!a.active ? '<span class="badge" style="background:var(--red);color:#fff;margin-left:.4rem">Désactivé</span>' : ''}
+        ${a.display_name && a.display_name !== a.id ? `<span style="color:var(--text2);font-size:.82rem"> â ${esc(a.display_name)}</span>` : ''}
+        ${!a.active ? '<span class="badge" style="background:var(--red);color:#fff;margin-left:.4rem">DÃ©sactivÃ©</span>' : ''}
         ${a.id === me.id ? '<span class="badge badge-admin" style="margin-left:.4rem">Moi</span>' : ''}
         <span style="color:var(--text2);font-size:.72rem;margin-left:.5rem">${a.created_at ? a.created_at.slice(0,10) : ''}</span>
       </div>
       <div style="display:flex;gap:.4rem;flex-shrink:0">
         ${a.id !== me.id ? `
-          <button class="btn btn-ghost btn-sm" onclick="toggleAccount('${esc(a.id)}',${!a.active})">${a.active?'Désactiver':'Activer'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAccount('${esc(a.id)}',${!a.active})">${a.active?'DÃ©sactiver':'Activer'}</button>
           <button class="btn btn-danger btn-sm" onclick="deleteAccount('${esc(a.id)}')">Suppr.</button>
         ` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="showChangePw('${esc(a.id)}')">🔑 MDP</button>
+        <button class="btn btn-ghost btn-sm" onclick="showChangePw('${esc(a.id)}')">ð MDP</button>
       </div>
     </div>
   `).join('');
 
   pane.innerHTML = `
     <div class="card">
-      <h3>👤 Comptes Admin</h3>
-      <p class="hint">Gère les accès au panel. Login = ID + mot de passe, haché avec PBKDF2-SHA256.</p>
+      <h3>ð¤ Comptes Admin</h3>
+      <p class="hint">GÃ¨re les accÃ¨s au panel. Login = ID + mot de passe, hachÃ© avec PBKDF2-SHA256.</p>
       <div id="accts-list">
         ${accts.length ? rows : '<p style="color:var(--text2);font-size:.82rem">Aucun compte.</p>'}
       </div>
     </div>
 
     <div class="card">
-      <h3>➕ Nouveau compte</h3>
+      <h3>â Nouveau compte</h3>
       <div class="fgrid">
         <div class="frow"><label class="flabel">ID de connexion</label><input type="text" id="new-acct-id" placeholder="jean" /></div>
-        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acct-name" placeholder="Jean Dupont" /></div>
+        <div class="frow"><label class="flabel">Nom affichÃ©</label><input type="text" id="new-acct-name" placeholder="Jean Dupont" /></div>
       </div>
-      <div class="frow"><label class="flabel">Mot de passe (8 chars min)</label><input type="password" id="new-acct-pw" placeholder="••••••••" /></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button></div>
+      <div class="frow"><label class="flabel">Mot de passe (8 chars min)</label><input type="password" id="new-acct-pw" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" /></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="createAdminAccount()">CrÃ©er le compte</button></div>
     </div>
 
     <div id="change-pw-box" style="display:none" class="card">
-      <h3>🔑 Changer le mot de passe — <span id="cpw-name" style="color:var(--text2)"></span></h3>
+      <h3>ð Changer le mot de passe â <span id="cpw-name" style="color:var(--text2)"></span></h3>
       <input type="hidden" id="cpw-id" />
-      <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
-      <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
+      <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" /></div>
+      <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" /></div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button>
+        <button class="btn btn-primary" onclick="createAdminAccount()">CrÃ©er le compte</button>
       <button class="btn btn-ghost" onclick="document.getElementById('change-pw-box').style.display='none';document.getElementById('change-pw-box').closest('.card').style.display='none'">Annuler</button>
     </div>
   </div>
