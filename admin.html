@@ -4,161 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Le Curioscope</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
-// ═══════════════════════════════════════
-// Play Config — activer/désactiver les modes de jeu
-// ═══════════════════════════════════════
-const PLAY_MODES_DEFAULT = [
-  {id:'solo',  label:'🎯 Solo',          desc:'Quiz de révision sur les anecdotes lues', enabled:true},
-  {id:'prive', label:'🎮 Partie Privée', desc:'Multijoueur avec tes amis via code salle', enabled:true},
-  {id:'duel',  label:'⚔️ Duel Quiz',     desc:'Tour par tour, choisis le thème',          enabled:true},
-  {id:'vs100', label:'🌍 1 contre 100',  desc:'Mode massif temps réel (Arena)',           enabled:true},
-  {id:'ligue', label:'🏆 Ligue',         desc:'Classement hebdomadaire',                  enabled:true},
-];
-let _playMods = null;
-
-async function playConfig(pane) {
-  if (!_playMods) {
-    const {data} = await sb.from('app_config').select('value').eq('key','play_modes').maybeSingle();
-    try { _playMods = data?.value ? JSON.parse(data.value) : null; } catch(_) {}
-    if (!_playMods) _playMods = PLAY_MODES_DEFAULT.map(m=>({...m}));
-  }
-  // Merge defaults with saved (preserve enabled state)
-  const modes = PLAY_MODES_DEFAULT.map(def => {
-    const saved = _playMods.find(m=>m.id===def.id);
-    return saved ? {...def, enabled: saved.enabled} : {...def};
-  });
-
-  pane.innerHTML = `
-    <div class="card">
-      <h3>🎮 Modes de jeu — Activer / Désactiver</h3>
-      <p class="hint">Active ou désactive chaque mode de jeu sur la page Jouer. Les changements sont visibles immédiatement après sauvegarde.</p>
-      ${modes.map((m,i)=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-weight:600;font-size:.9rem">${m.label}</div>
-            <div style="font-size:.78rem;color:var(--text2)">${m.desc}</div>
-          </div>
-          <label class="toggle"><input type="checkbox" data-play-id="${m.id}" ${m.enabled?'checked':''} onchange="playToggle('${m.id}',this.checked)"><span class="slider"></span></label>
-        </div>`).join('')}
-      <div class="btn-row" style="margin-top:1rem">
-        <button class="btn btn-primary" onclick="savePlayModes()">💾 Sauvegarder</button>
-      </div>
-    </div>
-  `;
-}
-
-function playToggle(id, checked) {
-  if (!_playMods) return;
-  const m = _playMods.find(x=>x.id===id);
-  if (m) m.enabled = checked;
-  else _playMods.push({id, enabled: checked});
-}
-
-async function savePlayModes() {
-  const checkboxes = document.querySelectorAll('[data-play-id]');
-  const data = Array.from(checkboxes).map(cb=>({id:cb.dataset.playId, enabled:cb.checked}));
-  _playMods = data;
-  const {error} = await sb.from('app_config').upsert({key:'play_modes',value:JSON.stringify(data)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Modes de jeu sauvegardés ✓', error?'err':'ok');
-}
-
-// ═══════════════════════════════════════
-// Nav Config — header tabs + bottom bar
-// ═══════════════════════════════════════
-const NAV_HEADER_DEFAULT = [
-  {id:'anec',       label:'Le saviez-vous ?',  url:'/le-saviez-vous', wip:false, hidden:false},
-  {id:'maisdismoi', label:'Mais dis moi ?',     url:'',                wip:true,  hidden:false},
-  {id:'ephemeride', label:'Éphéméride',         url:'',                wip:true,  hidden:false},
-  {id:'enigme',     label:'Crack le code !',    url:'/enigme',         wip:true,  hidden:false},
-  {id:'motmal',     label:"T'as dit quoi ?!",   url:'',                wip:true,  hidden:false},
-];
-const NAV_BOTTOM_DEFAULT = [
-  {id:'anec',   icon:'🏠', label:'Hub',    url:'/'},
-  {id:'play',   icon:'🎮', label:'Jouer',  url:'/quiz'},
-  {id:'league', icon:'🏆', label:'Ligue',  url:'/ligue'},
-  {id:'profil', icon:'👤', label:'Profil', url:'/profile'},
-];
-let _navH = null, _navB = null;
-
-async function navConfig(pane) {
-  const [{data:hd},{data:bn}] = await Promise.all([
-    sb.from('app_config').select('value').eq('key','nav_header').maybeSingle(),
-    sb.from('app_config').select('value').eq('key','nav_bottom').maybeSingle(),
-  ]);
-  try { _navH = hd?.value ? JSON.parse(hd.value) : null; } catch(_) {}
-  try { _navB = bn?.value ? JSON.parse(bn.value) : null; } catch(_) {}
-  if (!_navH) _navH = NAV_HEADER_DEFAULT.map(t=>({...t}));
-  if (!_navB) _navB = NAV_BOTTOM_DEFAULT.map(b=>({...b}));
-
-  // Merge defaults
-  const tabs = NAV_HEADER_DEFAULT.map(def => ({...def, ...(_navH.find(t=>t.id===def.id)||{})}));
-  const btns = NAV_BOTTOM_DEFAULT.map(def => ({...def, ...(_navB.find(b=>b.id===def.id)||{})}));
-
-  pane.innerHTML = `
-    <div class="card">
-      <h3>📑 Header — Onglets du haut</h3>
-      <p class="hint">Configure les onglets visibles dans le header. WIP = badge orange + désactivé. Masqué = complètement caché.</p>
-      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
-        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
-          <th style="text-align:left;padding:.4rem .5rem .6rem">Label</th>
-          <th style="text-align:left;padding:.4rem .5rem .6rem">URL</th>
-          <th style="padding:.4rem .5rem .6rem">WIP</th>
-          <th style="padding:.4rem .5rem .6rem">Masqué</th>
-        </tr></thead>
-        <tbody>
-          ${tabs.map((t,i)=>`
-          <tr style="border-top:1px solid var(--border)">
-            <td style="padding:.5rem"><input type="text" value="${esc(t.label)}" data-nh-id="${t.id}" data-nh-field="label" style="width:100%" oninput="updNH('${t.id}','label',this.value)"></td>
-            <td style="padding:.5rem"><input type="text" value="${esc(t.url)}" placeholder="/page" style="width:100%" oninput="updNH('${t.id}','url',this.value)"></td>
-            <td style="padding:.5rem;text-align:center"><label class="toggle" style="transform:scale(.8)"><input type="checkbox" ${t.wip?'checked':''} onchange="updNH('${t.id}','wip',this.checked)"><span class="slider"></span></label></td>
-            <td style="padding:.5rem;text-align:center"><label class="toggle" style="transform:scale(.8)"><input type="checkbox" ${t.hidden?'checked':''} onchange="updNH('${t.id}','hidden',this.checked)"><span class="slider"></span></label></td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-      <div class="btn-row" style="margin-top:.75rem">
-        <button class="btn btn-primary" onclick="saveNavH()">💾 Sauvegarder header</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>📱 Barre de navigation — Boutons du bas</h3>
-      <p class="hint">Configure les boutons de la barre de navigation en bas de l'écran.</p>
-      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
-        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
-          <th style="text-align:left;padding:.4rem .5rem .6rem">Icône</th>
-          <th style="text-align:left;padding:.4rem .5rem .6rem">Label</th>
-          <th style="text-align:left;padding:.4rem .5rem .6rem">URL</th>
-        </tr></thead>
-        <tbody>
-          ${btns.map((b,i)=>`
-          <tr style="border-top:1px solid var(--border)">
-            <td style="padding:.5rem"><input type="text" value="${esc(b.icon)}" style="width:54px;text-align:center;font-size:1.1rem" oninput="updNB('${b.id}','icon',this.value)"></td>
-            <td style="padding:.5rem"><input type="text" value="${esc(b.label)}" style="width:100%" oninput="updNB('${b.id}','label',this.value)"></td>
-            <td style="padding:.5rem"><input type="text" value="${esc(b.url)}" placeholder="/page" style="width:100%" oninput="updNB('${b.id}','url',this.value)"></td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-      <div class="btn-row" style="margin-top:.75rem">
-        <button class="btn btn-primary" onclick="saveNavB()">💾 Sauvegarder bottom bar</button>
-      </div>
-    </div>
-  `;
-}
-
-function updNH(id,field,val){const t=_navH.find(x=>x.id===id);if(t)t[field]=val;}
-function updNB(id,field,val){const b=_navB.find(x=>x.id===id);if(b)b[field]=val;}
-
-async function saveNavH(){
-  const{error}=await sb.from('app_config').upsert({key:'nav_header',value:JSON.stringify(_navH)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Header sauvegardé ✓',error?'err':'ok');
-}
-async function saveNavB(){
-  const{error}=await sb.from('app_config').upsert({key:'nav_bottom',value:JSON.stringify(_navB)},{onConflict:'key'});
-  toast(error?'Erreur: '+error.message:'Bottom bar sauvegardée ✓',error?'err':'ok');
-}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -262,7 +108,7 @@ tr:hover td{background:var(--surface2)}
 /* ── Setup box ── */
 .setup-box{background:#12201a;border:1px solid #1e4a2a;border-radius:.75rem;padding:1.25rem}
 .setup-box h4{color:#86efac;margin-bottom:.75rem;font-size:.9rem}
-.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow/x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
+.setup-box pre{background:#0a1a10;border-radius:.5rem;padding:.85rem;font-size:.75rem;color:#d1fae5;overflow-x:auto;margin:.5rem 0;white-space:pre-wrap;word-break:break-all}
 
 /* ── Toast ── */
 #toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:.65rem;padding:.65rem 1.1rem;font-size:.875rem;z-index:9999;transform:translateY(120px);transition:transform .28s;max-width:300px;pointer-events:none}
@@ -290,11 +136,6 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 
 /* ── Hub live preview ── */
 .hub-live-wrap{background:#0a0a18;border-radius:1rem;border:1px solid rgba(124,106,255,.2);padding:1.25rem 1rem;margin:0 0 1.25rem}
-.hub-live-header{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0 .9rem;border-bottom:1px solid rgba(124,106,255,.12);margin-bottom:.9rem}
-.hub-live-label{font-family:'Space Grotesk',monospace;font-size:.62rem;font-weight:800;letter-spacing:.22em;color:#a855f7;text-transform:uppercase}
-.hub-live-date{font-size:.6rem;color:rgba(255,255,255,.3);font-family:monospace}
-.hub-live-gates{display:flex;flex-direction:column;gap:.6rem}
-/* ── Hub 2-col layout ── */
 .hub-live-cols{display:flex;gap:1.25rem;align-items:flex-start;}
 .hub-live-left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:.6rem;}
 .hub-live-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:.6rem;}
@@ -309,6 +150,10 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 .hub-live-col-label{font-family:monospace;font-size:.5rem;font-weight:800;letter-spacing:.18em;color:rgba(255,255,255,.2);text-transform:uppercase;padding:.15rem 0 .45rem;display:flex;align-items:center;gap:.4rem;}
 .hub-live-col-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07);}
 @media(max-width:700px){.hub-live-cols{flex-direction:column;}.hub-live-left{width:100%;}}
+.hub-live-header{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0 .9rem;border-bottom:1px solid rgba(124,106,255,.12);margin-bottom:.9rem}
+.hub-live-label{font-family:'Space Grotesk',monospace;font-size:.62rem;font-weight:800;letter-spacing:.22em;color:#a855f7;text-transform:uppercase}
+.hub-live-date{font-size:.6rem;color:rgba(255,255,255,.3);font-family:monospace}
+.hub-live-gates{display:flex;flex-direction:column;gap:.6rem}
 .hub-gate-row{display:flex;align-items:center;gap:.4rem}
 .hub-gate-row-handle{cursor:grab;color:rgba(255,255,255,.2);font-size:1.1rem;padding:.2rem .15rem;flex-shrink:0;user-select:none;-webkit-user-select:none;transition:color .15s}
 .hub-gate-row-handle:hover{color:#a855f7}
@@ -461,7 +306,7 @@ async function doLogin() {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(me));
     showApp();
   } catch(e) {
-    err.textContent = 'Erreur réseau. Réessaie.';
+    err.textContent = 'Erreur reseau. Reessaie.';
     btn.disabled = false; btn.textContent = 'Se connecter';
   }
 }
@@ -473,7 +318,7 @@ function doSignOut() {
 
 function showFirstSetup() {
   document.querySelector('.login-box').innerHTML = `
-    <div class="login-logo">🛡️</div>
+    <div class="login-logo">🛠️</div>
     <h2>Créer le premier compte</h2>
     <p style="font-size:.8rem;color:var(--text2);text-align:center;margin-bottom:1.25rem">
       Aucun compte admin trouvé. Crée le tien pour accéder au panel.
@@ -488,7 +333,7 @@ function showFirstSetup() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-async function doFirstSetup() {
+acync function doFirstSetup() {
   const id   = document.getElementById('setup-id').value.trim().toLowerCase();
   const name = document.getElementById('setup-name').value.trim();
   const pw   = document.getElementById('setup-pw').value;
@@ -542,8 +387,8 @@ async function stats(pane) {
     <div class="stats-grid">
       <div class="stat"><span class="val">${usersR.count ?? '—'}</span><span class="lbl">Chasseurs inscrits</span></div>
       <div class="stat"><span class="val">${duelsR.count ?? '—'}</span><span class="lbl">Duels actifs</span></div>
-      <div class="stat"><span class="val">${anecR.count ? '✅' : '❌'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
-      <div class="stat"><span class="val">${enigR.count ? '✅' : '❌'}</span><span class="lbl">Énigme aujourd'hui</span></div>
+      <div class="stat"><span class="val">${anecR.count ? '✅' : '❩L'}</span><span class="lbl">Anecdote aujourd'hui</span></div>
+      <div class="stat"><span class="val">${enigR.count ? '✅' : '❩L'}</span><span class="lbl">Énigme aujourd'hui</span></div>
     </div>
 
     <div class="card">
@@ -582,12 +427,12 @@ async function stats(pane) {
 // Hub Config
 // ═══════════════════════════════════════
 const HUB_DEFAULT = [
-  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true},
-  {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true},
-  {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true},
-  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true},
-  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true},
-  {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true},
+  {id:'daily-anecdote',title:'Le Saviez-Vous ?',icon:'💡',rank:'E',color:'#7c6aff',xp:'+50 XP',desc:"L'anecdote du jour",type:'gate',enabled:true,action:'goAnec()'},
+  {id:'daily-enigme',title:'Crack le Code !',icon:'🔐',rank:'B',color:'#f59e0b',xp:'+150 XP',desc:'Énigme quotidienne',type:'gate',enabled:true,action:'goEnigme()'},
+  {id:'daily-quiz',title:'Quiz',icon:'🎯',rank:'C',color:'#22c55e',xp:'+100 XP',desc:'Questions du jour',type:'gate',enabled:true,action:"renderPlayChoice();show('screen-play');updateNav('bn-play');"},
+  {id:'arena',title:'Arène — 1 contre 100',icon:'⚡',rank:'S',color:'#ef4444',xp:'+500 XP',desc:'Mode multijoueur temps réel',type:'section',enabled:true,action:'show1vs100Lobby()'},
+  {id:'mystery',title:'Mystère de la Semaine',icon:'🕵',rank:'A',color:'#8b5cf6',xp:'+200 XP',desc:'Enquête hebdomadaire',type:'section',enabled:true,action:''},
+  {id:'locked',title:'Portails Verrouillés',icon:'🔒',rank:'?',color:'#64748b',xp:'WIP',desc:'Sections à venir (WIP)',type:'locked',enabled:true,action:''},
 ];
 let hubMods = null;
 
@@ -661,7 +506,7 @@ function renderHub(pane) {
       <p class="hint" style="margin-bottom:1rem">
         Tu vois exactement le hub tel qu'il apparaît aux utilisateurs.
         <strong>Glisse ⠿</strong> ou utilise <strong>▲▼</strong> pour réordonner.
-        Toggle = activer/désactiver. 🗑 = supprimer. Les champs sous les <em>Quêtes</em> permettent de personnaliser icône, titre, description et couleur.
+        Toggle = activer/désactiver. 🗑 = supprimer.
       </p>
       <div class="hub-live-wrap">
         <div class="hub-live-header">
@@ -672,15 +517,12 @@ function renderHub(pane) {
           <div class="hub-live-left">
             <div class="hub-mock-hunter">
               <div class="hub-mock-hunter-top">
-                <div>
-                  <div class="hub-mock-hunter-label">CHASSEUR</div>
-                  <div class="hub-mock-hunter-name">Arnaud</div>
-                </div>
+                <div><div class="hub-mock-hunter-label">CHASSEUR</div><div class="hub-mock-hunter-name">Arnaud</div></div>
                 <div class="hub-mock-rank"><div>S-RANG</div><div style="font-size:.38rem;opacity:.6">MONARCH</div></div>
               </div>
-              <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:.3rem;">XP TOTAL &nbsp;<span style="color:#a855f7;font-weight:700;">12 450</span> / 20 000 → SS</div>
+              <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:.3rem;">XP TOTAL &nbsp;<span style="color:#a855f7;font-weight:700;">12 450</span></div>
               <div class="hub-mock-xp-bar"><div class="hub-mock-xp-fill"></div></div>
-              <div class="hub-mock-streak">🔥 7 jours de streak &nbsp;·&nbsp; 2 missions restantes</div>
+              <div class="hub-mock-streak">🔥 7 jours de streak</div>
             </div>
             <div class="hub-live-col-label">Arène &amp; Sections</div>
             <div class="hub-live-gates" id="mod-list-sections">${sectionsHtml}</div>
@@ -725,15 +567,16 @@ function renderHub(pane) {
 }
 
 function addMod() {
-  const icon  = document.getElementById('nm-icon').value.trim() || '⭐';
-  const title = document.getElementById('nm-title').value.trim();
-  const desc  = document.getElementById('nm-desc').value.trim();
-  const type  = document.getElementById('nm-type').value;
-  const rank  = document.getElementById('nm-rank').value.trim() || 'C';
-  const xp    = document.getElementById('nm-xp').value.trim();
-  const color = document.getElementById('nm-color').value;
+  const icon   = document.getElementById('nm-icon').value.trim() || '⭐';
+  const title  = document.getElementById('nm-title').value.trim();
+  const desc   = document.getElementById('nm-desc').value.trim();
+  const type   = document.getElementById('nm-type').value;
+  const rank   = document.getElementById('nm-rank').value.trim() || 'C';
+  const xp     = document.getElementById('nm-xp').value.trim();
+  const color  = document.getElementById('nm-color').value;
+  const action = document.getElementById('nm-action').value;
   if (!title) { toast('Donne un titre au module.','err'); return; }
-  hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, enabled:true });
+  hubMods.push({ id:'custom-'+Date.now(), icon, title, desc, type, rank, xp, color, action, enabled:true });
   renderHub(document.getElementById('pane'));
   toast('Module ajouté — pense à sauvegarder !','ok');
 }
@@ -765,10 +608,8 @@ function enableDnD() {
       });
       item.addEventListener('dragend', () => {
         list.querySelectorAll('.hub-gate-card').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
-        // Rebuild hubMods from both lists preserving cross-list order
-        const allRows = document.querySelectorAll('.hub-gate-row');
         const newOrder = [];
-        allRows.forEach(el => {
+        document.querySelectorAll('.hub-gate-row').forEach(el => {
           const idx = parseInt(el.dataset.idx);
           if (!isNaN(idx) && hubMods[idx]) newOrder.push({...hubMods[idx]});
         });
@@ -812,6 +653,129 @@ function resetHub() {
   renderHub(document.getElementById('pane'));
   toast('Hub réinitialisé — pense à sauvegarder.','ok');
 }
+
+async function saveHub() {
+  const {error} = await sb.from('app_config').upsert({key:'hub_modules',value:JSON.stringify(hubMods)},{onConflict:'key'});
+  if (error) toast('Erreur: '+error.message,'err');
+  else toast('Hub sauvegardé ✓','ok');
+}
+
+// ── Play Config ──────────────────────────────────────────────────────────────
+const PLAY_MODES_DEFAULT = [
+  {id:'solo',  label:'🎯 Solo',          desc:'Quiz de révision sur les anecdotes lues', enabled:true},
+  {id:'prive', label:'🎮 Partie Privée', desc:'Multijoueur avec tes amis via code salle', enabled:true},
+  {id:'duel',  label:'⚔️ Duel Quiz',     desc:'Tour par tour, choisis le thème',          enabled:true},
+  {id:'vs100', label:'🌍 1 contre 100',  desc:'Mode massif temps réel (Arena)',            enabled:true},
+  {id:'ligue', label:'🏆 Ligue',         desc:'Classement hebdomadaire',                   enabled:true},
+];
+let _playMods = null;
+
+async function playConfig(pane) {
+  if (!_playMods) {
+    const {data} = await sb.from('app_config').select('value').eq('key','play_modes').maybeSingle();
+    try { _playMods = data?.value ? JSON.parse(data.value) : null; } catch(_) {}
+    if (!_playMods) _playMods = PLAY_MODES_DEFAULT.map(m=>({...m}));
+  }
+  const modes = PLAY_MODES_DEFAULT.map(def => {
+    const saved = _playMods.find(m=>m.id===def.id);
+    return saved ? {...def, enabled: saved.enabled} : {...def};
+  });
+  pane.innerHTML = `
+    <div class="card">
+      <h3>🎮 Modes de jeu — Activer / Désactiver</h3>
+      <p class="hint">Active ou désactive chaque mode sur la page Jouer.</p>
+      ${modes.map(m=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600;font-size:.9rem">${m.label}</div>
+            <div style="font-size:.78rem;color:var(--text2)">${m.desc}</div>
+          </div>
+          <label class="toggle"><input type="checkbox" data-play-id="${m.id}" ${m.enabled?'checked':''} onchange="playToggle('${m.id}',this.checked)"><span class="slider"></span></label>
+        </div>`).join('')}
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="savePlayModes()">💾 Sauvegarder</button>
+      </div>
+    </div>`;
+}
+
+function playToggle(id, checked) {
+  if (!_playMods) return;
+  const m = _playMods.find(x=>x.id===id);
+  if (m) m.enabled = checked; else _playMods.push({id, enabled: checked});
+}
+
+async function savePlayModes() {
+  const data = Array.from(document.querySelectorAll('[data-play-id]')).map(cb=>({id:cb.dataset.playId, enabled:cb.checked}));
+  _playMods = data;
+  const {error} = await sb.from('app_config').upsert({key:'play_modes',value:JSON.stringify(data)},{onConflict:'key'});
+  toast(error?'Erreur: '+error.message:'Modes de jeu sauvegardés ✓', error?'err':'ok');
+}
+
+// ── Nav Config ───────────────────────────────────────────────────────────────
+const NAV_HEADER_DEFAULT = [
+  {id:'anec',       label:'Le saviez-vous ?', url:'/le-saviez-vous', wip:false},
+  {id:'maisdismoi', label:'Mais dis moi ?',   url:'',                wip:true},
+  {id:'ephemeride', label:'Éphéméride',       url:'',                wip:true},
+  {id:'enigme',     label:'Crack le code !',  url:'/enigme',         wip:true},
+  {id:'motmal',     label:"T'as dit quoi ?!", url:'',                wip:true},
+];
+const NAV_BOTTOM_DEFAULT = [
+  {id:'anec',   icon:'🏠', label:'Hub',    url:'/'},
+  {id:'play',   icon:'🎮', label:'Jouer',  url:'/quiz'},
+  {id:'league', icon:'🏆', label:'Ligue',  url:'/ligue'},
+  {id:'profil', icon:'👤', label:'Profil', url:'/profile'},
+];
+let _navH = null, _navB = null;
+
+async function navConfig(pane) {
+  const [{data:hd},{data:bn}] = await Promise.all([
+    sb.from('app_config').select('value').eq('key','nav_header').maybeSingle(),
+    sb.from('app_config').select('value').eq('key','nav_bottom').maybeSingle(),
+  ]);
+  try { _navH = hd?.value ? JSON.parse(hd.value) : null; } catch(_) {}
+  try { _navB = bn?.value ? JSON.parse(bn.value) : null; } catch(_) {}
+  if (!_navH) _navH = NAV_HEADER_DEFAULT.map(t=>({...t}));
+  if (!_navB) _navB = NAV_BOTTOM_DEFAULT.map(b=>({...b}));
+  const tabs = NAV_HEADER_DEFAULT.map(def => ({...def, ...(_navH.find(t=>t.id===def.id)||{})}));
+  const btns = NAV_BOTTOM_DEFAULT.map(def => ({...def, ...(_navB.find(b=>b.id===def.id)||{})}));
+  pane.innerHTML = `
+    <div class="card">
+      <h3>📑 Header — Onglets du haut</h3>
+      <p class="hint">WIP = badge orange + désactivé.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
+          <th style="padding:.4rem .5rem">Label</th><th style="padding:.4rem .5rem">URL</th><th style="padding:.4rem .5rem;text-align:center">WIP</th>
+        </tr></thead><tbody>
+          ${tabs.map(t=>`<tr style="border-top:1px solid var(--border)">
+            <td style="padding:.5rem"><input type="text" value="${esc(t.label)}" style="width:100%" oninput="updNH('${t.id}','label',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(t.url)}" style="width:100%" oninput="updNH('${t.id}','url',this.value)"></td>
+            <td style="padding:.5rem;text-align:center"><label class="toggle" style="transform:scale(.8)"><input type="checkbox" ${t.wip?'checked':''} onchange="updNH('${t.id}','wip',this.checked)"><span class="slider"></span></label></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavH()">💾 Sauvegarder header</button></div>
+    </div>
+    <div class="card">
+      <h3>📱 Bottom bar</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase">
+          <th style="padding:.4rem .5rem">Icône</th><th style="padding:.4rem .5rem">Label</th><th style="padding:.4rem .5rem">URL</th>
+        </tr></thead><tbody>
+          ${btns.map(b=>`<tr style="border-top:1px solid var(--border)">
+            <td style="padding:.5rem"><input type="text" value="${esc(b.icon)}" style="width:54px;text-align:center;font-size:1.1rem" oninput="updNB('${b.id}','icon',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(b.label)}" style="width:100%" oninput="updNB('${b.id}','label',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(b.url)}" style="width:100%" oninput="updNB('${b.id}','url',this.value)"></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveNavB()">💾 Sauvegarder bottom bar</button></div>
+    </div>`;
+}
+
+function updNH(id,field,val){const t=_navH.find(x=>x.id===id);if(t)t[field]=val;}
+function updNB(id,field,val){const b=_navB.find(x=>x.id===id);if(b)b[field]=val;}
+async function saveNavH(){const{error}=await sb.from('app_config').upsert({key:'nav_header',value:JSON.stringify(_navH)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Header sauvegardé ✓',error?'err':'ok');}
+async function saveNavB(){const{error}=await sb.from('app_config').upsert({key:'nav_bottom',value:JSON.stringify(_navB)},{onConflict:'key'});toast(error?'Erreur: '+error.message:'Bottom bar sauvegardée ✓',error?'err':'ok');}
 
 
 async function saveHub() {
@@ -991,7 +955,7 @@ async function banner(pane) {
       </div>
       <div class="frow">
         <div class="flabel">Aperçu</div>
-        <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem;font-family:'Space Grotesk',sans-serif">${esc(b.message||'Aucun message')}</div>
+        <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem">${esc(b.message||'Aucun message')}</div>
       </div>
       <button class="btn btn-primary" onclick="saveBanner()">💾 Sauvegarder</button>
     </div>
@@ -1032,7 +996,7 @@ async function loadUsers(q) {
   const {data,error}=await query;
   const el=document.getElementById('u-table');
   if(!el)return;
-  if(error){el.innerHTML=`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
+  if(error){el.innerHTML<`<div style="color:var(--red)">${esc(error.message)}</div>`;return;}
   el.innerHTML=`
     <div class="tbl-wrap"><table>
       <thead><tr><th>Pseudo</th><th>Rôle</th><th>Streak record</th><th>Inscription</th></tr></thead>
@@ -1086,7 +1050,7 @@ ALTER TABLE public.duels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anecdotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_enigmas ENABLE ROW LEVEL SECURITY;
 
--- Lecture publique pour le contenu
+-- Lecture publique pour le content
 CREATE POLICY "Lecture anecdotes" ON public.anecdotes FOR SELECT USING (true);
 CREATE POLICY "Lecture enigmes" ON public.daily_enigmas FOR SELECT USING (true);
 
@@ -1125,7 +1089,7 @@ async function testConn() {
   const el=document.getElementById('conn-result');
   el.textContent='Test en cours…';
   const {data,error}=await sb.from('app_config').select('key').limit(1);
-  if(error) el.innerHTML<`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
+  if(error) el.innerHTML=`<span style="color:var(--red)">❌ ${esc(error.message)}<br>→ La table n'existe pas encore. Exécute le SQL ci-dessus.</span>`;
   else el.innerHTML=`<span style="color:var(--green)">✅ app_config accessible ! ${data?.length ? data.length+' entrée(s)' : 'Table vide'}</span>`;
 }
 
@@ -1166,4 +1130,16 @@ async function accounts(pane) {
       <h3>➕ Nouveau compte</h3>
       <div class="fgrid">
         <div class="frow"><label class="flabel">ID de connexion</label><input type="text" id="new-acct-id" placeholder="jean" /></div>
-        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acc
+        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acct-name" placeholder="Jean Dupont" /></div>
+      </div>
+      <div class="frow"><label class="flabel">Mot de passe (8 chars min)</label><input type="password" id="new-acct-pw" placeholder="••••••••" /></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button></div>
+    </div>
+
+    <div id="change-pw-box" style="display:none" class="card">
+      <h3>🔑 Changer le mot de passe — <span id="cpw-name" style="color:var(--text2)"></span></h3>
+      <input type="hidden" id="cpw-id" />
+      <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
+      <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
+      <div class="btn-row">
+        <b
