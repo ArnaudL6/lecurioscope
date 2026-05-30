@@ -4,7 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Le Curioscope</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+// ═══════════════════════════════════════
+// Play Config — activer/désactiver les modes de jeu
+// ═══════════════════════════════════════
+const PLAY_MODES_DEFAULT = [
+  {id:'solo',  label:'🎯 Solo',          desc:'Quiz de révision sur les anecdotes lues', enabled:true},
+  {id:'prive', label:'🎮 Partie Privée', desc:'Multijoueur avec tes amis via code salle', enabled:true},
+  {id:'duel',  label:'⚔️ Duel Quiz',     desc:'Tour par tour, choisis le thème',          enabled:true},
+  {id:'vs100', label:'🌍 1 contre 100',  desc:'Mode massif temps réel (Arena)',           enabled:true},
+  {id:'ligue', label:'🏆 Ligue',         desc:'Classement hebdomadaire',                  enabled:true},
+];
+let _playMods = null;
+
+async function playConfig(pane) {
+  if (!_playMods) {
+    const {data} = await sb.from('app_config').select('value').eq('key','play_modes').maybeSingle();
+    try { _playMods = data?.value ? JSON.parse(data.value) : null; } catch(_) {}
+    if (!_playMods) _playMods = PLAY_MODES_DEFAULT.map(m=>({...m}));
+  }
+  // Merge defaults with saved (preserve enabled state)
+  const modes = PLAY_MODES_DEFAULT.map(def => {
+    const saved = _playMods.find(m=>m.id===def.id);
+    return saved ? {...def, enabled: saved.enabled} : {...def};
+  });
+
+  pane.innerHTML = `
+    <div class="card">
+      <h3>🎮 Modes de jeu — Activer / Désactiver</h3>
+      <p class="hint">Active ou désactive chaque mode de jeu sur la page Jouer. Les changements sont visibles immédiatement après sauvegarde.</p>
+      ${modes.map((m,i)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600;font-size:.9rem">${m.label}</div>
+            <div style="font-size:.78rem;color:var(--text2)">${m.desc}</div>
+          </div>
+          <label class="toggle"><input type="checkbox" data-play-id="${m.id}" ${m.enabled?'checked':''} onchange="playToggle('${m.id}',this.checked)"><span class="slider"></span></label>
+        </div>`).join('')}
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="savePlayModes()">💾 Sauvegarder</button>
+      </div>
+    </div>
+  `;
+}
+
+function playToggle(id, checked) {
+  if (!_playMods) return;
+  const m = _playMods.find(x=>x.id===id);
+  if (m) m.enabled = checked;
+  else _playMods.push({id, enabled: checked});
+}
+
+async function savePlayModes() {
+  const checkboxes = document.querySelectorAll('[data-play-id]');
+  const data = Array.from(checkboxes).map(cb=>({id:cb.dataset.playId, enabled:cb.checked}));
+  _playMods = data;
+  const {error} = await sb.from('app_config').upsert({key:'play_modes',value:JSON.stringify(data)},{onConflict:'key'});
+  toast(error?'Erreur: '+error.message:'Modes de jeu sauvegardés ✓', error?'err':'ok');
+}
+
+// ═══════════════════════════════════════
+// Nav Config — header tabs + bottom bar
+// ═══════════════════════════════════════
+const NAV_HEADER_DEFAULT = [
+  {id:'anec',       label:'Le saviez-vous ?',  url:'/le-saviez-vous', wip:false, hidden:false},
+  {id:'maisdismoi', label:'Mais dis moi ?',     url:'',                wip:true,  hidden:false},
+  {id:'ephemeride', label:'Éphéméride',         url:'',                wip:true,  hidden:false},
+  {id:'enigme',     label:'Crack le code !',    url:'/enigme',         wip:true,  hidden:false},
+  {id:'motmal',     label:"T'as dit quoi ?!",   url:'',                wip:true,  hidden:false},
+];
+const NAV_BOTTOM_DEFAULT = [
+  {id:'anec',   icon:'🏠', label:'Hub',    url:'/'},
+  {id:'play',   icon:'🎮', label:'Jouer',  url:'/quiz'},
+  {id:'league', icon:'🏆', label:'Ligue',  url:'/ligue'},
+  {id:'profil', icon:'👤', label:'Profil', url:'/profile'},
+];
+let _navH = null, _navB = null;
+
+async function navConfig(pane) {
+  const [{data:hd},{data:bn}] = await Promise.all([
+    sb.from('app_config').select('value').eq('key','nav_header').maybeSingle(),
+    sb.from('app_config').select('value').eq('key','nav_bottom').maybeSingle(),
+  ]);
+  try { _navH = hd?.value ? JSON.parse(hd.value) : null; } catch(_) {}
+  try { _navB = bn?.value ? JSON.parse(bn.value) : null; } catch(_) {}
+  if (!_navH) _navH = NAV_HEADER_DEFAULT.map(t=>({...t}));
+  if (!_navB) _navB = NAV_BOTTOM_DEFAULT.map(b=>({...b}));
+
+  // Merge defaults
+  const tabs = NAV_HEADER_DEFAULT.map(def => ({...def, ...(_navH.find(t=>t.id===def.id)||{})}));
+  const btns = NAV_BOTTOM_DEFAULT.map(def => ({...def, ...(_navB.find(b=>b.id===def.id)||{})}));
+
+  pane.innerHTML = `
+    <div class="card">
+      <h3>📑 Header — Onglets du haut</h3>
+      <p class="hint">Configure les onglets visibles dans le header. WIP = badge orange + désactivé. Masqué = complètement caché.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
+          <th style="text-align:left;padding:.4rem .5rem .6rem">Label</th>
+          <th style="text-align:left;padding:.4rem .5rem .6rem">URL</th>
+          <th style="padding:.4rem .5rem .6rem">WIP</th>
+          <th style="padding:.4rem .5rem .6rem">Masqué</th>
+        </tr></thead>
+        <tbody>
+          ${tabs.map((t,i)=>`
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:.5rem"><input type="text" value="${esc(t.label)}" data-nh-id="${t.id}" data-nh-field="label" style="width:100%" oninput="updNH('${t.id}','label',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(t.url)}" placeholder="/page" style="width:100%" oninput="updNH('${t.id}','url',this.value)"></td>
+            <td style="padding:.5rem;text-align:center"><label class="toggle" style="transform:scale(.8)"><input type="checkbox" ${t.wip?'checked':''} onchange="updNH('${t.id}','wip',this.checked)"><span class="slider"></span></label></td>
+            <td style="padding:.5rem;text-align:center"><label class="toggle" style="transform:scale(.8)"><input type="checkbox" ${t.hidden?'checked':''} onchange="updNH('${t.id}','hidden',this.checked)"><span class="slider"></span></label></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="btn-row" style="margin-top:.75rem">
+        <button class="btn btn-primary" onclick="saveNavH()">💾 Sauvegarder header</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📱 Barre de navigation — Boutons du bas</h3>
+      <p class="hint">Configure les boutons de la barre de navigation en bas de l'écran.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em">
+          <th style="text-align:left;padding:.4rem .5rem .6rem">Icône</th>
+          <th style="text-align:left;padding:.4rem .5rem .6rem">Label</th>
+          <th style="text-align:left;padding:.4rem .5rem .6rem">URL</th>
+        </tr></thead>
+        <tbody>
+          ${btns.map((b,i)=>`
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:.5rem"><input type="text" value="${esc(b.icon)}" style="width:54px;text-align:center;font-size:1.1rem" oninput="updNB('${b.id}','icon',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(b.label)}" style="width:100%" oninput="updNB('${b.id}','label',this.value)"></td>
+            <td style="padding:.5rem"><input type="text" value="${esc(b.url)}" placeholder="/page" style="width:100%" oninput="updNB('${b.id}','url',this.value)"></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="btn-row" style="margin-top:.75rem">
+        <button class="btn btn-primary" onclick="saveNavB()">💾 Sauvegarder bottom bar</button>
+      </div>
+    </div>
+  `;
+}
+
+function updNH(id,field,val){const t=_navH.find(x=>x.id===id);if(t)t[field]=val;}
+function updNB(id,field,val){const b=_navB.find(x=>x.id===id);if(b)b[field]=val;}
+
+async function saveNavH(){
+  const{error}=await sb.from('app_config').upsert({key:'nav_header',value:JSON.stringify(_navH)},{onConflict:'key'});
+  toast(error?'Erreur: '+error.message:'Header sauvegardé ✓',error?'err':'ok');
+}
+async function saveNavB(){
+  const{error}=await sb.from('app_config').upsert({key:'nav_bottom',value:JSON.stringify(_navB)},{onConflict:'key'});
+  toast(error?'Erreur: '+error.message:'Bottom bar sauvegardée ✓',error?'err':'ok');
+}
+
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#0a0a1a; --surface:#111128; --surface2:#1a1a35; --border:#2a2a5a;
@@ -13,7 +169,7 @@
   --text:#e2e8f0; --text2:#94a3b8;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,-apple-system,sans-serif;min-height:100vh;font-size:15px}
 
 /* ── Auth screens ── */
 #loading,#auth-error{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1rem;text-align:center;padding:2rem}
@@ -133,11 +289,26 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
 .login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:.5rem;min-height:1.2em}
 
 /* ── Hub live preview ── */
-.hub-live-wrap{background:#0a0a18;border-radius:1rem;border:1px solid rgba(124,106,255,.2);padding:1.25rem 1rem;max-width:480px;margin:0 auto 1.25rem}
+.hub-live-wrap{background:#0a0a18;border-radius:1rem;border:1px solid rgba(124,106,255,.2);padding:1.25rem 1rem;margin:0 0 1.25rem}
 .hub-live-header{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0 .9rem;border-bottom:1px solid rgba(124,106,255,.12);margin-bottom:.9rem}
 .hub-live-label{font-family:'Space Grotesk',monospace;font-size:.62rem;font-weight:800;letter-spacing:.22em;color:#a855f7;text-transform:uppercase}
 .hub-live-date{font-size:.6rem;color:rgba(255,255,255,.3);font-family:monospace}
 .hub-live-gates{display:flex;flex-direction:column;gap:.6rem}
+/* ── Hub 2-col layout ── */
+.hub-live-cols{display:flex;gap:1.25rem;align-items:flex-start;}
+.hub-live-left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:.6rem;}
+.hub-live-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:.6rem;}
+.hub-mock-hunter{background:#0f0f1a;border:1px solid rgba(168,85,247,.25);border-radius:.875rem;padding:.8rem .9rem;margin-bottom:.1rem;}
+.hub-mock-hunter-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;}
+.hub-mock-hunter-label{font-family:monospace;font-size:.45rem;font-weight:800;letter-spacing:.18em;color:#a855f7;text-transform:uppercase;margin-bottom:.18rem;}
+.hub-mock-hunter-name{font-size:.85rem;font-weight:700;color:#fff;}
+.hub-mock-rank{font-family:monospace;font-size:.45rem;font-weight:800;letter-spacing:.1em;border:1px solid #a855f7;border-radius:3px;padding:.1rem .35rem;color:#a855f7;text-transform:uppercase;text-align:center;}
+.hub-mock-xp-bar{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin:.4rem 0 .3rem;}
+.hub-mock-xp-fill{height:100%;width:42%;background:#a855f7;border-radius:2px;}
+.hub-mock-streak{font-size:.6rem;color:rgba(255,255,255,.3);}
+.hub-live-col-label{font-family:monospace;font-size:.5rem;font-weight:800;letter-spacing:.18em;color:rgba(255,255,255,.2);text-transform:uppercase;padding:.15rem 0 .45rem;display:flex;align-items:center;gap:.4rem;}
+.hub-live-col-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07);}
+@media(max-width:700px){.hub-live-cols{flex-direction:column;}.hub-live-left{width:100%;}}
 .hub-gate-row{display:flex;align-items:center;gap:.4rem}
 .hub-gate-row-handle{cursor:grab;color:rgba(255,255,255,.2);font-size:1.1rem;padding:.2rem .15rem;flex-shrink:0;user-select:none;-webkit-user-select:none;transition:color .15s}
 .hub-gate-row-handle:hover{color:#a855f7}
@@ -204,8 +375,10 @@ a.link{color:var(--accent2);text-decoration:none}.a.link:hover{text-decoration:u
     <div class="tab" onclick="go('content',this)">✍️ Contenu</div>
     <div class="tab" onclick="go('flags',this)">🚩 Fonctions</div>
     <div class="tab" onclick="go('banner',this)">📢 Bannière</div>
-    <div class="tab" onclick="go 'users',this)">👥 Utilisateurs</div>
+    <div class="tab" onclick="go('users',this)">👥 Utilisateurs</div>
     <div class="tab" onclick="go('setup',this)">🛠️ Setup</div>
+    <div class="tab" onclick="go('playConfig',this)">🎮 Jouer</div>
+    <div class="tab" onclick="go('navConfig',this)">🧭 Navigation</div>
     <div class="tab" onclick="go('accounts',this)">👤 Comptes</div>
   </div>
 
@@ -337,7 +510,7 @@ async function doFirstSetup() {
 // ═══════════════════════════════════════
 // Tab router
 // ═══════════════════════════════════════
-const TABS = { stats, hub, content: contentTab, flags, banner, users, setup, accounts };
+const TABS = { stats, hub, content: contentTab, flags, banner, users, setup, accounts, playConfig, navConfig };
 function go(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -432,7 +605,7 @@ function renderHub(pane) {
   const typeColors = {gate:'#7c6aff', section:'#ef4444', locked:'#64748b'};
   const typeLabels = {gate:'Quête', section:'Section', locked:'Portail'};
 
-  const gatesHtml = hubMods.map((m,i) => {
+  function makeCard(m, i) {
     const gc = m.color || '#a855f7';
     const tc = typeColors[m.type] || '#a855f7';
     const tl = typeLabels[m.type] || m.type;
@@ -475,7 +648,12 @@ function renderHub(pane) {
           <button class="hub-gate-del" onclick="delMod(${i})" title="Supprimer">🗑</button>
         </div>
       </div>`;
-  }).join('');
+  }
+
+  const gates    = hubMods.map((m,i)=>({m,i})).filter(({m})=>m.type==='gate');
+  const sections = hubMods.map((m,i)=>({m,i})).filter(({m})=>m.type!=='gate');
+  const gatesHtml    = gates.map(({m,i})=>makeCard(m,i)).join('');
+  const sectionsHtml = sections.map(({m,i})=>makeCard(m,i)).join('');
 
   pane.innerHTML = `
     <div class="card">
@@ -490,8 +668,27 @@ function renderHub(pane) {
           <span class="hub-live-label">⚡ THE SYSTEM</span>
           <span class="hub-live-date">${today}</span>
         </div>
-        <div class="hub-live-gates" id="mod-list">
-          ${gatesHtml}
+        <div class="hub-live-cols">
+          <div class="hub-live-left">
+            <div class="hub-mock-hunter">
+              <div class="hub-mock-hunter-top">
+                <div>
+                  <div class="hub-mock-hunter-label">CHASSEUR</div>
+                  <div class="hub-mock-hunter-name">Arnaud</div>
+                </div>
+                <div class="hub-mock-rank"><div>S-RANG</div><div style="font-size:.38rem;opacity:.6">MONARCH</div></div>
+              </div>
+              <div style="font-size:.6rem;color:rgba(255,255,255,.25);margin-bottom:.3rem;">XP TOTAL &nbsp;<span style="color:#a855f7;font-weight:700;">12 450</span> / 20 000 → SS</div>
+              <div class="hub-mock-xp-bar"><div class="hub-mock-xp-fill"></div></div>
+              <div class="hub-mock-streak">🔥 7 jours de streak &nbsp;·&nbsp; 2 missions restantes</div>
+            </div>
+            <div class="hub-live-col-label">Arène &amp; Sections</div>
+            <div class="hub-live-gates" id="mod-list-sections">${sectionsHtml}</div>
+          </div>
+          <div class="hub-live-right">
+            <div class="hub-live-col-label">Quêtes journalières</div>
+            <div class="hub-live-gates" id="mod-list-gates">${gatesHtml}</div>
+          </div>
         </div>
       </div>
       <div class="btn-row">
@@ -556,38 +753,64 @@ function delMod(i) {
 }
 
 function enableDnD() {
-  const list = document.getElementById('mod-list');
-  if (!list) return;
-  let dragged = null;
-  list.querySelectorAll('.hub-gate-row').forEach(item => {
-    item.addEventListener('dragstart', e => {
-      dragged = item;
-      e.dataTransfer.effectAllowed = 'move';
-      requestAnimationFrame(() => item.querySelector('.hub-gate-card')?.classList.add('dragging'));
-    });
-    item.addEventListener('dragend', () => {
-      list.querySelectorAll('.hub-gate-card').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
-      const newOrder = [];
-      list.querySelectorAll('.hub-gate-row').forEach(el => {
-        const idx = parseInt(el.dataset.idx);
-        if (!isNaN(idx) && hubMods[idx]) newOrder.push({...hubMods[idx]});
+  ['mod-list-gates','mod-list-sections'].forEach(listId => {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    let dragged = null;
+    list.querySelectorAll('.hub-gate-row').forEach(item => {
+      item.addEventListener('dragstart', e => {
+        dragged = item;
+        e.dataTransfer.effectAllowed = 'move';
+        requestAnimationFrame(() => item.querySelector('.hub-gate-card')?.classList.add('dragging'));
       });
-      if (newOrder.length === hubMods.length) hubMods = newOrder;
-      renderHub(document.getElementById('pane'));
-      dragged = null;
-    });
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!dragged || dragged === item) return;
-      list.querySelectorAll('.hub-gate-card').forEach(el => el.classList.remove('drag-over'));
-      item.querySelector('.hub-gate-card')?.classList.add('drag-over');
-      const rect = item.getBoundingClientRect();
-      list.insertBefore(dragged, e.clientY > rect.top + rect.height/2 ? item.nextSibling : item);
-    });
-    item.addEventListener('dragleave', e => {
-      if (!item.contains(e.relatedTarget)) item.querySelector('.hub-gate-card')?.classList.remove('drag-over');
+      item.addEventListener('dragend', () => {
+        list.querySelectorAll('.hub-gate-card').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
+        // Rebuild hubMods from both lists preserving cross-list order
+        const allRows = document.querySelectorAll('.hub-gate-row');
+        const newOrder = [];
+        allRows.forEach(el => {
+          const idx = parseInt(el.dataset.idx);
+          if (!isNaN(idx) && hubMods[idx]) newOrder.push({...hubMods[idx]});
+        });
+        if (newOrder.length === hubMods.length) hubMods = newOrder;
+        renderHub(document.getElementById('pane'));
+        dragged = null;
+      });
+      item.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (!dragged || dragged === item) return;
+        list.querySelectorAll('.hub-gate-card').forEach(el => el.classList.remove('drag-over'));
+        item.querySelector('.hub-gate-card')?.classList.add('drag-over');
+        const rect = item.getBoundingClientRect();
+        list.insertBefore(dragged, e.clientY > rect.top + rect.height/2 ? item.nextSibling : item);
+      });
+      item.addEventListener('dragleave', e => {
+        if (!item.contains(e.relatedTarget)) item.querySelector('.hub-gate-card')?.classList.remove('drag-over');
+      });
     });
   });
+}
+
+function togMod(i, checked) {
+  if (!hubMods[i]) return;
+  hubMods[i].enabled = checked;
+  const card = document.querySelector(`#mi${i} .hub-gate-card`);
+  if (card) card.classList.toggle('off', !checked);
+}
+
+function upd(i, key, val) {
+  if (!hubMods[i]) return;
+  hubMods[i][key] = val;
+  if (key === 'icon') { const el = document.querySelector(`#mi${i} .hub-gate-icon`); if (el) el.textContent = val; }
+  else if (key === 'title') { const el = document.querySelector(`#mi${i} .hub-gate-name`); if (el) el.textContent = val; }
+  else if (key === 'desc') { const el = document.querySelector(`#mi${i} .hub-gate-desc`); if (el) el.textContent = val; }
+}
+
+function resetHub() {
+  if (!confirm('Réinitialiser le hub aux valeurs par défaut ?')) return;
+  hubMods = HUB_DEFAULT.map(m => ({...m}));
+  renderHub(document.getElementById('pane'));
+  toast('Hub réinitialisé — pense à sauvegarder.','ok');
 }
 
 
@@ -768,7 +991,7 @@ async function banner(pane) {
       </div>
       <div class="frow">
         <div class="flabel">Aperçu</div>
-        <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem">${esc(b.message||'Aucun message')}</div>
+        <div id="b-preview" style="padding:.75rem 1rem;border-radius:.5rem;border-left:3px solid ${typeColors[b.type]||typeColors.info};background:var(--surface2);font-size:.875rem;font-family:'Space Grotesk',sans-serif">${esc(b.message||'Aucun message')}</div>
       </div>
       <button class="btn btn-primary" onclick="saveBanner()">💾 Sauvegarder</button>
     </div>
@@ -943,95 +1166,4 @@ async function accounts(pane) {
       <h3>➕ Nouveau compte</h3>
       <div class="fgrid">
         <div class="frow"><label class="flabel">ID de connexion</label><input type="text" id="new-acct-id" placeholder="jean" /></div>
-        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acct-name" placeholder="Jean Dupont" /></div>
-      </div>
-      <div class="frow"><label class="flabel">Mot de passe (8 chars min)</label><input type="password" id="new-acct-pw" placeholder="••••••••" /></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button></div>
-    </div>
-
-    <div id="change-pw-box" style="display:none" class="card">
-      <h3>🔑 Changer le mot de passe — <span id="cpw-name" style="color:var(--text2)"></span></h3>
-      <input type="hidden" id="cpw-id" />
-      <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
-      <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="doChangePw()">Enregistrer</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('change-pw-box').style.display='none'">Annuler</button>
-      </div>
-    </div>
-  `;
-}
-
-async function createAdminAccount() {
-  const id   = document.getElementById('new-acct-id').value.trim().toLowerCase();
-  const name = document.getElementById('new-acct-name').value.trim();
-  const pw   = document.getElementById('new-acct-pw').value;
-  if (!id || !pw)    { toast('Remplis ID et mot de passe.','err'); return; }
-  if (pw.length < 8) { toast('Mot de passe trop court (8 chars min).','err'); return; }
-  const accts = await loadAdminAccounts();
-  if (accts.find(a=>a.id===id)) { toast('Cet ID existe déjà.','err'); return; }
-  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-  const hash = await pbkdf2Hash(pw, salt);
-  accts.push({ id, display_name: name||id, salt, hash, active:true, created_at: new Date().toISOString() });
-  await saveAdminAccounts(accts);
-  toast('Compte créé !','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-async function toggleAccount(id, activate) {
-  const accts = await loadAdminAccounts();
-  const a = accts.find(x=>x.id===id); if(a) a.active = activate;
-  await saveAdminAccounts(accts);
-  toast(activate ? 'Compte activé.' : 'Compte désactivé.','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-async function deleteAccount(id) {
-  if (!confirm(`Supprimer le compte "${id}" ?`)) return;
-  await saveAdminAccounts((await loadAdminAccounts()).filter(a=>a.id!==id));
-  toast('Compte supprimé.','ok');
-  go('accounts', document.querySelector('.tab.active'));
-}
-
-function showChangePw(id) {
-  document.getElementById('change-pw-box').style.display = 'block';
-  document.getElementById('cpw-id').value   = id;
-  document.getElementById('cpw-name').textContent = id;
-  document.getElementById('cpw-pw').value  = '';
-  document.getElementById('cpw-pw2').value = '';
-  document.getElementById('change-pw-box').scrollIntoView({behavior:'smooth'});
-}
-
-async function doChangePw() {
-  const id  = document.getElementById('cpw-id').value;
-  const pw  = document.getElementById('cpw-pw').value;
-  const pw2 = document.getElementById('cpw-pw2').value;
-  if (pw.length < 8) { toast('Mot de passe trop court.','err'); return; }
-  if (pw !== pw2)    { toast('Les mots de passe ne correspondent pas.','err'); return; }
-  const accts = await loadAdminAccounts();
-  const a = accts.find(x=>x.id===id);
-  if (!a) { toast('Compte introuvable.','err'); return; }
-  const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-  a.salt = salt; a.hash = await pbkdf2Hash(pw, salt);
-  await saveAdminAccounts(accts);
-  toast('Mot de passe changé !','ok');
-  document.getElementById('change-pw-box').style.display = 'none';
-}
-
-// ═══════════════════════════════════════
-// Utils
-// ═══════════════════════════════════════
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-let _toTimer;
-function toast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='show '+type;
-  clearTimeout(_toTimer); _toTimer=setTimeout(()=>t.className='',3200);
-}
-
-// ── Boot ──
-boot();
-</script>
-</body>
-</html>
+        <div class="frow"><label class="flabel">Nom affiché</label><input type="text" id="new-acc

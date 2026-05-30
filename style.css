@@ -1560,3 +1560,13 @@ html.dark .hist-item, html.dark .prof-stat
 .wm-lb-av{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .wm-lb-av-ph{width:26px;height:26px;border-radius:50%;background:rgba(0,200,255,.15);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#00c8ff;flex-shrink:0;}
 .wm-lb-name{font-weight:600;color:#e2e8f0;flex-shrink:0;max-width:90px;overflow:hidden;t
+/* ── Page Jouer — sélection de mode ──────────────────────────────────────── */
+.play-mode-grid{display:flex;flex-direction:column;gap:.7rem;padding:.1rem 0;}
+.play-mode-card{background:var(--s1);border:1px solid var(--b1);border-radius:1.1rem;overflow:hidden;cursor:pointer;display:flex;align-items:center;gap:.95rem;padding:.95rem 1.15rem .95rem 1.45rem;transition:border-color .18s,transform .18s;position:relative;}
+.play-mode-card:hover{border-color:var(--mc,var(--a));transform:translateX(3px);}
+.play-mode-accent{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--mc,var(--a));}
+.play-mode-icon{font-size:1.85rem;flex-shrink:0;width:2.1rem;text-align:center;line-height:1;}
+.play-mode-info{flex:1;min-width:0;}
+.play-mode-title{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;letter-spacing:.01em;}
+.play-mode-tagline{font-size:.7rem;color:var(--ink3);line-height:1.4;}
+.play-mode-cta{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mc,var(--a));flex-shrink:0;padding-left:.5rem;}
