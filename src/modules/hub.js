@@ -331,7 +331,8 @@ export async function buildCommunityChallenge(el){
 }
 
 export async function showHub(){
-  setRoute('hub');
+  // Nettoie le hash sans en ajouter un nouveau (URLs propres sans #)
+  if(window.location.hash)history.replaceState(null,'',window.location.pathname+window.location.search);
   show('screen-hub');
   let readToday=false,enigmaToday=false,quizToday=false;
   let xp=state.currentUserXP||0;
