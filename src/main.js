@@ -50,11 +50,21 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
   loadNavConfig();
   // Précharger l'anecdote en arrière-plan sans l'afficher
   loadTodayBackground();
+  // Routing par pathname
+  const _path=window.location.pathname.replace(/\/$/,'');
   if(state.currentUser){
-    showHub();
+    if(_path==='/quiz')goPlay();
+    else if(_path==='/ligue')goLigue();
+    else if(_path==='/profile')showProfile();
+    else if(_path==='/enigme'){show('screen-enigme');updateNav('bn-anec');}
+    else if(_path==='/mystere'){show('screen-mystere');}
+    else if(_path==='/duels'){show('screen-multi');goLigue();}
+    else if(_path==='/vs100'){show1vs100Lobby();}
+    else showHub();
     loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
-    show('screen-login');
+    if(_path==='/quiz'){show('screen-multi');renderPlayChoice();}
+    else show('screen-login');
   }
 
 // ════════════════════════════════════════════════════════════════════════════
