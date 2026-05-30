@@ -19,10 +19,8 @@ export function _handleHashRouting(){
   // Deep link: profil d'un autre utilisateur
   const m=hash.match(/^\/profil\/([a-f0-9-]{36})$/i) || hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
   if(m){viewUserProfile(m[1]);return;}
-  // Navigation vers une section par hash (#anecdote, #enigme, etc.)
-  const SECTIONS=['hub','anecdote','quiz','enigme','mystere','duels','vs100','profil','notifs','admin'];
-  const sec=(hash||'').replace(/^#/,'').toLowerCase().split('/')[0];
-  if(sec&&SECTIONS.includes(sec))show(sec);
+  // Sur index.html, seul le hub est géré — les autres sections ont leur propre .html
+  // On ne touche pas aux écrans pour éviter d'écraser showHub()
 }
 
 // Make all functions globally available for inline HTML handlers
@@ -446,12 +444,8 @@ function popXP(amount,anchorEl){
 })();
 
 
-window.addEventListener('hashchange',_handleHashRouting);
-// Déclencher au chargement si hash présent (après auth)
-document.addEventListener('DOMContentLoaded',()=>setTimeout(_handleHashRouting,800));
-// ══════════════════════════════â
-_handleHashRouting();
-  window.addEventListener('hashchange',_handleHashRouting);
+// Deep link profil uniquement (ex: /profil/uuid)
+window.addEventListener('hashchange', _handleHashRouting);
 
 
 // Banniere site
@@ -475,4 +469,4 @@ async function loadSiteBanner(){
     document.documentElement.style.setProperty("--banner-h","38px");
   }catch(e){}
 }
-setTimeout(loadSiteBanner,900);
+setTimeout(loadSiteBanner,900);                                                                                                                                 
