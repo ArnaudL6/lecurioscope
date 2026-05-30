@@ -52,6 +52,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
   loadTodayBackground();
   // Routing par pathname
   const _path=window.location.pathname.replace(/\/$/,'');
+  const _hash=(window.location.hash||'').replace(/^#/,'');
   if(state.currentUser){
     if(_path==='/quiz')goPlay();
     else if(_path==='/ligue')goLigue();
@@ -60,6 +61,7 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
     else if(_path==='/mystere'){show('screen-mystere');}
     else if(_path==='/duels'){show('screen-multi');goLigue();}
     else if(_path==='/vs100'){show1vs100Lobby();}
+    else if(_path==='/le-saviez-vous'||_hash==='anecdote'){show('screen-anec');updateNav('bn-anec');}
     else showHub();
     loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
