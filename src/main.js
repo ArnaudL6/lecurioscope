@@ -56,12 +56,12 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
   if(state.currentUser){
     if(_path==='/quiz')goPlay();
     else if(_path==='/ligue')goLigue();
-    else if(_path==='/profile')showProfile();
-    else if(_path==='/enigme'){show('screen-enigme');updateNav('bn-anec');}
-    else if(_path==='/mystere'){show('screen-mystere');}
+    else if(_path==='/profile')goProfile();
+    else if(_path==='/enigme'||_hash==='enigme'){show('screen-enigme');updateNav('bn-anec');}
+    else if(_path==='/mystere'||_hash==='mystere'){showMysteryDetail();}
     else if(_path==='/duels'){show('screen-multi');goLigue();}
     else if(_path==='/vs100'){show1vs100Lobby();}
-    else if(_path==='/le-saviez-vous'||_hash==='anecdote'){show('screen-anec');updateNav('bn-anec');}
+    else if(_path==='/le-saviez-vous'||_hash==='anecdote')goAnec();
     else showHub();
     loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
