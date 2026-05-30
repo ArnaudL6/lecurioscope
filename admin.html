@@ -333,7 +333,7 @@ function showFirstSetup() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-acync function doFirstSetup() {
+async function doFirstSetup() {
   const id   = document.getElementById('setup-id').value.trim().toLowerCase();
   const name = document.getElementById('setup-name').value.trim();
   const pw   = document.getElementById('setup-pw').value;
@@ -1142,4 +1142,12 @@ async function accounts(pane) {
       <div class="frow"><label class="flabel">Nouveau mot de passe</label><input type="password" id="cpw-pw" placeholder="••••••••" /></div>
       <div class="frow"><label class="flabel">Confirmer</label><input type="password" id="cpw-pw2" placeholder="••••••••" /></div>
       <div class="btn-row">
-        <b
+        <button class="btn btn-primary" onclick="createAdminAccount()">Créer le compte</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('change-pw-box').style.display='none';document.getElementById('change-pw-box').closest('.card').style.display='none'">Annuler</button>
+    </div>
+  </div>
+  `;
+}
+</script>
+</body>
+</html>
