@@ -16,11 +16,9 @@ import { state, sb } from './shared.js';
 
 export function _handleHashRouting(){
   const hash=window.location.hash;
-  // Deep link: profil d'un autre utilisateur
+  // Deep link profil uniquement — les autres routes gérées par pathname
   const m=hash.match(/^\/profil\/([a-f0-9-]{36})$/i) || hash.match(/^#\/profil\/([a-f0-9-]{36})$/i);
   if(m){viewUserProfile(m[1]);return;}
-  // Sur index.html, seul le hub est géré — les autres sections ont leur propre .html
-  // On ne touche pas aux écrans pour éviter d'écraser showHub()
 }
 
 // Make all functions globally available for inline HTML handlers
@@ -48,15 +46,22 @@ Object.assign(window, Shared, Xp, Auth, Hub, Anecdote, Enigme, Mystery, Profile,
   // Précharger l'anecdote en arrière-plan sans l'afficher
   loadTodayBackground();
   if(state.currentUser){
-    showHub();
+    // SPA routing par pathname (Cloudflare sert index.html pour toutes les routes via _redirects)
+    const path=window.location.pathname.replace(/^\/|\/$/g,'').toLowerCase();
+    if(path==='le-saviez-vous'){goAnec();}
+    else if(path==='enigme'){goEnigme();}
+    else if(path==='quiz'){goPlay();}
+    else if(path==='duels'){goPlay();setTimeout(showDuelLobby,100);}
+    else if(path==='vs100'){show1vs100Lobby();}
+    else if(path==='mystere'){showHub();setTimeout(showMysteryDetail,200);}
+    else if(path==='profile'||path==='profil'){goProfile();}
+    else{showHub();}
     loadFavs();checkFriendRequests();loadNotifications();subscribeNotifications();subscribeNewHunters();
   } else {
     show('screen-login');
   }
 
-// ════════════════════════════════════════════════════════════════════════════
 // v2 FEATURES
-// ════════════════════════════════════════════════════════════════════════════
 
 // ── Streak ──────────────────────────────────────────────────────────────────
 // state.userStreak declared at top
@@ -444,8 +449,7 @@ function popXP(amount,anchorEl){
 })();
 
 
-// Deep link profil uniquement (ex: /profil/uuid)
-window.addEventListener('hashchange', _handleHashRouting);
+window.addEventListener('hashchange',_handleHashRouting);
 
 
 // Banniere site
