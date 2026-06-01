@@ -1,819 +1,340 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>La Curiosphère</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Curiosphère — Bientôt</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  --bg: #07090f; --s1: #101320; --s2: #141728;
+  --b1: rgba(255,255,255,.055); --b2: rgba(255,255,255,.10);
+  --ink: #eef0f4; --ink2: #94a3b8; --ink3: #475569;
+  --a: #00c8ff; --adim: rgba(0,200,255,.08);
+  --re: #f87171;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
-<link rel="stylesheet" href="style.css?v=5">
-  <!-- SEO & Open Graph -->
-  <meta name="description" content="Le Curioscope — Explore l'histoire, la science et la culture générale autrement. Anecdotes quotidiennes, énigmes, duels de culture G et bien plus.">
-  <meta name="keywords" content="culture générale, anecdotes, histoire, science, quiz, enigmes, le saviez-vous, curiosités">
-  <meta name="author" content="Arnaud Licour">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://lecurioscope.fr/">
+/* Background grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 40%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
 
-  <!-- Open Graph (Discord, Facebook, WhatsApp) -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://lecurioscope.fr/">
-  <meta property="og:title" content="Le Curioscope — La curiosité, c'est un art">
-  <meta property="og:description" content="Explore l'histoire, la science et la culture générale autrement. Anecdotes quotidiennes, énigmes, duels et classements.">
-  <meta property="og:image" content="https://lecurioscope.fr/og-image.png">
-  <meta property="og:locale" content="fr_FR">
-  <meta property="og:site_name" content="Le Curioscope">
+/* Aurora */
+.aurora { position: fixed; pointer-events: none; z-index: 0; }
+.aurora-1 { top: -20%; left: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,200,255,.12), transparent 60%); animation: aurora-drift 12s ease-in-out infinite alternate; }
+.aurora-2 { bottom: -20%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(99,102,241,.1), transparent 60%); animation: aurora-drift 15s ease-in-out infinite alternate-reverse; }
+@keyframes aurora-drift { from { transform: translate(0, 0); } to { transform: translate(40px, 30px); } }
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Le Curioscope — La curiosité, c'est un art">
-  <meta name="twitter:description" content="Explore l'histoire, la science et la culture générale autrement. Anecdotes, énigmes et duels de culture G.">
-  <meta name="twitter:image" content="https://lecurioscope.fr/og-image.png">
+.wrap { position: relative; z-index: 10; width: 100%; max-width: 480px; padding: 2rem 1.5rem; text-align: center; }
 
-  <!-- PWA manifest -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f0f1a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Curioscope">
+/* Logo */
+.logo { display: flex; align-items: center; justify-content: center; gap: .6rem; font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3rem; }
+.logo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--a); box-shadow: 0 0 12px var(--a); animation: pulse-dot 2.2s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{transform:scale(1);box-shadow:0 0 12px var(--a)} 50%{transform:scale(1.5);box-shadow:0 0 20px var(--a)} }
+
+/* Status badge */
+.status { display: inline-flex; align-items: center; gap: .45rem; background: rgba(0,200,255,.08); border: 1px solid rgba(0,200,255,.2); border-radius: 999px; padding: .35rem .9rem; font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--a); margin-bottom: 1.5rem; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--a); animation: pulse-dot 1.5s ease-in-out infinite; }
+
+.title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 8vw, 3.2rem); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--ink); line-height: 1.1; margin-bottom: .75rem; }
+.title span { color: var(--a); }
+
+.subtitle { font-size: .9rem; color: var(--ink2); line-height: 1.7; margin-bottom: 2.5rem; max-width: 380px; margin-left: auto; margin-right: auto; }
+
+/* Features teaser */
+.features { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-bottom: 2.5rem; text-align: left; }
+.feat { background: var(--s1); border: 1px solid var(--b1); border-radius: .85rem; padding: .75rem .9rem; }
+.feat-ico { font-size: 1.1rem; margin-bottom: .3rem; }
+.feat-name { font-size: .75rem; font-weight: 700; color: var(--ink); margin-bottom: .1rem; }
+.feat-desc { font-size: .62rem; color: var(--ink3); }
+
+/* CTA */
+.cta-beta { width: 100%; padding: .9rem; background: var(--a); color: #07090f; border: none; border-radius: .85rem; font-family: 'Space Grotesk', sans-serif; font-size: .82rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: opacity .15s; margin-bottom: .75rem; }
+.cta-beta:hover { opacity: .85; }
+.cta-wl { width: 100%; padding: .75rem; background: transparent; color: var(--ink3); border: 1px solid var(--b2); border-radius: .85rem; font-family: 'Space Grotesk', sans-serif; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.cta-wl:hover { color: var(--ink); border-color: var(--b2); }
+
+/* Login modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.modal { background: var(--s1); border: 1px solid var(--b2); border-radius: 1.25rem; padding: 2rem 1.75rem; width: 100%; max-width: 380px; position: relative; }
+.modal-title { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 1.5rem; text-align: center; }
+.form-group { margin-bottom: .85rem; }
+.form-label { font-size: .62rem; font-weight: 700; letter-spacing: .1em; color: var(--ink3); text-transform: uppercase; display: block; margin-bottom: .4rem; }
+.form-input { width: 100%; background: var(--s2); border: 1px solid var(--b2); border-radius: .65rem; color: var(--ink); padding: .6rem .9rem; font-size: .85rem; font-family: inherit; outline: none; transition: border-color .2s; }
+.form-input:focus { border-color: var(--a); }
+.btn-login { width: 100%; padding: .75rem; background: var(--a); color: #07090f; border: none; border-radius: .75rem; font-family: 'Space Grotesk', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; letter-spacing: .08em; margin-top: .5rem; transition: opacity .15s; }
+.btn-login:hover { opacity: .85; }
+.btn-login:disabled { opacity: .4; cursor: default; }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--ink3); cursor: pointer; font-size: 1.1rem; line-height: 1; }
+.err-msg { font-size: .72rem; color: var(--re); background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2); border-radius: .5rem; padding: .5rem .75rem; margin-bottom: .75rem; }
+
+/* Access denied */
+.denied { text-align: center; }
+.denied-ico { font-size: 2.5rem; margin-bottom: .75rem; }
+.denied-title { font-size: 1.1rem; font-weight: 700; color: var(--re); margin-bottom: .5rem; }
+.denied-desc { font-size: .78rem; color: var(--ink3); line-height: 1.65; margin-bottom: 1.25rem; }
+.btn-wl { padding: .6rem 1.5rem; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); border-radius: .75rem; color: var(--re); font-family: 'Space Grotesk', sans-serif; font-size: .75rem; font-weight: 700; cursor: pointer; }
+
+/* Success */
+.success { text-align: center; }
+.success-ico { font-size: 2.5rem; margin-bottom: .75rem; }
+.success-title { font-size: 1.1rem; font-weight: 700; color: var(--a); margin-bottom: .5rem; }
+.success-desc { font-size: .78rem; color: var(--ink2); line-height: 1.65; margin-bottom: 1.25rem; }
+.btn-enter { width: 100%; padding: .8rem; background: var(--a); color: #07090f; border: none; border-radius: .75rem; font-family: 'Space Grotesk', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Waitlist form */
+.wl-desc { font-size: .78rem; color: var(--ink3); margin-bottom: 1rem; line-height: 1.6; }
+.btn-submit-wl { width: 100%; padding: .75rem; background: var(--s2); border: 1px solid var(--b2); border-radius: .75rem; color: var(--ink2); font-family: 'Space Grotesk', sans-serif; font-size: .78rem; font-weight: 700; cursor: pointer; margin-top: .5rem; }
+.btn-submit-wl:hover { border-color: var(--a); color: var(--a); }
+</style>
 </head>
 <body>
-<!-- ── Onboarding ──────────────────────────────────────────────────────── -->
-<div id="onboard-overlay" class="onboard-overlay" style="display:none;">
-  <div class="onboard-card">
-    <div class="onboard-wolf" id="onboard-wolf">🐺</div>
-    <div class="onboard-title" id="onboard-title">Bienvenue !</div>
-    <div class="onboard-desc" id="onboard-desc">Chaque jour, une nouvelle anecdote fascinante vous attend.</div>
-    <div class="onboard-dots">
-      <div class="onboard-dot active" id="odot-0"></div>
-      <div class="onboard-dot" id="odot-1"></div>
-      <div class="onboard-dot" id="odot-2"></div>
-    </div>
-    <button class="onboard-btn" id="onboard-btn" onclick="nextOnboard()">Continuer</button>
+<div class="aurora aurora-1"></div>
+<div class="aurora aurora-2"></div>
+
+<div class="wrap">
+  <div class="logo" style="font-family: &quot;Space Grotesk&quot;"><div class="logo-dot"></div>La Curiosphère</div>
+  <div class="status"><div class="status-dot"></div>Bêta privée en cours</div>
+  <div class="title">La culture,<br/><span>gamifiée.</span></div>
+  <div class="subtitle">Anecdotes quotidiennes, quiz, duels et classements Solo — une nouvelle façon d'apprendre chaque jour.</div>
+  <div class="features">
+    <div class="feat"><div class="feat-ico">💡</div><div class="feat-name">Anecdote du jour</div><div class="feat-desc">Nouveau contenu chaque matin</div></div>
+    <div class="feat"><div class="feat-ico">⚔️</div><div class="feat-name">Boss de rang</div><div class="feat-desc">Progresse de E jusqu'au rang S</div></div>
+    <div class="feat"><div class="feat-ico">🌍</div><div class="feat-name">1 VS 100</div><div class="feat-desc">Affronte la communauté en direct</div></div>
+    <div class="feat"><div class="feat-ico">📊</div><div class="feat-name">Recap hebdo</div><div class="feat-desc">Tes stats de la semaine</div></div>
   </div>
-</div>
-<div class="aurora" aria-hidden="true"></div>
-<header>
-  <div class="logo" href="/" title="Accueil">
-    <div class="logo-mark"><div class="logo-dot"></div></div>
-    <span class="logo-txt"><em>Le</em>&thinsp;Curioscope</span>
-  </div>
-  <div class="top-tabs">
-    <button class="top-tab active" id="top-tab-anec" onclick="location.href='/le-saviez-vous'">
-      <div class="tab-dot"></div>
-      <span class="logo-txt"><em>Le</em>&thinsp;saviez-vous&thinsp;?</span>
-    </button>
-    <button class="top-tab" id="top-tab-maisdismoi" onclick="goMaisDisMoi()">
-      <span class="logo-txt">Mais&thinsp;dis&thinsp;moi&thinsp;?</span>
-    </button>
-    <button class="top-tab" id="top-tab-ephemeride" onclick="goEphemeride()">
-      <span class="logo-txt">Éphéméride</span>
-    </button>
-    <button class="top-tab" id="top-tab-enigme" onclick="location.href='/enigme'">
-      <span class="logo-txt">Crack&thinsp;le&thinsp;code&thinsp;!</span>
-    </button>
-    <button class="top-tab" id="top-tab-motmal" onclick="goTasDitQuoi()">
-      <span class="logo-txt">T'as&thinsp;dit&thinsp;quoi&thinsp;?!</span>
-    </button>
-  </div>
-  <div class="h-right">
-    <span class="date-tag" id="date-lbl"></span>
-    <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Mode clair / sombre" style="display:none;"></button>
-    <a class="discord-btn" href="https://discord.gg/lmco" target="_blank" rel="noopener" title="Rejoindre le Discord"><svg width="18" height="14" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg></a>
-    <button class="notif-bell" id="notif-bell" onclick="toggleNotifPanel()" title="Notifications" style="display:none;">🔔<span class="notif-bell-badge" id="notif-bell-badge" style="display:none;">0</span></button>
-    <button class="btn-hlogin" id="btn-hlogin" onclick="show('screen-login')">Connexion</button>
-    <button class="av-btn" id="av-btn" onclick="location.href='/profile'"></button>
-    <button class="admin-header-btn" id="admin-header-btn" onclick="location.href='/admin'" title="Panneau Admin" style="display:none;">⚡</button>
-  </div>
-</header>
-<main>
-  <div class="screen" id="screen-login">
-    <div class="auth-panel">
-      <div class="auth-brand"><div class="auth-eyebrow">Bienvenue</div>
-        <div class="auth-bigtitle">Anecdote<br>du Jour</div>
-        <div class="auth-tagline">Une curiosit&eacute; partag&eacute;e par la communaut&eacute; &mdash; chaque matin.</div></div>
-      <button class="btn-discord-oauth" onclick="doDiscordLogin()">
-        <svg width="18" height="14" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>
-        Continuer avec Discord
-      </button>
-      <div class="auth-sep"><span>ou par email</span></div>
-      <div class="err" id="lerr"></div>
-      <div class="f"><label>Email</label><input id="lu" type="email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <div class="f"><label>Mot de passe</label><input id="lp" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <div class="auth-forgot"><a onclick="doForgotPassword()">Mot de passe oubli&eacute; ?</a></div>
-      <button class="btn-main" id="btn-login" onclick="doLogin()">Se connecter</button>
-      <div class="auth-alt">Pas encore membre ? <a onclick="show('screen-register')">Cr&eacute;er un compte</a></div>
-      <div class="auth-guest"><a onclick="location.href='/'">Continuer sans compte</a></div>
-    </div>
-  </div>
-  <div class="screen" id="screen-register">
-    <div class="auth-panel">
-      <div class="auth-brand"><div class="auth-eyebrow">Inscription</div>
-        <div class="auth-bigtitle">Cr&eacute;er un<br>compte</div>
-        <div class="auth-tagline">Historique, quiz quotidien et amis &mdash; tout est ici.</div></div>
-      <button class="btn-discord-oauth" onclick="doDiscordLogin()">
-        <svg width="18" height="14" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>
-        Continuer avec Discord
-      </button>
-      <div class="auth-sep"><span>ou par email</span></div>
-      <div class="err" id="rerr"></div>
-      <div class="f"><label>Pseudo</label><input id="ru" placeholder="choisissez un pseudo" autocomplete="username" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-      <div class="f"><label>Email</label><input id="re" type="email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-      <div class="f"><label>Mot de passe <span id="pw-strength-lbl" style="font-weight:400;font-size:.55rem;"></span></label><input id="rp" type="password" placeholder="min. 8 caract&egrave;res" autocomplete="new-password" oninput="checkPwStrength(this.value)" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-      <div id="pw-strength-bar" style="height:3px;border-radius:2px;background:var(--b1);margin-top:-.5rem;margin-bottom:.5rem;transition:all .2s;"><div id="pw-strength-fill" style="height:100%;border-radius:2px;width:0;transition:all .3s;"></div></div>
-      <button class="btn-main" id="btn-register" onclick="doRegister()">Cr&eacute;er mon compte</button>
-      <div class="auth-alt">D&eacute;j&agrave; membre ? <a onclick="show('screen-login')">Se connecter</a></div>
-      <div class="auth-guest"><a onclick="location.href='/'">Continuer sans compte</a></div>
-    </div>
-  </div>
-  <div class="screen" id="screen-pick">
-    <div class="pick-wrap">
-      <div class="pick-head">
-        <div class="pick-meta-row">
-          <div class="pick-eyebrow">✦ Premier visiteur du jour</div>
-          <div class="pick-daybadge" id="pick-day-badge">Jour — / 365</div>
-        </div>
-        <div class="pick-hero">
-          <div class="pick-title">Quel th&egrave;me<br><span class="accent">pour aujourd&rsquo;hui ?</span></div>
-          <p class="pick-sub">Votre choix d&eacute;finit l&rsquo;anecdote pour <em>tous</em> les visiteurs d&rsquo;aujourd&rsquo;hui.</p>
-        </div>
-      </div>
-      <div class="theme-grid" id="theme-grid"></div>
-      <button class="btn-gen" id="btn-gen" onclick="pickTheme()">G&eacute;n&eacute;rer l&rsquo;anecdote</button>
-    </div>
-  </div>
-  <div class="screen" id="screen-load">
-    <div class="load-wrap">
-      <div class="load-orbit"><div class="load-center"><div class="load-dot-c"></div></div></div>
-      <div class="load-title" id="load-title">Chargement&hellip;</div>
-      <div class="load-progress"><div class="load-progress-fill"></div></div>
-    </div>
-  </div>
-  <div class="screen" id="screen-anec">
-    <div class="anec-wrap">
-      <div class="anec-topbar">
-        <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
-          <div class="anec-theme-chip" id="anec-tag">Th&egrave;me</div>
-          <div class="jour-badge" id="jour-badge">Jour &mdash; / 365</div>
-        </div>
-        <div class="anec-chooser-block">
-          <div class="anec-chooser-label">Choisi par</div>
-          <div class="anec-chooser-name" id="anec-chooser">&mdash;</div>
-        </div>
-      </div>
-      <div class="anec-card" id="anec-num-card" data-num="01">
-        <div class="anec-glow"></div><div class="anec-body" id="anec-body"></div>
-      <div class="contexte-card" id="contexte-card" style="display:none">
-        <button class="contexte-toggle" onclick="toggleContexte()">
-          <span class="ct-icon">💡</span>
-          <span class="ct-title">En savoir plus</span>
-          <span class="ct-arrow">▾</span>
-        </button>
-        <div class="contexte-body-wrap">
-          <div class="contexte-body-inner">
-            <div class="contexte-txt" id="contexte-txt"></div>
-            <div class="contexte-sources" id="contexte-sources"></div>
-          </div>
-        </div>
-      </div>
-      </div>
-      <div class="anec-actions">
-        <button class="btn-share" id="btn-share" onclick="shareAnec()" style="margin:0;">&#x2197; Partager</button>
-        <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris">🤍</button>
-        <div class="react-wrap" id="react-wrap" style="display:none">
-          <button class="react-btn" id="react-up" onclick="setReaction('up')">👍 <span id="react-up-count">0</span></button>
-          <button class="react-btn" id="react-down" onclick="setReaction('down')">👎 <span id="react-down-count">0</span></button>
-        </div>
-        <button class="btn-share" id="btn-quiz-today" onclick="triggerTodayQuiz()" style="display:none;">🧠 Quiz</button>
-        <button class="btn-historique-anec" onclick="goHistoire()" title="Voir l'historique des anecdotes">🏛️ Historique</button>
-      </div>
-      <div class="anec-footer">
-        <div class="anec-note" id="anec-note"></div>
-        <div class="cd-block"><div class="cd-label">Prochaine anecdote</div><div class="cd-time" id="countdown">--:--:--</div></div>
-      </div>
-      <div class="join-bar" id="join-bar">
-        <div class="join-ico">&#127919;</div>
-        <div class="join-txt"><strong>Quiz &amp; historique</strong>Cr&eacute;ez un compte pour tester vos connaissances et retrouver chaque anecdote lue.</div>
-        <button class="btn-join" onclick="show('screen-register')">Rejoindre</button>
-      </div>
-      <div class="rating-section" id="rating-section" style="display:none;">
-        <div class="rating-head"><span class="rating-lbl">Votre avis</span><span class="rating-avg" id="rating-avg"></span></div>
-        <div class="stars-row">
-          <span class="star" onmouseover="hoverStars(1)" onmouseout="resetStars()" onclick="clickStar(1)">&#x2605;</span>
-          <span class="star" onmouseover="hoverStars(2)" onmouseout="resetStars()" onclick="clickStar(2)">&#x2605;</span>
-          <span class="star" onmouseover="hoverStars(3)" onmouseout="resetStars()" onclick="clickStar(3)">&#x2605;</span>
-          <span class="star" onmouseover="hoverStars(4)" onmouseout="resetStars()" onclick="clickStar(4)">&#x2605;</span>
-          <span class="star" onmouseover="hoverStars(5)" onmouseout="resetStars()" onclick="clickStar(5)">&#x2605;</span>
-        </div>
-        <textarea class="comment-input" id="comment-input" placeholder="Un commentaire ? (optionnel, 200 car. max)" maxlength="200" oninput="updateCommentCount()"></textarea>
-        <div class="comment-count" id="comment-count">0 / 200</div>
-        <div class="rating-actions">
-          <button class="btn-rate" onclick="submitRating()">Enregistrer</button>
-          <span class="rating-saved" id="rating-saved">&#x2713; Enregistr&eacute;</span>
-        </div>
-      </div>
-      <div id="comments-feed" class="comments-feed" style="display:none;"></div>
-      <div id="quiz-solo-area" style="margin-top:1.5rem;display:none;"></div>
-      <div id="home-challenge-wrap" style="margin-top:1.25rem;"></div>
-    </div>
-  </div>
-
-  <!-- ── Sélecteur de catégorie Énigme ──────────────────────────────────── -->
-  <div class="screen" id="screen-enigme-pick">
-    <div class="enigme-pick-wrap">
-      <div class="enigme-pick-head">
-        <div class="enigme-pick-eyebrow">🔮 Énigme du jour</div>
-        <h1 class="enigme-pick-title">Choisis ta<span class="accent">catégorie</span></h1>
-        <p class="enigme-pick-sub">Le premier à choisir définit l'énigme pour <em>tous les visiteurs</em> d'aujourd'hui.</p>
-      </div>
-      <div class="theme-grid" id="enigme-cat-grid"></div>
-      <button class="btn-gen-enigme" id="btn-gen-enigme" onclick="pickEnigmeCat()">Générer l'énigme</button>
-    </div>
-  </div>
-
-  <!-- ── Écran Énigme du jour ────────────────────────────────────────────── -->
-  <div class="screen" id="screen-enigme">
-  <div class="enigme-wrap">
-      <div class="enigme-topbar">
-        <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
-          <div class="enigme-cat-chip" id="enigme-cat-tag">Catégorie</div>
-          <div class="enigme-difficulty-badge" id="enigme-difficulty"></div>
-        </div>
-        <div class="anec-chooser-block">
-          <div class="anec-chooser-label">Choisi par</div>
-          <div class="anec-chooser-name" id="enigme-chooser">—</div>
-        </div>
-      </div>
-
-      <!-- Carte question -->
-      <div class="enigme-card">
-        <div class="enigme-card-glow"></div>
-        <div class="enigme-question" id="enigme-question"></div>
-
-        <!-- Indice -->
-        <div class="enigme-hint" id="enigme-hint" style="display:none;">
-          <div class="enigme-hint-header" onclick="toggleEnigmeHint()">
-            <span>💡 Indice</span>
-            <button class="btn-back" style="border:none;padding:.1rem .5rem;font-size:.62rem;" id="enigme-hint-btn">Voir l'indice</button>
-          </div>
-          <div class="enigme-hint-body" id="enigme-hint-body"></div>
-        </div>
-      </div>
-
-      <!-- Zone de réponse -->
-      <div class="enigme-answer-area">
-        <div class="enigme-answer-label">Ta réponse</div>
-        <textarea class="enigme-answer-input" id="enigme-answer-input" rows="3" placeholder="Écris ta réponse ici…"></textarea>
-        <div class="enigme-answer-actions">
-          <button class="btn-enigme-submit" id="enigme-btn-submit" onclick="submitEnigmaAnswer()">✓ Valider ma réponse</button>
-          <button class="btn-enigme-reveal" id="enigme-btn-reveal" onclick="revealEnigmaWithoutAnswer()">Voir la réponse</button>
-        </div>
-        <div id="enigme-answer-result"></div>
-      </div>
-
-      <!-- Carte Savoir -->
-      <div class="carte-savoir" id="enigme-carte-savoir">
-        <div class="carte-savoir-head">Carte Savoir</div>
-        <div class="carte-savoir-title">Pour aller plus loin</div>
-        <div class="carte-savoir-text" id="enigme-explanation"></div>
-        <div class="carte-savoir-funfact" id="enigme-fun-fact-wrap">
-          <div class="carte-savoir-funfact-label">Le savais-tu ?</div>
-          <div class="carte-savoir-text" id="enigme-fun-fact"></div>
-        </div>
-      </div>
-
-      <!-- Join bar (non connecté) -->
-      <div class="join-bar" id="enigme-join-bar">
-        <div class="join-ico">🔮</div>
-        <div class="join-txt"><strong>Enregistre tes réponses</strong>Crée un compte pour suivre tes stats et gagner des badges Énigmes.</div>
-        <button class="btn-join" onclick="show('screen-register')">Rejoindre</button>
-      </div>
-
-      <!-- Notation -->
-      <div class="rating-section" id="enigme-rating-section" style="display:none;">
-        <div class="rating-head"><span class="rating-lbl">Votre avis sur l'énigme</span><span class="rating-avg" id="enigme-rating-avg"></span></div>
-        <div class="stars-row" id="enigme-stars-row">
-          <span class="star" onmouseover="hoverEnigmeStars(1)" onmouseout="resetEnigmeStars()" onclick="clickEnigmeStar(1)">★</span>
-          <span class="star" onmouseover="hoverEnigmeStars(2)" onmouseout="resetEnigmeStars()" onclick="clickEnigmeStar(2)">★</span>
-          <span class="star" onmouseover="hoverEnigmeStars(3)" onmouseout="resetEnigmeStars()" onclick="clickEnigmeStar(3)">★</span>
-          <span class="star" onmouseover="hoverEnigmeStars(4)" onmouseout="resetEnigmeStars()" onclick="clickEnigmeStar(4)">★</span>
-          <span class="star" onmouseover="hoverEnigmeStars(5)" onmouseout="resetEnigmeStars()" onclick="clickEnigmeStar(5)">★</span>
-        </div>
-        <textarea class="comment-input" id="enigme-comment-input" placeholder="Un commentaire sur cette énigme ? (optionnel)" maxlength="200"></textarea>
-        <div class="rating-actions">
-          <button class="btn-rate" onclick="submitEnigmaRating()">Enregistrer</button>
-          <span class="rating-saved" id="enigme-rating-saved">✓ Enregistré</span>
-        </div>
-      </div>
-
-      <!-- Fil de commentaires -->
-      <div style="margin-top:1.5rem;" id="enigme-comment-section">
-        <div style="font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink3);margin-bottom:.75rem;">Commentaires</div>
-        <div style="display:flex;gap:.5rem;margin-bottom:.85rem;">
-          <textarea class="enigme-answer-input" id="enigme-comment-new" rows="2" placeholder="Ajouter un commentaire…" maxlength="500" style="flex:1;"></textarea>
-          <button class="btn-enigme-submit" style="width:auto;padding:.6rem 1rem;flex-shrink:0;" onclick="submitEnigmaComment()">Envoyer</button>
-        </div>
-        <div id="enigme-comments-feed" class="comments-feed"></div>
-      </div>
-
-
-  </div><!-- end enigme-wrap -->
-
-  <!-- Chat -->
-  <div class="enigme-chat-panel">
-    <div class="enigme-chat-wrap">
-      <div class="enigme-chat-head">
-        <div class="enigme-chat-title"><span class="enigme-chat-dot"></span>Chat en direct</div>
-        <span class="enigme-chat-count" id="chat-count"></span>
-      </div>
-      <div class="enigme-chat-msgs" id="chat-msgs">
-        <div class="enigme-chat-empty" id="chat-empty">Soyez le premier a ecrire !</div>
-      </div>
-      <div class="enigme-chat-footer" id="chat-footer" style="display:none;">
-        <textarea class="enigme-chat-input" id="chat-input" placeholder="Un message..." rows="1" maxlength="280" onkeydown="chatKeyDown(event)"></textarea>
-        <button class="enigme-chat-send" id="chat-send-btn" onclick="sendChatMsg()">Envoyer</button>
-      </div>
-      <div class="enigme-chat-login" id="chat-login-hint" style="display:none;">
-        <a onclick="show('screen-login')">Connecte-toi</a> pour participer au chat
-      </div>
-    </div>
-  </div>
-
-  </div><!-- end screen-enigme flex -->
-
-  <div class="screen" id="screen-profile">
-    <div class="prof-top-bar">
-      <button class="btn-back" onclick="goBack()">← Retour</button>
-      <div class="prof-top-actions">
-        <button class="prof-edit-name-btn" onclick="openAccountSettings()">⚙️ Paramètres</button>
-        <button class="prof-logout-btn" onclick="doSignOut()">Déconnexion</button>
-      </div>
-    </div>
-
-    <!-- Modale paramètres compte -->
-    <div class="acct-modal-bd" id="acct-modal-bd" style="display:none;" onclick="if(event.target===this)closeAccountSettings()">
-      <div class="acct-modal-card">
-        <div class="acct-modal-head">
-          <span class="acct-modal-title">⚙️ Paramètres</span>
-          <button class="acct-modal-close" onclick="closeAccountSettings()">✕</button>
-        </div>
-
-        <!-- Onglets -->
-        <div class="acct-tabs">
-          <button class="acct-tab active" onclick="switchAcctTab('profil',this)">👤 Profil</button>
-          <button class="acct-tab" onclick="switchAcctTab('compte',this)">🔒 Compte</button>
-          <button class="acct-tab" onclick="switchAcctTab('notifs',this)">🔔 Notifs</button>
-          <button class="acct-tab" onclick="switchAcctTab('danger',this)">⚠️ Danger</button>
-        </div>
-
-        <!-- Onglet Profil -->
-        <div class="acct-tab-panel" id="acct-panel-profil">
-          <div class="acct-section">
-            <div class="acct-section-title">Pseudo</div>
-            <div class="acct-section-desc">Visible par tous les autres joueurs.</div>
-            <div class="acct-row">
-              <input class="acct-input" id="acct-username-input" maxlength="24" placeholder="Nouveau pseudo"/>
-              <button class="acct-btn" onclick="saveUsername()">Sauvegarder</button>
-            </div>
-            <div class="acct-err" id="acct-username-err"></div>
-          </div>
-
-          <div class="acct-section">
-            <div class="acct-section-title">Bio</div>
-            <div class="acct-section-desc">Quelques mots sur toi, visible sur ton profil.</div>
-            <div class="acct-row-col">
-              <textarea class="acct-textarea" id="acct-bio-input" maxlength="160" placeholder="Présente-toi en quelques mots…" rows="3"></textarea>
-              <button class="acct-btn" onclick="saveBioSettings()">Sauvegarder</button>
-            </div>
-            <div class="acct-err" id="acct-bio-err"></div>
-          </div>
-
-          <div class="acct-section">
-            <div class="acct-section-title">Photo de profil</div>
-            <div class="acct-section-desc">Clique sur ton avatar depuis le profil pour la changer. Tu peux aussi choisir une couleur.</div>
-            <button class="acct-btn-outline" onclick="closeAccountSettings();triggerAvatarUpload()">📷 Changer la photo</button>
-            <button class="acct-btn-outline" onclick="closeAccountSettings();toggleColorPicker()">🎨 Changer la couleur</button>
-          </div>
-        </div>
-
-        <!-- Onglet Compte -->
-        <div class="acct-tab-panel" id="acct-panel-compte" style="display:none;">
-          <div class="acct-section">
-            <div class="acct-section-title">Adresse e-mail</div>
-            <div class="acct-current-label">Actuelle : <span id="acct-current-email" class="acct-current-val"></span></div>
-            <div class="acct-row">
-              <input class="acct-input" id="acct-email-input" type="email" placeholder="Nouvel e-mail"/>
-              <button class="acct-btn" onclick="saveEmail()">Modifier</button>
-            </div>
-            <div class="acct-err" id="acct-email-err"></div>
-            <div class="acct-info">📧 Un lien de confirmation sera envoyé à la nouvelle adresse. Le changement ne sera effectif qu'après validation.</div>
-          </div>
-
-          <div class="acct-section">
-            <div class="acct-section-title">Mot de passe</div>
-            <div class="acct-section-desc">Choisissez un mot de passe d'au moins 8 caractères.</div>
-            <div class="acct-row-col">
-              <input class="acct-input" id="acct-pw-new" type="password" placeholder="Nouveau mot de passe"/>
-              <input class="acct-input" id="acct-pw-confirm" type="password" placeholder="Confirmer le mot de passe"/>
-              <button class="acct-btn" onclick="savePassword()">Changer le mot de passe</button>
-            </div>
-            <div class="acct-err" id="acct-pw-err"></div>
-          </div>
-
-          <div class="acct-section">
-            <div class="acct-section-title">Connexions</div>
-            <div class="acct-section-desc">Comptes liés à ton profil.</div>
-            <div class="acct-providers" id="acct-providers"></div>
-          </div>
-        </div>
-
-        <!-- Onglet Notifications -->
-        <div class="acct-tab-panel" id="acct-panel-notifs" style="display:none;">
-          <div class="acct-section">
-            <div class="acct-section-title">Préférences de notifications</div>
-            <div class="acct-section-desc">Choisis les notifications que tu veux recevoir.</div>
-            <div class="acct-toggle-list">
-              <label class="acct-toggle-row">
-                <span class="acct-toggle-label">🤝 Demandes d'amis</span>
-                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-friend" checked onchange="saveNotifPref('friend',this.checked)"/>
-                <span class="acct-toggle-slider"></span>
-              </label>
-              <label class="acct-toggle-row">
-                <span class="acct-toggle-label">⚔️ Invitations de duel</span>
-                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-duel" checked onchange="saveNotifPref('duel',this.checked)"/>
-                <span class="acct-toggle-slider"></span>
-              </label>
-              <label class="acct-toggle-row">
-                <span class="acct-toggle-label">🎯 C'est ton tour (duel)</span>
-                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-turn" checked onchange="saveNotifPref('turn',this.checked)"/>
-                <span class="acct-toggle-slider"></span>
-              </label>
-              <label class="acct-toggle-row">
-                <span class="acct-toggle-label">🏆 Résultats de duel</span>
-                <input type="checkbox" class="acct-toggle-cb" id="notif-pref-result" checked onchange="saveNotifPref('result',this.checked)"/>
-                <span class="acct-toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Onglet Danger -->
-        <div class="acct-tab-panel" id="acct-panel-danger" style="display:none;">
-          <div class="acct-section">
-            <div class="acct-section-title">Réinitialiser la progression</div>
-            <div class="acct-section-desc">Remet à zéro ton XP, tes badges et ta série. Irréversible.</div>
-            <button class="acct-btn-warn" onclick="confirmResetProgress()">🔄 Réinitialiser ma progression</button>
-          </div>
-          <div class="acct-section acct-danger-zone">
-            <div class="acct-section-title" style="color:var(--err)">Supprimer le compte</div>
-            <div class="acct-section-desc">Toutes tes données seront supprimées définitivement. Cette action est irréversible.</div>
-            <button class="acct-btn-danger" onclick="confirmDeleteAccount()">🗑️ Supprimer mon compte</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-    <div id="admin-entry" style="display:none;"></div>
-
-    <!-- Hero card -->
-    <div class="prof-hero-card">
-      <!-- Avatar + anneau XP circulaire -->
-      <div class="prof-av-container">
-        <svg class="xp-ring-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle class="xp-ring-track" cx="55" cy="55" r="46"/>
-          <circle class="xp-ring-prog" id="xp-ring-prog" cx="55" cy="55" r="46"/>
-        </svg>
-        <div class="prof-av-inner">
-          <div class="prof-avatar-wrap" onclick="triggerAvatarUpload()" title="Changer la photo">
-            <div class="prof-av" id="prof-av"></div>
-            <img class="prof-av-photo" id="prof-av-photo" src="" alt="avatar"/>
-            <div class="prof-av-overlay">📷</div>
-          </div>
-          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>
-          <button class="prof-color-btn" onclick="toggleColorPicker()" title="Couleur">&#9998;</button>
-        </div>
-      </div>
-      <!-- Infos -->
-      <div class="prof-hero-info">
-        <div class="prof-level-chip" id="prof-level-chip">Novice</div>
-        <h2 class="prof-name" id="prof-name"></h2>
-        <div class="prof-since" id="prof-since"></div>
-        <div class="prof-bio-wrap">
-          <div class="prof-bio-text" id="prof-bio-text" onclick="startEditBio()">Ajoute une bio...</div>
-          <textarea class="prof-bio-input" id="prof-bio-input" placeholder="Dis-nous qui tu es..." maxlength="160" style="display:none"></textarea>
-          <div class="prof-bio-actions" id="prof-bio-actions" style="display:none">
-            <button class="prof-bio-save" onclick="saveBio()">Sauvegarder</button>
-            <button class="prof-bio-cancel" onclick="cancelEditBio()">Annuler</button>
-          </div>
-        </div>
-        <div class="prof-xp-row"><span id="prof-xp-cur">0 XP</span><span class="prof-xp-sep">&middot;</span><span id="prof-xp-next">&rarr; 100 XP</span></div>
-      </div>
-      <!-- Mascotte loup -->
-      <div class="prof-wolf-wrap"><img src="data:image/png;base64,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" style="width:75px;height:90px;object-fit:contain;display:block;flex-shrink:0;" alt="mascotte"/></div>
-    </div>
-
-    <!-- Sélecteur couleur -->
-    <div class="color-picker" id="color-picker" style="display:none;">
-      <div class="color-picker-label">Couleur du profil</div>
-      <div class="color-swatches" id="color-swatches"></div>
-    </div>
-
-    <!-- Carte streak héro -->
-    <div class="streak-card">
-      <div class="streak-content">
-        <div class="streak-num" id="s-streak">0</div>
-        <div class="streak-label">jours de suite</div>
-        <div class="streak-sub" id="streak-sub">Lance-toi !</div>
-      </div>
-      <div class="streak-fire">&#128293;</div>
-    </div>
-
-    <!-- XP Chart -->
-    <div id="xp-chart" class="xp-chart-wrap" style="display:none;">
-      <div class="xp-chart-title">📊 XP par semaine</div>
-      <div class="xp-bars" id="xp-bars"></div>
-    </div>
-    <!-- Stats colorées -->
-    <div class="prof-stats-grid">
-      <div class="prof-stat-card sl-stat"><div class="psc-icon">📖</div><div class="psc-val" id="s-reads">0</div><div class="psc-lbl">Anecdotes</div></div>
-      <div class="prof-stat-card sl-stat"><div class="psc-icon">🎯</div><div class="psc-val" id="s-quizz">0</div><div class="psc-lbl">Quiz</div></div>
-      <div class="prof-stat-card sl-stat"><div class="psc-icon">🔮</div><div class="psc-val" id="s-enigmes">0</div><div class="psc-lbl">Énigmes</div></div>
-      <div class="prof-stat-card sl-stat"><div class="psc-icon">⭐</div><div class="psc-val" id="s-avg">0%</div><div class="psc-lbl">Score moy.</div></div>
-      <div class="prof-stat-card sl-stat"><div class="psc-icon">🏅</div><div class="psc-val" id="s-badges-count">0</div><div class="psc-lbl">Badges</div></div>
-    </div>
-
-    <!-- Carte Identité -->
-    <div class="identity-card">
-      <div class="identity-title">🎭 Mon identité</div>
-      <div class="identity-grid" id="identity-grid">
-        <div class="id-stat"><div class="id-stat-icon">⏳</div><div class="id-stat-val">...</div><div class="id-stat-lbl">Chargement</div></div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn on" onclick="switchTab('badges')">Badges</button>
-      <button class="tab-btn" onclick="switchTab('quiz-hist')">Quiz</button>
-      <button class="tab-btn" onclick="switchTab('stats')">Stats</button>
-      <button class="tab-btn" onclick="switchTab('amis')">Amis</button>
-    </div>
-    <div class="tab-pane on" id="tab-badges"></div>
-    <div class="tab-pane" id="tab-quiz-hist"></div>
-    <div class="tab-pane" id="tab-stats"></div>
-    <div class="tab-pane" id="tab-amis"></div>
-  </div>
-  <!-- ── Écran Historique ───────────────────────────────────────────────── -->
-  <div class="screen" id="screen-hist">
-    <div class="hist-screen-wrap">
-      <div class="hist-screen-head">
-        <div class="multi-title"><em>Historique</em></div>
-        <div class="hist-filter-bar" id="hist-filter-bar">
-          <button class="hist-chip active" onclick="filterHist('all',this)">Tout</button>
-          <button class="hist-chip" onclick="filterHist('read',this)">Lu ✓</button>
-          <button class="hist-chip" onclick="filterHist('unread',this)">À lire</button>
-          <button class="hist-chip" onclick="filterHist('fav',this)">❤️ Favoris</button>
-        </div>
-      </div>
-      <div id="hist-screen-list"></div>
-    </div>
-  </div>
-
-  <div class="screen" id="screen-multi">
-    <div class="multi-wrap">
-      <div class="multi-head">
-        <button class="btn-back" style="margin-bottom:1rem;" onclick="leaveMulti()">&larr; Retour</button>
-        <div class="multi-title" id="multi-title-txt"><em>Jouer</em></div>
-        <div class="multi-sub" id="multi-sub">Choisis ton mode de jeu.</div>
-      </div>
-      <div id="multi-content"></div>
-    </div>
-  </div>
-
-  <!-- ── Profil d'un autre utilisateur ──────────────────────────────────── -->
-  <div class="screen" id="screen-user-profile">
-    <button class="btn-back" style="align-self:flex-start;margin-bottom:1rem;" onclick="goBack()">← Retour</button>
-    <div id="user-prof-content"><div class="empty"><span class="empty-ico">👤</span><p>Chargement…</p></div></div>
-  </div>
-
-  <!-- ── Écran Admin ────────────────────────────────────────────────────── -->
-  <div class="screen" id="screen-admin">
-    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
-      <button class="btn-back" onclick="goBack()">← Retour</button>
-      <div class="admin-title" style="margin:0;">⚡ Admin</div>
-    </div>
-    <div class="admin-tabs" id="admin-tabs">
-      <button class="admin-tab active" onclick="adminSwitchTab('stats',this)">📊 Stats</button>
-      <button class="admin-tab" onclick="adminSwitchTab('anecdotes',this)">📅 Anecdotes</button>
-      <button class="admin-tab" onclick="adminSwitchTab('users',this)">👥 Utilisateurs</button>
-      <button class="admin-tab" onclick="adminSwitchTab('comments',this)">💬 Commentaires</button>
-    </div>
-    <div id="admin-content"></div>
-  </div>
-<!-- ── Mais Dis Moi — Picker ──────────────────────────────────────────────── -->
-<div class="screen" id="screen-mdm-pick">
-  <div class="pick-wrap">
-    <button class="btn-back" onclick="goBack()">← Retour</button>
-    <div class="pick-head">
-      <div class="pick-hero">
-        <div class="pick-title">Mais <span class="accent">dis moi ?</span></div>
-        <p class="pick-sub">Choisis un domaine — on t'explique tout simplement.</p>
-      </div>
-    </div>
-    <div class="theme-grid" id="mdm-cat-grid"></div>
-    <button class="btn-gen" id="btn-gen-mdm" onclick="pickMDMCat()">✨ Générer</button>
-  </div>
+  <button class="cta-beta" id="btn-beta">🔑 J'ai un accès bêta</button>
+  <button class="cta-wl" id="btn-wl">→ Rejoindre la liste d'attente</button>
 </div>
 
-<!-- ── Mais Dis Moi — Contenu ─────────────────────────────────────────────── -->
-<div class="screen" id="screen-mdm">
-  <div class="anec-wrap">
-    <div class="anec-topbar">
-      <div class="anec-theme-chip" id="mdm-cat-tag">Catégorie</div>
-      <div class="anec-chooser-block">
-        <div class="anec-chooser-label">Choisi par</div>
-        <div class="anec-chooser-name" id="mdm-chooser">—</div>
+<!-- Login Modal -->
+<div class="modal-overlay" id="modal-login" style="display:none">
+  <div class="modal" id="modal-content">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-title">🔑 Accès bêta</div>
+    <div id="modal-body">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="inp-email" placeholder="ton@email.fr" />
       </div>
-    </div>
-    <div class="anec-card">
-      <div class="anec-glow"></div>
-      <div class="mdm-title" id="mdm-title"></div>
-      <div class="anec-body" id="mdm-body"></div>
-      <div class="mdm-block" id="mdm-analogie" style="display:none">
-        <div class="mdm-block-lbl">💡 Analogie</div>
-        <div id="mdm-analogie-txt"></div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-input" type="password" id="inp-pass" placeholder="••••••••" />
       </div>
-      <div class="mdm-block" id="mdm-fun" style="display:none">
-        <div class="mdm-block-lbl">🎲 Le saviez-vous ?</div>
-        <div id="mdm-fun-txt"></div>
-      </div>
-    </div>
-    <div class="anec-actions">
-      <button class="btn-share" onclick="goBack()">← Retour</button>
+      <div id="login-err" style="display:none" class="err-msg"></div>
+      <button class="btn-login" id="btn-login-submit">→ Accéder</button>
     </div>
   </div>
 </div>
 
-<!-- ── Éphéméride ─────────────────────────────────────────────────────────── -->
-<div class="screen" id="screen-eph">
-  <div class="anec-wrap">
-    <div class="anec-topbar">
-      <div class="anec-theme-chip">📅 Éphéméride</div>
-      <div class="jour-badge" id="eph-date"></div>
+<!-- Waitlist Modal -->
+<div class="modal-overlay" id="modal-wl" style="display:none">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-wl').style.display='none'">✕</button>
+    <div class="modal-title">📬 Liste d'attente</div>
+    <div class="wl-desc">La bêta est actuellement sur invitation uniquement. Laisse ton email — on te préviendra à l'ouverture !</div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="wl-email" placeholder="ton@email.fr" />
     </div>
-    <div id="eph-events" class="eph-events-list"></div>
-    <div class="anec-actions">
-      <button class="btn-share" onclick="goEphBack()">← Retour</button>
-    </div>
+    <div id="wl-err" style="display:none" class="err-msg"></div>
+    <button class="btn-submit-wl" id="btn-wl-submit">S'inscrire sur la liste →</button>
   </div>
 </div>
 
-<!-- ── T'as Dit Quoi — Picker ─────────────────────────────────────────────── -->
-<div class="screen" id="screen-tdq-pick">
-  <div class="pick-wrap">
-    <button class="btn-back" onclick="goBack()">← Retour</button>
-    <div class="pick-head">
-      <div class="pick-hero">
-        <div class="pick-title">T'as dit <span class="accent">quoi ?!</span></div>
-        <p class="pick-sub">Découvre le vrai sens des mots qu'on utilise tous les jours.</p>
-      </div>
-    </div>
-    <div class="theme-grid" id="tdq-cat-grid"></div>
-    <button class="btn-gen" id="btn-gen-tdq" onclick="pickTDQCat()">✨ Générer</button>
-  </div>
-</div>
+<script>
+const SB_URL = 'https://zryrfmothjhywkklmniw.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
+const sb = supabase.createClient(SB_URL, SB_ANON);
+const ALLOWED_ROLES = ['beta_tester', 'moderator', 'admin'];
+const APP_URL = '/app.html';
 
-<!-- ── T'as Dit Quoi — Contenu ───────────────────────────────────────────── -->
-<div class="screen" id="screen-tdq">
-  <div class="anec-wrap">
-    <div class="anec-topbar">
-      <div class="anec-theme-chip" id="tdq-cat-tag">Catégorie</div>
-      <div class="anec-chooser-block">
-        <div class="anec-chooser-label">Choisi par</div>
-        <div class="anec-chooser-name" id="tdq-chooser">—</div>
-      </div>
+// Check existing session on load
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+    if (p && ALLOWED_ROLES.includes(p.role)) {
+      window.location.href = APP_URL;
+    }
+  }
+})();
+
+// Open login modal
+document.getElementById('btn-beta').addEventListener('click', () => {
+  document.getElementById('modal-login').style.display = 'flex';
+  document.getElementById('inp-email').focus();
+});
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-login').style.display = 'none';
+  document.getElementById('modal-body').innerHTML = getLoginFormHTML();
+  bindLoginForm();
+});
+
+// Waitlist modal
+document.getElementById('btn-wl').addEventListener('click', () => {
+  document.getElementById('modal-wl').style.display = 'flex';
+});
+document.getElementById('btn-wl-submit').addEventListener('click', async () => {
+  const email = document.getElementById('wl-email').value.trim();
+  const errEl = document.getElementById('wl-err');
+  if (!email) { errEl.textContent = 'Email requis'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  try {
+    await sb.from('waitlist').insert({ email });
+    document.getElementById('modal-wl').innerHTML = `<div class="modal"><div style="text-align:center;padding:1rem 0"><div style="font-size:2rem;margin-bottom:.75rem">📬</div><div style="font-size:1rem;font-weight:700;color:var(--a);margin-bottom:.5rem">Inscrit !</div><div style="font-size:.78rem;color:var(--ink3)">On te préviendra dès l'ouverture.</div></div></div>`;
+  } catch (e) {
+    errEl.textContent = 'Erreur : ' + e.message;
+    errEl.style.display = 'block';
+  }
+});
+
+function getLoginFormHTML() {
+  return `
+    <div style="display:flex;gap:.4rem;margin-bottom:1.25rem;background:rgba(255,255,255,.04);border-radius:.6rem;padding:.2rem">
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1;padding:.4rem;border:none;border-radius:.45rem;background:#00c8ff;color:#07090f;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer">Connexion</button>
+      <button id="tab-signup" onclick="switchTab('signup')" style="flex:1;padding:.4rem;border:none;border-radius:.45rem;background:transparent;color:var(--ink3);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer">Créer un compte</button>
     </div>
-    <div class="anec-card">
-      <div class="anec-glow"></div>
-      <div class="tdq-word" id="tdq-word"></div>
-      <div class="tdq-block">
-        <div class="tdq-block-lbl">🤔 Comment on l'utilise souvent</div>
-        <div id="tdq-fake-meaning" class="tdq-fake"></div>
+    <div id="form-login">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="inp-email" placeholder="ton@email.fr" />
       </div>
-      <button class="btn-gen" id="btn-tdq-reveal" onclick="revealTDQ()" style="margin:1rem 0;">
-        👀 Révéler le vrai sens
-      </button>
-      <div id="tdq-real-wrap" style="display:none">
-        <div class="tdq-block correct">
-          <div class="tdq-block-lbl">✅ Le vrai sens</div>
-          <div id="tdq-real-meaning"></div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-input" type="password" id="inp-pass" placeholder="••••••••" />
+      </div>
+      <div id="login-err" style="display:none" class="err-msg"></div>
+      <button class="btn-login" id="btn-login-submit">→ Se connecter</button>
+    </div>
+    <div id="form-signup" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="inp-su-email" placeholder="ton@email.fr" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pseudo</label>
+        <input class="form-input" type="text" id="inp-su-username" placeholder="Hunter42" maxlength="20" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-input" type="password" id="inp-su-pass" placeholder="Min. 6 caractères" />
+      </div>
+      <div id="signup-err" style="display:none" class="err-msg"></div>
+      <button class="btn-login" id="btn-signup-submit">→ Créer mon compte</button>
+    </div>
+  `;
+}
+
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('tab-login').style.background = isLogin ? '#00c8ff' : 'transparent';
+  document.getElementById('tab-login').style.color = isLogin ? '#07090f' : 'var(--ink3)';
+  document.getElementById('tab-signup').style.background = isLogin ? 'transparent' : '#00c8ff';
+  document.getElementById('tab-signup').style.color = isLogin ? 'var(--ink3)' : '#07090f';
+  if (tab === 'signup') bindSignupForm();
+  else bindLoginForm();
+}
+
+async function doSignup() {
+  const email = document.getElementById('inp-su-email').value.trim();
+  const username = document.getElementById('inp-su-username').value.trim();
+  const pass = document.getElementById('inp-su-pass').value;
+  const errEl = document.getElementById('signup-err');
+  const btn = document.getElementById('btn-signup-submit');
+  if (!email || !username || !pass) { errEl.textContent = 'Tous les champs sont requis'; errEl.style.display = 'block'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Mot de passe trop court (6 caractères min.)'; errEl.style.display = 'block'; return; }
+  btn.textContent = '…'; btn.disabled = true; errEl.style.display = 'none';
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { username } } });
+    if (error) throw error;
+    // Create profile with username
+    if (data.user) {
+      await sb.from('profiles').upsert({ id: data.user.id, username, role: 'user' }, { onConflict: 'id' });
+    }
+    document.getElementById('modal-body').innerHTML = `
+      <div style="text-align:center;padding:.5rem 0">
+        <div style="font-size:2rem;margin-bottom:.75rem">✉️</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--a);margin-bottom:.5rem">Compte créé !</div>
+        <div style="font-size:.78rem;color:var(--ink2);line-height:1.65;margin-bottom:1rem">
+          Vérifie ton email pour confirmer ton compte.<br/>
+          L'accès bêta sera activé par l'équipe — on te préviendra !
         </div>
-        <div class="tdq-block">
-          <div class="tdq-block-lbl">📖 Exemple</div>
-          <div id="tdq-example" class="tdq-example"></div>
-        </div>
-        <div class="tdq-block">
-          <div class="tdq-block-lbl">🌍 Origine</div>
-          <div id="tdq-origin"></div>
+        <div style="font-size:.7rem;color:var(--ink3);background:var(--s2);border-radius:.65rem;padding:.65rem .9rem;border:1px solid var(--b1)">
+          💡 Une fois ton accès accordé, reviens ici et connecte-toi avec tes identifiants.
         </div>
       </div>
-    </div>
-    <div class="anec-actions">
-      <button class="btn-share" onclick="goBack()">← Retour</button>
-    </div>
-  </div>
-</div>
+    `;
+  } catch (e) {
+    errEl.textContent = e.message === 'User already registered' ? 'Cet email est déjà utilisé' : e.message;
+    errEl.style.display = 'block';
+    btn.textContent = '→ Créer mon compte'; btn.disabled = false;
+  }
+}
 
-<!-- ── Archives ───────────────────────────────────────────────────────────── -->
-<div class="screen" id="screen-archives">
-  <div class="anec-wrap">
-    <button class="btn-back" onclick="goBack()">← Retour</button>
-    <div class="multi-title" style="margin-bottom:1rem;"><em>Archives</em></div>
-    <div class="arch-tabbar" id="archives-tabbar"></div>
-    <div id="archives-content"></div>
-  </div>
-</div>
+function bindSignupForm() {
+  const btn = document.getElementById('btn-signup-submit');
+  if (btn) btn.addEventListener('click', doSignup);
+}
 
-<!-- ── Amis (Social) ──────────────────────────────────────────────────────── -->
-<div class="screen" id="screen-amis">
-  <div class="anec-wrap" id="amis-wrap"></div>
-</div>
-</main>
-<nav class="bottom-nav" id="bottom-nav">
-  <button class="bn-item active" id="bn-anec" onclick="location.href='/'">
-    <span class="bn-icon">🏠</span><span class="bn-label">Hub</span>
-  </button>
-  <button class="bn-item" id="bn-play" onclick="location.href='/quiz'">
-    <span class="bn-icon">🎮</span><span class="bn-label">Jouer</span>
-  </button>
-  <button class="bn-item" id="bn-league" onclick="location.href='/ligue'">
-    <span class="bn-icon">🏆</span><span class="bn-label">Ligue</span>
-  </button>
-  <button class="bn-item" id="bn-profil" onclick="location.href='/profile'">
-    <span class="bn-icon">👤</span><span class="bn-label">Profil</span><span class="notif-badge" id="friend-req-badge" style="display:none;"></span>
-  </button>
-</nav>
-<footer class="legal-footer">
-  &copy; 2026 <strong>Licour Arnaud</strong> &mdash; <a href="mailto:nymeraroman@gmail.com">nymeraroman@gmail.com</a><br>
-  Anecdote du Jour est un projet personnel. Les anecdotes sont g&eacute;n&eacute;r&eacute;es par intelligence artificielle &agrave; titre informatif et culturel.<br>
-  Aucune donn&eacute;e personnelle n&rsquo;est revendue &agrave; des tiers. &mdash; <a href="mailto:nymeraroman@gmail.com">Nous contacter</a><br>
-  <a href="https://discord.gg/lmco" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.3rem;margin-top:.3rem;"><svg width="14" height="11" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.5.4a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54.1 54.1 0 0 0-16.2 0A37.3 37.3 0 0 0 25.4.5a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.6 4.9a.2.2 0 0 0-.1.1C1.6 18.1-.9 31 .3 43.7a.2.2 0 0 0 .1.2 58.9 58.9 0 0 0 17.7 8.9.2.2 0 0 0 .2-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.8 38.8 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.8a.2.2 0 0 1 .2 0c11.5 5.3 24 5.3 35.4 0a.2.2 0 0 1 .2 0l1.1.8a.2.2 0 0 1 0 .4 36.1 36.1 0 0 1-5.5 2.6.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .2.1 58.7 58.7 0 0 0 17.8-8.9.2.2 0 0 0 .1-.2c1.5-15-2.5-28-10.5-39.6a.2.2 0 0 0-.1-.2ZM23.7 36.2c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Zm23.7 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.6 0 6.5 3.3 6.4 7.2 0 4-2.8 7.2-6.4 7.2Z" fill="currentColor"/></svg>Rejoindre le Discord</a>
-</footer>
-<div class="toast" id="toast"></div>
-
-<!-- ── Panel Notifications ──────────────────────────────────────────── -->
-<div class="notif-bd" id="notif-bd" onclick="if(event.target===this)closeNotifPanel()">
-  <div class="notif-panel">
-    <div class="notif-panel-head">
-      <div class="notif-panel-title">🔔 Notifications</div>
-      <button class="notif-mark-all" onclick="markAllNotifsRead()">Tout marquer lu</button>
-    </div>
-    <div class="notif-list" id="notif-list"><div class="notif-empty">Aucune notification</div></div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script type="module" src="/src/main.js"></script>
-
-  <!-- ── Share modal ──────────────────────────────────────────────────────── -->
-  <div class="share-bd" id="share-bd" onclick="if(event.target===this)closeShare()">
-    <div class="share-modal">
-      <div class="share-modal-title">✈︎ Partager l'anecdote</div>
-      <div class="share-preview-box">
-        <div class="share-preview-theme" id="share-preview-theme"></div>
-        <div class="share-preview-txt" id="share-preview-txt"></div>
+async function doLogin() {
+  const email = document.getElementById('inp-email').value.trim();
+  const pass = document.getElementById('inp-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login-submit');
+  if (!email || !pass) { errEl.textContent = 'Email et mot de passe requis'; errEl.style.display = 'block'; return; }
+  btn.textContent = '…'; btn.disabled = true; errEl.style.display = 'none';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    const { data: profile } = await sb.from('profiles').select('role, username').eq('id', data.user.id).maybeSingle();
+    if (!profile || !ALLOWED_ROLES.includes(profile.role)) {
+      // Not allowed
+      document.getElementById('modal-body').innerHTML = `
+        <div class="denied">
+          <div class="denied-ico">🚫</div>
+          <div class="denied-title">Accès refusé</div>
+          <div class="denied-desc">Ton compte n'a pas encore accès à la bêta.<br/>Tu peux rejoindre la liste d'attente pour être notifié.</div>
+          <button class="btn-wl" onclick="document.getElementById('modal-login').style.display='none';document.getElementById('modal-wl').style.display='flex'">→ Liste d'attente</button>
+        </div>
+      `;
+      await sb.auth.signOut();
+      return;
+    }
+    // Allowed!
+    document.getElementById('modal-body').innerHTML = `
+      <div class="success">
+        <div class="success-ico">🎉</div>
+        <div class="success-title">Bienvenue, ${profile.username || 'Hunter'} !</div>
+        <div class="success-desc">Ton accès bêta est confirmé. Bonne exploration !</div>
+        <button class="btn-enter" onclick="window.location.href='${APP_URL}'">⚡ Accéder à La Curiosphère</button>
       </div>
-      <div class="share-btns">
-        <button class="share-btn share-btn-wa" onclick="shareViaWhatsApp()">💬 WhatsApp</button>
-        <button class="share-btn share-btn-discord" onclick="shareViaDiscord()">🎮 Discord</button>
-        <button class="share-btn share-btn-copy" onclick="copyShareText()">📋 Copier le texte</button>
-        <button class="share-btn" style="background:var(--a);color:#000;font-weight:700" onclick="downloadShareImage()">📸 Image PNG</button>
-        <button class="share-btn share-btn-close" onclick="closeShare()">✕ Fermer</button>
-      </div>
-      <div class="share-hint" id="share-hint"></div>
-    </div>
-  </div>
+    `;
+  } catch (e) {
+    errEl.textContent = e.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect' : e.message;
+    errEl.style.display = 'block';
+    btn.textContent = '→ Accéder'; btn.disabled = false;
+  }
+}
 
-  <!-- ── Bingo de l'été ───────────────────────────────────────────────────── -->
-  <button class="bingo-fab" id="bingo-fab" onclick="openBingo()">
-    🎯 Bingo été <span class="bingo-fab-badge" id="bingo-fab-badge">0/25</span>
-  </button>
-  <div class="bingo-bd" id="bingo-bd" onclick="if(event.target===this)closeBingo()">
-    <div class="bingo-modal">
-      <div class="bingo-header">
-        <div class="bingo-title">🌞 Bingo de l'été</div>
-        <div class="bingo-subtitle">Coche toutes les cases avant la rentrée !</div>
-        <div class="bingo-dates">21 juin → 21 septembre 2026</div>
-      </div>
-      <div class="bingo-progress-bar"><div class="bingo-progress-fill" id="bingo-prog-fill" style="width:0%"></div></div>
-      <div class="bingo-progress-txt" id="bingo-prog-txt">0 / 25 cases cochées</div>
-      <div class="bingo-grid" id="bingo-grid"></div>
-      <button class="bingo-close" onclick="closeBingo()">Fermer</button>
-    </div>
-  </div>
+function bindLoginForm() {
+  const btn = document.getElementById('btn-login-submit');
+  if (btn) btn.addEventListener('click', doLogin);
+  const pass = document.getElementById('inp-pass');
+  if (pass) pass.addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+}
 
-  <div class="streak-pop" id="streak-pop">
-    <span class="sp-num" id="sp-num">🔥</span>
-    <span id="sp-msg">jours de suite !</span>
-  </div>
+bindLoginForm();
+</script>
 </body>
 </html>

@@ -1,10 +1,10 @@
-# SPA routing — toutes les routes servent index.html (Cloudflare Pages)
-/le-saviez-vous     /   200
-/enigme             /   200
-/quiz               /   200
-/duels              /   200
-/ligue              /   200
-/vs100              /   200
-/mystere            /   200
-/profile            /   200
-/profile.html       /   200
+# Routes SPA → app.html (Cloudflare Pages)
+/le-saviez-vous     /app.html   200
+/enigme             /app.html   200
+/quiz               /app.html   200
+/duels              /app.html   200
+/ligue              /app.html   200
+/vs100              /app.html   200
+/mystere            /app.html   200
+/profile            /app.html   200
+/profile.html       /app.html   200
