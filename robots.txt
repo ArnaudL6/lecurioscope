@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lecurioscope.fr/sitemap.xml
