@@ -154,9 +154,7 @@ body::before {
 <script>
 const SB_URL = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
-const sb = supabase.createClient(SB_URL, SB_ANON, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'sb-zryrfmothjhywkklmniw-auth-token', storage: window.localStorage, flowType: 'implicit' }
-});
+const sb = supabase.createClient(SB_URL, SB_ANON);
 const ALLOWED_ROLES = ['beta_tester', 'moderator', 'admin'];
 const APP_URL = '/app';
 
