@@ -707,17 +707,18 @@ function LoginScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
   async function login() {
     setErr(''); setLoading(true);
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé — vérifie ta connexion et réessaie')), ms))]);
     try {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: pass }), 15000);
       if (error) throw error;
-      const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+      const { data: profile } = await withTimeout(sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle(), 15000);
       if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator')) {
         await sb.auth.signOut();
         throw new Error('Accès refusé — rôle admin requis');
       }
       onLogin(data.user, profile);
     } catch (e) { setErr(e.message); }
-    setLoading(false);
+    finally { setLoading(false); }
   }
   return (
     <div className="login-wrap">
@@ -730,7 +731,7 @@ function LoginScreen({ onLogin }) {
         </div>
         <div className="form-group">
           <label className="form-label">Email admin</label>
-          <input className="form-input" type="email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} placeholder="admin@curiosphere.fr" />
+          <input className="form-input" type="email" autoCapitalize="none" autoCorrect="off" autoComplete="email" inputMode="email" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} placeholder="admin@curiosphere.fr" />
         </div>
         <div className="form-group">
           <label className="form-label">Mot de passe</label>
