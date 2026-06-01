@@ -611,7 +611,18 @@ function App() {
       setProfile({ id: user.id, username: (user.email || '').split('@')[0] || 'Hunter', role: 'beta_tester', xp: 0, streak: 0, joined: new Date().toISOString(), streak_record: 0 });
       return;
     }
-    if (!p || !ALLOWED_ROLES.includes(p.role)) {
+    // Pas de profil ? On le crée (comme l'app d'origine) — il y a une session, donc le RLS l'autorise
+    if (!p) {
+      const meta = user.user_metadata || {};
+      let uname = (meta.username || meta.user_name || meta.full_name || (user.email || '').split('@')[0] || ('chasseur' + Math.floor(Math.random() * 9999))).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 20);
+      try {
+        const { data: ex } = await sb.from('profiles').select('id').eq('username', uname).maybeSingle();
+        if (ex) uname = uname.slice(0, 15) + '_' + Math.floor(Math.random() * 999);
+        const { data: created } = await sb.from('profiles').insert({ id: user.id, username: uname, joined: todayStr() }).select().maybeSingle();
+        p = created || { id: user.id, username: uname, role: 'user' };
+      } catch (e) { console.warn('create profile:', e); p = { id: user.id, username: uname, role: 'user' }; }
+    }
+    if (!ALLOWED_ROLES.includes(p.role)) {
       await sb.auth.signOut();
       setAuthUser(null); setProfile(null); setDenied(true);
       return;
@@ -1697,6 +1708,7 @@ function ScreenProfil({ profile: authProfile, authUser, onNav }) {
       <button onClick={() => onNav('recap')} style={{ flex: 1, padding: '.75rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(168,85,247,.06)', border: '1px solid rgba(168,85,247,.2)', borderRadius: '.85rem', color: '#a855f7', cursor: 'pointer' }}>📊 Recap semaine</button>
       <NotifButton />
     </div>
+    <button onClick={async () => { if (window.confirm('Se déconnecter ?')) { try { await sb.auth.signOut(); } catch (e) {} window.location.href = '/'; } }} style={{ width: '100%', marginTop: '.65rem', padding: '.8rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(239,68,68,.07)', border: '1px solid rgba(239,68,68,.25)', borderRadius: '.85rem', color: '#f87171', cursor: 'pointer' }}>↩ Se déconnecter</button>
     <EditProfileDrawer open={showEdit} onClose={() => setShowEdit(false)} onSave={() => { setShowEdit(false); setEditKey(k => k + 1); }} />
     </div>);
 
