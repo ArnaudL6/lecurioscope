@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Curiosphère — Bientôt</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
@@ -36,7 +37,7 @@ body::before {
 .wrap { position: relative; z-index: 10; width: 100%; max-width: 480px; padding: 2rem 1.5rem; text-align: center; }
 
 /* Logo */
-.logo { display: flex; align-items: center; justify-content: center; gap: .6rem; font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3rem; }
+.logo { display: flex; align-items: center; justify-content: center; gap: .5rem; font-family: 'Space Grotesk', sans-serif; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3rem; }
 .logo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--a); box-shadow: 0 0 12px var(--a); animation: pulse-dot 2.2s ease-in-out infinite; }
 @keyframes pulse-dot { 0%,100%{transform:scale(1);box-shadow:0 0 12px var(--a)} 50%{transform:scale(1.5);box-shadow:0 0 20px var(--a)} }
 
@@ -101,7 +102,7 @@ body::before {
 <div class="aurora aurora-2"></div>
 
 <div class="wrap">
-  <div class="logo" style="font-family: &quot;Space Grotesk&quot;"><div class="logo-dot"></div>La Curiosphère</div>
+  <div class="logo"><div class="logo-dot"></div><span><em style="font-style:normal;color:var(--ink2)">Le</em>&thinsp;Curioscope</span></div>
   <div class="status"><div class="status-dot"></div>Bêta privée en cours</div>
   <div class="title">La culture,<br/><span>gamifiée.</span></div>
   <div class="subtitle">Anecdotes quotidiennes, quiz, duels et classements Solo — une nouvelle façon d'apprendre chaque jour.</div>
