@@ -744,6 +744,8 @@ function App() {
         const { data } = await sb.from('weekly_mysteries').select('id,title,story_days,week_start').eq('week_start', ws).maybeSingle();
         const MOCK_MYSTERY = {
           id: 'mock', title: 'Le Meurtre au Musée Grimaldi', week_start: '2026-05-25',
+          intro: "Lundi matin, le musée Grimaldi est en émoi : le tableau « La Mélancolie » de Voss, estimé à 4 millions d'euros, a disparu pendant la nuit — sans la moindre trace d'effraction. Quatre personnes seulement avaient accès aux lieux cette nuit-là. Chaque jour de la semaine, un nouvel indice fait surface.",
+          goal: "Recouper les indices des 5 actes et démasquer le coupable du vol au musée Grimaldi.",
           story_days: [
           "Ce lundi matin, le directeur du musée Grimaldi découvrit avec horreur la vitrine principale brisée. Le tableau \"La Mélancolie\" de Voss — estimé à 4 millions d'euros — avait disparu. Aucune trace d'effraction sur les portes. Le gardien de nuit, Marco Ferri, prétend n'avoir rien entendu.",
           "Les enquêteurs ont relevé des traces de poudre blanche près de la vitrine. Le chimiste de garde, Élise Morand, confirme qu'il s'agit de plâtre — comme celui utilisé dans les travaux de restauration du deuxième étage. Curieusement, le chantier a été arrêté vendredi dernier.",
@@ -787,12 +789,12 @@ function App() {
         {screen === 'recap' && <div className="screen on"><ScreenRecap onBack={() => setScreen('profil')} /></div>}
         {screen === 'anec' && <div className="screen on"><ScreenAnecdote anec={anec} qs={anecQs} loading={loadingAnec} onDone={() => setAnecDone(true)} onPick={() => setScreen('pick')} /></div>}
         {screen === 'eph' && <div className="screen on"><ScreenEphemeride /></div>}
-        {screen === 'mot' && <div className="screen on"><ScreenTDQ /></div>}
-        {screen === 'crack' && <div className="screen on"><ScreenCrack /></div>}
-        {screen === 'mais' && <div className="screen on"><ScreenMDM onNav={setScreen} /></div>}
+        {screen === 'mot' && <div className="screen on"><ScreenTDQ profile={profile} /></div>}
+        {screen === 'crack' && <div className="screen on"><ScreenCrack profile={profile} /></div>}
+        {screen === 'mais' && <div className="screen on"><ScreenMDM profile={profile} onNav={setScreen} /></div>}
         {screen === 'vs100' && <div className="screen on"><ScreenVS100 onBack={() => setScreen('hub')} /></div>}
         {screen === 'generating' && <div className="screen on"><ScreenGenerating theme={{ label: 'Science', icon: '🔬', color: '#00c8ff' }} onDone={() => setScreen('anec')} /></div>}
-        {screen === 'pick' && <div className="screen on"><ScreenPick onBack={() => setScreen('hub')} onGenerate={(a, q) => {setAnec(a);setAnecQs(q);setScreen('anec');}} /></div>}
+        {screen === 'pick' && <div className="screen on"><ScreenPick profile={profile} onBack={() => setScreen('hub')} onGenerate={(a, q) => {setAnec(a);setAnecQs(q);setScreen('anec');}} /></div>}
         {screen === 'chat' && <div className="screen on"><ScreenChat /></div>}
         {screen === 'amis' && <div className="screen on"><ScreenAmis /></div>}
         {screen === 'duel' && <div className="screen on"><ScreenDuel /></div>}
@@ -3131,6 +3133,8 @@ function ScreenMystery({ mystery, dow, onBack }) {
   const unlockedCount = Math.min((dow || 0) + 1, 5);
   const acts = mystery?.story_days || [];
   if (!mystery) return <div style={{ width: '100%', padding: '2rem', textAlign: 'center', color: 'var(--ink3)' }}>Aucun mystère cette semaine — revenez lundi !</div>;
+  const introText = mystery.intro || "Une nouvelle affaire t'attend cette semaine. Du lundi au vendredi, un nouvel indice est dévoilé chaque jour. Lis-les attentivement, recoupe les détails… et forge-toi une conviction.";
+  const goalText = mystery.goal || `Rassembler les indices au fil des actes et désigner le coupable de « ${mystery.title} » avant la fin de la semaine.`;
   return (
     <div style={{ width: '100%' }}>
       {/* Header */}
@@ -3139,6 +3143,17 @@ function ScreenMystery({ mystery, dow, onBack }) {
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '.56rem', fontWeight: 700, letterSpacing: '.16em', color: '#00c8ff', textTransform: 'uppercase', marginBottom: '.25rem' }}>🕵️ Mystère de la semaine</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.25 }}>{mystery.title}</div>
+        </div>
+      </div>
+
+      {/* Intro / contexte de l'affaire */}
+      <div style={{ background: `color-mix(in srgb,#00c8ff 7%,var(--hero-base))`, border: '1px solid rgba(0,200,255,.28)', borderRadius: '1.25rem', padding: '1.25rem 1.4rem', marginBottom: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, background: 'radial-gradient(circle,rgba(0,200,255,.14),transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: '#00c8ff', textTransform: 'uppercase', marginBottom: '.6rem', position: 'relative' }}>📜 L'affaire</div>
+        <div style={{ fontSize: '.85rem', color: 'var(--ink2)', lineHeight: 1.7, position: 'relative' }}>{introText}</div>
+        <div style={{ marginTop: '.95rem', paddingTop: '.85rem', borderTop: '1px solid rgba(0,200,255,.16)', display: 'flex', gap: '.55rem', alignItems: 'flex-start', position: 'relative' }}>
+          <span style={{ fontSize: '.95rem', lineHeight: 1.4 }}>🎯</span>
+          <div style={{ fontSize: '.78rem', color: 'var(--ink)', lineHeight: 1.6 }}><strong style={{ color: '#00c8ff', fontWeight: 700 }}>Ta mission&nbsp;:</strong> {goalText}</div>
         </div>
       </div>
 
@@ -3510,7 +3525,7 @@ function ScreenGenerating({ theme, onDone }) {
 
 }
 
-function ScreenPick({ onBack, onGenerate }) {
+function ScreenPick({ profile, onBack, onGenerate }) {
   const [sel, setSel] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
@@ -3595,7 +3610,7 @@ function ScreenPick({ onBack, onGenerate }) {
           setGenerating(true);setError(null);
           try {
             const t = THEMES.find((x) => x.id === sel);
-            const res = await fetch(EDGE, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ themeId: sel, chooser: 'Visiteur', date: today() }) });
+            const res = await fetch(EDGE, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ themeId: sel, chooser: (profile?.username || 'Visiteur'), date: today() }) });
             if (!res.ok) throw new Error('Erreur serveur ' + res.status);
             const json = await res.json();
             if (!json.anecdote) throw new Error('Génération échouée');
@@ -4150,7 +4165,7 @@ const TDQ_CATS = [
 { id: 'faux_amis', label: 'Faux amis', icon: '🤝', tag: 'Librairie ≠ library…', color: '#ec4899' }];
 
 
-function ScreenTDQ() {
+function ScreenTDQ({ profile }) {
   const [phase, setPhase] = useState('loading');
   const [content, setContent] = useState(null);
   const [sel, setSel] = useState(null);
@@ -4177,7 +4192,7 @@ function ScreenTDQ() {
     setGenerating(true);setError(null);
     try {
       const cat = TDQ_CATS.find((c) => c.id === sel);
-      const res = await fetch(EDGE_TDQ, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, category: cat?.label, date: today(), chooser: 'Visiteur' }) });
+      const res = await fetch(EDGE_TDQ, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, category: cat?.label, date: today(), chooser: (profile?.username || 'Visiteur') }) });
       if (!res.ok) throw new Error('Erreur serveur ' + res.status);
       const json = await res.json();
       if (!json.word && !json.content) throw new Error('Génération échouée');
@@ -4314,7 +4329,7 @@ const CRACK_CATS = [
 { id: 'observation', label: 'Observation', icon: '🕵️', tag: "Repère l'intrus, le détail…", color: '#fbbf24' }];
 
 
-function ScreenCrack() {
+function ScreenCrack({ profile }) {
   const [phase, setPhase] = useState('loading');
   const [enigma, setEnigma] = useState(null);
   const [sel, setSel] = useState(null);
@@ -4347,7 +4362,7 @@ function ScreenCrack() {
     setGenerating(true);setError(null);
     try {
       const cat = CRACK_CATS.find((c) => c.id === sel);
-      const res = await fetch(EDGE_CRACK, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, chooser: 'Visiteur' }) });
+      const res = await fetch(EDGE_CRACK, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, chooser: (profile?.username || 'Visiteur') }) });
       if (!res.ok) {const errBody = await res.json().catch(() => ({}));throw new Error((errBody.error || 'Erreur') + ' (' + res.status + ')');}
       const { enigma: e } = await res.json();
       if (!e) throw new Error('Génération échouée');
@@ -4531,7 +4546,7 @@ const MDM_CATS = [
 
 const EDGE_MDM = SB_URL + '/functions/v1/mais-dis-moi';
 
-function ScreenMDM({ onNav }) {
+function ScreenMDM({ profile, onNav }) {
   const [phase, setPhase] = useState('loading');
   const [content, setContent] = useState(null);
   const [sel, setSel] = useState(null);
@@ -4558,7 +4573,7 @@ function ScreenMDM({ onNav }) {
     setGenerating(true);setError(null);
     try {
       const cat = MDM_CATS.find((c) => c.id === sel);
-      const res = await fetch(EDGE_MDM, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, category: cat?.label, date: today(), chooser: 'Visiteur' }) });
+      const res = await fetch(EDGE_MDM, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId: sel, category: cat?.label, date: today(), chooser: (profile?.username || 'Visiteur') }) });
       if (!res.ok) throw new Error('Erreur serveur ' + res.status);
       const json = await res.json();
       if (!json.content && !json.explanation) throw new Error('Génération échouée');
