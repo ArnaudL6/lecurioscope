@@ -392,6 +392,7 @@ function ModuleUsers() {
                       <select value={u.role || 'user'} onChange={e => setRole(u.id, e.target.value)}
                         style={{ background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '.4rem', color: 'var(--ink2)', padding: '.2rem .45rem', fontSize: '.72rem', fontFamily: 'inherit', cursor: 'pointer' }}>
                         <option value="user">User</option>
+                        <option value="beta_tester">Beta tester</option>
                         <option value="moderator">Mod</option>
                         <option value="admin">Admin</option>
                       </select>

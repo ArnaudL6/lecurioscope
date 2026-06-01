@@ -309,6 +309,7 @@ const SB_URL = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
 const EDGE = SB_URL + '/functions/v1/daily';
 const sb = supabase.createClient(SB_URL, SB_ANON);
+const ALLOWED_ROLES = ['beta_tester', 'moderator', 'admin'];
 const todayStr = () => {const d = new Date();return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');};
 
 const RANKS = [
@@ -373,16 +374,19 @@ function Tutorial({ active, step, onNext, onPrev, onSkip }) {
 
   if (!active) return null;
   const pad = 10;
+  const TIP_H = 248;
   const sr = rect ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 } : null;
-  const tipLeft = sr ? Math.max(16, Math.min(sr.left, window.innerWidth - 336)) : null;
-  const tipBelow = sr ? (sr.top + sr.height + 16 + 180 < window.innerHeight) : false;
-  const tipTop = sr ? (tipBelow ? sr.top + sr.height + 16 : sr.top - 196) : null;
+  const tipLeft = sr ? Math.max(16, Math.min(sr.left, window.innerWidth - 328)) : null;
+  const tipBelow = sr ? (sr.top + sr.height + 16 + TIP_H < window.innerHeight) : false;
+  let tipTop = sr ? (tipBelow ? sr.top + sr.height + 16 : sr.top - TIP_H - 16) : null;
+  // Toujours garder le tooltip entièrement visible dans la fenêtre
+  if (sr) tipTop = Math.max(16, Math.min(tipTop, window.innerHeight - TIP_H - 16));
 
   return (
     <>
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(7,9,15,.8)', zIndex: 9998 }} onClick={onSkip} />
       {sr && <div style={{ position: 'fixed', top: sr.top, left: sr.left, width: sr.width, height: sr.height, borderRadius: '1rem', boxShadow: `0 0 0 9999px rgba(7,9,15,.8), 0 0 0 2px ${s.color}70, 0 0 28px ${s.color}40`, zIndex: 9999, pointerEvents: 'none' }} />}
-      <div style={{ position: 'fixed', left: sr ? tipLeft : '50%', top: sr ? tipTop : '50%', transform: sr ? 'none' : 'translate(-50%,-50%)', width: 312, background: 'linear-gradient(135deg,var(--s1),var(--s228)', border: `1px solid ${s.color}35`, borderRadius: '1.25rem', padding: '1.4rem', zIndex: 10001, pointerEvents: 'all', boxShadow: `0 8px 40px rgba(0,0,0,.6)` }}>
+      <div style={{ position: 'fixed', left: sr ? tipLeft : '50%', top: sr ? tipTop : '50%', transform: sr ? 'none' : 'translate(-50%,-50%)', width: 312, background: 'linear-gradient(135deg,#161a2e,#0d0f1c)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: `1px solid ${s.color}35`, borderRadius: '1.25rem', padding: '1.4rem', zIndex: 10001, pointerEvents: 'all', boxShadow: `0 8px 40px rgba(0,0,0,.6)` }}>
         <div style={{ display: 'flex', gap: '.25rem', marginBottom: '1rem' }}>
           {STEPS.map((_, i) => <div key={i} style={{ flex: 1, height: '3px', borderRadius: '2px', background: i <= step ? s.color : 'rgba(255,255,255,.1)', transition: 'background .3s' }} />)}
         </div>
@@ -425,8 +429,10 @@ function ScreenOnboarding({ onAuth }) {
       if (error) throw error;
       if (data.user) {
         await sb.from('profiles').upsert({ id: data.user.id, username: pseudo.trim(), role: 'user' }, { onConflict: 'id' });
-        onAuth(data.user);
-      } else { setDone(true); }
+      }
+      // Nouveau compte = rôle "user" → accès bêta à valider par l'équipe. On ne fait PAS entrer.
+      await sb.auth.signOut().catch(() => {});
+      setDone(true);
     } catch (e) { setErr(e.message === 'User already registered' ? 'Email déjà utilisé' : e.message); }
     setLoading(false);
   }
@@ -437,6 +443,13 @@ function ScreenOnboarding({ onAuth }) {
     try {
       const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password: pass });
       if (error) throw error;
+      const { data: prof } = await sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+      if (!prof || !ALLOWED_ROLES.includes(prof.role)) {
+        await sb.auth.signOut();
+        setErr("Accès refusé — ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt.");
+        setLoading(false);
+        return;
+      }
       onAuth(data.user);
     } catch (e) { setErr(e.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect' : e.message); }
     setLoading(false);
@@ -452,8 +465,8 @@ function ScreenOnboarding({ onAuth }) {
   if (done) return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem', textAlign: 'center' }}>
       <div style={{ fontSize: '2.5rem' }}>✉️</div>
-      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Vérifie ton email !</div>
-      <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Un lien de confirmation t'a été envoyé. Reviens te connecter une fois ton compte vérifié.</div>
+      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Compte créé !</div>
+      <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Vérifie ton email pour confirmer ton compte. Ton accès bêta sera activé par l'équipe — on te préviendra. Reviens ensuite te connecter.</div>
       <button onClick={() => { setDone(false); setAuthTab('login'); }} style={{ padding: '.6rem 1.5rem', background: 'var(--adim)', border: '1px solid var(--a)', borderRadius: '.75rem', color: 'var(--a)', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>→ Se connecter</button>
     </div>
   );
@@ -555,14 +568,53 @@ function App() {
 
   // ── Auth ──
   const [authUser, setAuthUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [denied, setDenied] = useState(false);
+
+  async function loadProfile(user) {
+    if (!user) { setProfile(null); return; }
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+    let p = null;
+    try {
+      const res = await withTimeout(sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), 8000);
+      p = res?.data || null;
+    } catch (e) {
+      // Réseau lent/indisponible : on ne bloque pas, on renvoie vers la connexion
+      console.error('loadProfile:', e);
+      setAuthUser(null); setProfile(null);
+      sb.auth.signOut().catch(() => {});
+      return;
+    }
+    if (!p || !ALLOWED_ROLES.includes(p.role)) {
+      await sb.auth.signOut();
+      setAuthUser(null); setProfile(null); setDenied(true);
+      return;
+    }
+    setDenied(false);
+    setProfile(p);
+  }
+
   useEffect(() => {
-    sb.auth.getSession().then(({ data: { session } }) => {
-      setAuthUser(session?.user || null);
-      setAuthLoading(false);
-    });
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => {
-      setAuthUser(session?.user || null);
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((res) => setTimeout(() => res({ __timeout: true }), ms))]);
+    (async () => {
+      let session = null;
+      try {
+        const r = await withTimeout(sb.auth.getSession(), 6000);
+        if (!r.__timeout) session = r?.data?.session || null;
+        else console.warn('getSession timeout');
+      } catch (e) { console.error('getSession:', e); }
+      try {
+        if (session?.user) { setAuthUser(session.user); await loadProfile(session.user); }
+        else setAuthUser(null);
+      } catch (e) { console.error('auth init:', e); setAuthUser(null); }
+      finally { setAuthLoading(false); }
+    })();
+    const { data: { subscription } } = sb.auth.onAuthStateChange(async (_e, session) => {
+      try {
+        if (session?.user) { setAuthUser(session.user); await loadProfile(session.user); }
+        else { setAuthUser(null); setProfile(null); }
+      } catch (e) { console.error('auth change:', e); }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -653,13 +705,22 @@ function App() {
     <>
       {/* Auth gate */}
       {authLoading && <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}><div className="logo-dot" style={{ width: 14, height: 14 }} /></div>}
-      {!authLoading && !authUser && <ScreenOnboarding onAuth={setAuthUser} />}
-      {!authLoading && authUser && <>
+      {!authLoading && denied && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem', textAlign: 'center', zIndex: 300 }}>
+          <div style={{ fontSize: '2.5rem' }}>🚫</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Accès réservé à la bêta</div>
+          <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt — tu seras prévenu.</div>
+          <button onClick={() => setDenied(false)} style={{ padding: '.6rem 1.5rem', background: 'var(--adim)', border: '1px solid var(--a)', borderRadius: '.75rem', color: 'var(--a)', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>← Retour à la connexion</button>
+        </div>
+      )}
+      {!authLoading && !denied && !authUser && <ScreenOnboarding onAuth={setAuthUser} />}
+      {!authLoading && !denied && authUser && !profile && <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}><div className="logo-dot" style={{ width: 14, height: 14 }} /></div>}
+      {!authLoading && !denied && authUser && profile && <>
       <div className="aurora" />
-      <Header screen={screen} onNav={setScreen} theme={theme} onToggleTheme={toggleTheme} />
+      <Header profile={profile} screen={screen} onNav={setScreen} theme={theme} onToggleTheme={toggleTheme} />
       <main>
         {screen === 'archives' && <div className="screen on"><ScreenArchives onBack={() => setScreen('hub')} onOpenAnec={(a, qs) => {setAnec(a);setAnecQs(qs || []);setScreen('anec');}} /></div>}
-        {screen === 'hub' && <div className="screen hub-screen on"><ScreenHub onNav={setScreen} anecDone={anecDone} anec={anec} loadingAnec={loadingAnec} league={league} mystery={mystery} mysteryDow={mysteryDow} onRandom={handleRandomAnec} onArchives={() => setScreen('archives')} onBoss={() => setScreen('boss')} /></div>}
+        {screen === 'hub' && <div className="screen hub-screen on"><ScreenHub profile={profile} onNav={setScreen} anecDone={anecDone} anec={anec} loadingAnec={loadingAnec} league={league} mystery={mystery} mysteryDow={mysteryDow} onRandom={handleRandomAnec} onArchives={() => setScreen('archives')} onBoss={() => setScreen('boss')} /></div>}
         {screen === 'boss' && <div className="screen on"><ScreenBoss onBack={() => setScreen('hub')} /></div>}
         {screen === 'recap' && <div className="screen on"><ScreenRecap onBack={() => setScreen('profil')} /></div>}
         {screen === 'anec' && <div className="screen on"><ScreenAnecdote anec={anec} qs={anecQs} loading={loadingAnec} onDone={() => setAnecDone(true)} onPick={() => setScreen('pick')} /></div>}
@@ -677,7 +738,7 @@ function App() {
         {screen === 'quiz-solo' && <div className="screen on"><ScreenQuizSolo onBack={() => setScreen('play')} /></div>}
         {screen === 'partie-privee' && <div className="screen on"><ScreenPartiePrivee onBack={() => setScreen('play')} /></div>}
         {screen === 'mystery' && <div className="screen on"><ScreenMystery mystery={mystery} dow={mysteryDow} onBack={() => setScreen('hub')} /></div>}
-        {screen === 'profil' && <div className="screen on"><ScreenProfil onNav={setScreen} /></div>}
+        {screen === 'profil' && <div className="screen on"><ScreenProfil profile={profile} authUser={authUser} onNav={setScreen} /></div>}
       </main>
       <BottomNav screen={screen} onNav={setScreen} />
       <Tutorial active={tutoActive} step={tutoStep} onNext={() => setTutoStep(s => s + 1)} onPrev={() => setTutoStep(s => Math.max(0, s - 1))} onSkip={tutoSkip} />
@@ -686,9 +747,16 @@ function App() {
 
 }
 
-function Header({ screen, onNav, theme, onToggleTheme }) {
+function Header({ profile, screen, onNav, theme, onToggleTheme }) {
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const hxp = profile?.xp || 0;
+  const hRank = getRank(hxp);
+  const hNext = getNextRank(hxp);
+  const hXpPct = hNext ? Math.min(100, Math.round((hxp - hRank.minXP) / (hNext.minXP - hRank.minXP) * 100)) : 100;
+  const hStreak = profile?.streak || 0;
+  const hInitiale = (profile?.username || '?')[0].toUpperCase();
+  const isStaff = profile?.role === 'admin' || profile?.role === 'moderator';
   const TABS = [
   { id: 'anec', label: <><em>Le</em>&thinsp;saviez-vous&thinsp;?</>, dot: true },
   { id: 'mais', label: <><em>Mais</em>&thinsp;dis&thinsp;moi&thinsp;?</>, dot: true },
@@ -721,15 +789,15 @@ function Header({ screen, onNav, theme, onToggleTheme }) {
       <div className="h-right">
         <span className="date-tag" style={{ color: "rgb(148, 163, 184)" }}>{cap(dateStr)}</span>
         <button onClick={onToggleTheme} style={{ background: 'none', border: '1px solid var(--b2)', borderRadius: '999px', padding: '.22rem .55rem', cursor: 'pointer', fontSize: '.82rem', lineHeight: 1, color: 'var(--ink3)', transition: 'border-color .2s' }} title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}>{theme === 'dark' ? '☀️' : '🌙'}</button>
-        <div className="streak-badge">🔥 {USER.streak}</div>
-        {xpPct >= 100 && (
+        <div className="streak-badge">🔥 {hStreak}</div>
+        {hXpPct >= 100 && (
           <div onClick={() => onNav('boss')} style={{ display: 'flex', alignItems: 'center', gap: '.3rem', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.35)', borderRadius: '2rem', padding: '.22rem .55rem', cursor: 'pointer', animation: 'sl-pulse 1.8s ease-in-out infinite' }}>
             <span style={{ fontSize: '.62rem' }}>⚔️</span>
             <span style={{ fontSize: '.58rem', fontWeight: 800, color: '#ef4444', letterSpacing: '.08em', textTransform: 'uppercase' }}>Boss</span>
           </div>
         )}
-        <div className="av-btn" onClick={() => onNav('profil')}>{USER.name[0]}</div>
-        {USER.name === 'Arnaud_L' && <a href="admin.html" target="_blank" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', background: 'rgba(251,191,36,.1)', border: '1px solid rgba(251,191,36,.25)', color: '#fbbf24', fontSize: '.75rem', textDecoration: 'none', flexShrink: 0 }} title="Admin">⚙️</a>}
+        <div className="av-btn" onClick={() => onNav('profil')}>{hInitiale}</div>
+        {isStaff && <a href="admin.html" target="_blank" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', background: 'rgba(251,191,36,.1)', border: '1px solid rgba(251,191,36,.25)', color: '#fbbf24', fontSize: '.75rem', textDecoration: 'none', flexShrink: 0 }} title="Admin">⚙️</a>}
       </div>
     </header>);
 
@@ -749,9 +817,16 @@ function BottomNav({ screen, onNav }) {
 
 }
 
-function ScreenHub({ onNav, anecDone, mystery, mysteryDow, onRandom, onArchives, onBoss }) {
+function ScreenHub({ profile, onNav, anecDone, mystery, mysteryDow, onRandom, onArchives, onBoss }) {
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  // Données réelles du profil connecté (partagées avec l'écran Profil)
+  const hunterName = profile?.username || 'Hunter';
+  const hunterXp = profile?.xp || 0;
+  const hunterStreak = profile?.streak || 0;
+  const rank = getRank(hunterXp);
+  const nextRank = getNextRank(hunterXp);
+  const xpPct = nextRank ? Math.min(100, Math.round((hunterXp - rank.minXP) / (nextRank.minXP - rank.minXP) * 100)) : 100;
   const GATES = [
   { rankId: 'E', ico: '💡', name: 'Le Saviez-Vous ?', desc: "L'anecdote surprenante du jour", xp: '+50 XP', done: anecDone, go: () => onNav('anec') },
   { rankId: 'C', ico: '🔍', name: 'Mais dis moi ?', desc: "Comment ça marche vraiment ?", xp: '+50 XP', done: false, go: () => onNav('mais') },
@@ -776,7 +851,7 @@ function ScreenHub({ onNav, anecDone, mystery, mysteryDow, onRandom, onArchives,
             <div className="sl-hunter-top">
               <div>
                 <div className="sl-hunter-label">CHASSEUR</div>
-                <div className="sl-hunter-name" style={{ fontWeight: "600", height: "27px", width: "100px", lineHeight: "1.9", letterSpacing: "1px" }}>{USER.name}</div>
+                <div className="sl-hunter-name" style={{ fontWeight: "600", minHeight: "27px", lineHeight: "1.9", letterSpacing: "1px" }}>{hunterName}</div>
               </div>
               <div className="sl-rank-badge" style={{ borderColor: rank.color, color: rank.color }}>
                 <div className="sl-rank-id">{rank.label}</div>
@@ -786,14 +861,14 @@ function ScreenHub({ onNav, anecDone, mystery, mysteryDow, onRandom, onArchives,
             <div className="sl-xp-section">
               <div className="sl-xp-row">
                 <span className="sl-xp-label">XP TOTAL</span>
-                <span className="sl-xp-val" style={{ color: rank.color }}>{USER.xp.toLocaleString('fr-FR')}</span>
+                <span className="sl-xp-val" style={{ color: rank.color }}>{hunterXp.toLocaleString('fr-FR')}</span>
                 {nextRank && <span className="sl-xp-next">/ {nextRank.minXP.toLocaleString('fr-FR')} → {nextRank.label}</span>}
               </div>
               <div className="sl-xp-track"><div className="sl-xp-fill" style={{ width: xpPct + '%', background: rank.color }} /></div>
             </div>
             <div className="sl-hunter-streak">
               <span>🔥</span>
-              <span>{USER.streak} jours de streak</span>
+              <span>{hunterStreak} jours de streak</span>
               {done === 3 ? <span className="sl-missions-done">⚡ Missions complètes !</span> : <span className="sl-missions-left">{3 - done} mission{3 - done > 1 ? 's' : ''} restante{3 - done > 1 ? 's' : ''}</span>}
             </div>
             <button className="sl-stats-btn">📊 Stats</button>
@@ -1415,44 +1490,33 @@ function EditProfileDrawer({ open, onClose, onSave }) {
   );
 }
 
-function ScreenProfil({ onNav }) {
+function ScreenProfil({ profile: authProfile, authUser, onNav }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState(localStorage.getItem('proto_username') || '');
-  const [inputVal, setInputVal] = useState(localStorage.getItem('proto_username') || '');
   const [showEdit, setShowEdit] = useState(false);
   const [editKey, setEditKey] = useState(0);
   const editData = JSON.parse(localStorage.getItem('profile_edit') || '{}');
   const accentColor = editData.color || '#00c8ff';
 
-  async function fetchProfile(uname) {
+  async function fetchProfile() {
     setLoading(true);
     try {
-      // Try auth session first
-      const { data: { user } } = await sb.auth.getUser();
-      let uid = user?.id || null;
-      let p = null;
-      if (uid) {
+      // Toujours l'utilisateur connecté — pas de recherche par pseudo
+      const uid = authUser?.id || (await sb.auth.getUser()).data?.user?.id || null;
+      let p = authProfile && authProfile.id === uid ? authProfile : null;
+      if (!p && uid) {
         const { data } = await sb.from('profiles').select('*').eq('id', uid).maybeSingle();
         p = data;
-      } else if (uname) {
-        const { data, error: pe } = await sb.from('profiles').select('*').ilike('username', uname).maybeSingle();
-        console.log('Profile fetch:', data, pe);
-        p = data;uid = p?.id;
       }
       if (p) {
-        console.log('Profile columns:', JSON.stringify(p));
-        // Use stored xp/streak from profiles table directly
         const xp = p.xp || p.total_xp || 0;
         const streak = p.streak || p.current_streak || 0;
-        // Try reads/quiz (may be blocked by RLS)
         const { data: rc } = await sb.from('reads').select('id').eq('user_id', p.id);
         const { data: qc } = await sb.from('quiz_history').select('pct').eq('user_id', p.id);
-        console.log('reads:', rc?.length, 'quiz:', qc?.length);
         const reads = (rc || []).length;
         const quizzes = (qc || []).length;
         const avgQuiz = qc?.length ? Math.round(qc.reduce((a, b) => a + (b.pct || 0), 0) / qc.length) : p.avg_quiz || 0;
-        setProfile({ name: p.username || uname, xp: p.xp || 0, reads: reads || 0, quizzes: quizzes || 0, avgQuiz, streak: p.streak || streak || 0, streakRecord: p.streak_record || 0, joined: p.joined || p.created_at || new Date().toISOString(), initiale: (p.username || uname || '?')[0].toUpperCase(), avatarUrl: p.avatar_url || null, role: p.role || null, privateStats: reads === 0 && quizzes === 0 });
+        setProfile({ name: p.username || 'Hunter', xp, reads: reads || 0, quizzes: quizzes || 0, avgQuiz, streak: streak || 0, streakRecord: p.streak_record || 0, joined: p.joined || p.created_at || new Date().toISOString(), initiale: (p.username || '?')[0].toUpperCase(), avatarUrl: p.avatar_url || null, role: p.role || null, privateStats: reads === 0 && quizzes === 0 });
       } else {
         setProfile(null);
       }
@@ -1460,18 +1524,15 @@ function ScreenProfil({ onNav }) {
     setLoading(false);
   }
 
-  useEffect(() => {if (inputVal) fetchProfile(inputVal);else setLoading(false);}, []);
+  useEffect(() => {fetchProfile();}, [authProfile, authUser]);
 
-  // Username form
+  // Profil introuvable (ne devrait pas arriver : on est forcément connecté)
   if (!loading && !profile) return (
-    <div style={{ width: '100%', paddingTop: '2rem' }}>
-      <div style={{ fontFamily: 'Syne,sans-serif', fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--ink)', marginBottom: '.5rem' }}>Mon profil</div>
-      <div style={{ fontSize: '.78rem', color: 'var(--ink3)', marginBottom: '1.5rem' }}>Entre ton nom d'utilisateur pour voir ton profil réel.</div>
-      <input value={inputVal} onChange={(e) => setInputVal(e.target.value)} placeholder="Nom d'utilisateur…" onKeyDown={(e) => e.key === 'Enter' && fetchProfile(inputVal)}
-      style={{ width: '100%', background: 'rgba(0,0,0,.3)', border: '1px solid rgba(0,200,255,.3)', borderRadius: '.75rem', color: 'var(--ink)', fontSize: '.88rem', padding: '.7rem 1rem', outline: 'none', fontFamily: 'Space Grotesk,sans-serif', marginBottom: '.6rem', boxSizing: 'border-box' }} />
-      <button onClick={() => fetchProfile(inputVal)} style={{ width: '100%', padding: '.75rem', background: 'var(--a)', color: '#000', border: 'none', borderRadius: '.75rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '.08em', fontFamily: 'Space Grotesk,sans-serif' }}>
-        Voir mon profil →
-      </button>
+    <div style={{ width: '100%', paddingTop: '3rem', textAlign: 'center' }}>
+      <div style={{ fontSize: '2rem', marginBottom: '.75rem' }}>👤</div>
+      <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '.5rem' }}>Profil indisponible</div>
+      <div style={{ fontSize: '.78rem', color: 'var(--ink3)', marginBottom: '1.25rem' }}>Impossible de charger ton profil pour le moment.</div>
+      <button onClick={() => fetchProfile()} style={{ padding: '.65rem 1.4rem', background: 'var(--adim)', border: '1px solid var(--a)', borderRadius: '.75rem', color: 'var(--a)', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif' }}>↻ Réessayer</button>
     </div>);
 
 
@@ -1481,18 +1542,9 @@ function ScreenProfil({ onNav }) {
     </div>);
 
 
-  // Rang SL
-  const RANKS_SL = [
-  { label: 'E', title: 'Novice', color: '#9ca3af', minXP: 0 },
-  { label: 'D', title: 'Curieux', color: '#22c55e', minXP: 100 },
-  { label: 'C', title: 'Explorateur', color: '#00c8ff', minXP: 500 },
-  { label: 'B', title: 'Érudit', color: '#a855f7', minXP: 1500 },
-  { label: 'A', title: 'Expert', color: '#fbbf24', minXP: 3000 },
-  { label: 'S', title: 'Sage', color: '#ef4444', minXP: 6000 },
-  { label: '★', title: 'Légende', color: '#ec4899', minXP: 12000 }];
-
-  const rank = RANKS_SL.slice().reverse().find((r) => profile.xp >= r.minXP) || RANKS_SL[0];
-  const nextRank = RANKS_SL[RANKS_SL.indexOf(rank) + 1] || null;
+  // Barème de rang UNIFIÉ avec le hub (RANKS global) — le rang du profil = celui de la carte Hunter
+  const rank = getRank(profile.xp);
+  const nextRank = getNextRank(profile.xp);
   const xpPct = nextRank ? Math.min(100, Math.round((profile.xp - rank.minXP) / (nextRank.minXP - rank.minXP) * 100)) : 100;
   const joined = new Date(profile.joined).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
