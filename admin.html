@@ -363,6 +363,35 @@ function ModuleUsers() {
     showToast('✓ Rôle mis à jour');
     load();
   }
+  async function resetXp(id, username) {
+    if (!window.confirm('Remettre à zéro le XP de ' + (username || 'ce membre') + ' ?\n\nÇa efface ses lectures, quiz et énigmes, et remet son record de streak à 0. Action irréversible.')) return;
+    try {
+      const r = await Promise.all([
+        sb.from('reads').delete().eq('user_id', id),
+        sb.from('quiz_history').delete().eq('user_id', id),
+        sb.from('enigma_responses').delete().eq('user_id', id),
+        sb.from('profiles').update({ streak_record: 0 }).eq('id', id),
+      ]);
+      const err = r.find(x => x && x.error);
+      if (err) { showToast('⚠️ Reset partiel : ' + (err.error.message || 'erreur RLS')); }
+      else { showToast('✓ XP remis à zéro'); }
+    } catch (e) { showToast('⚠️ Erreur : ' + e.message); }
+    load();
+  }
+  async function deleteUser(id, username) {
+    if (!window.confirm('SUPPRIMER ' + (username || 'ce membre') + ' ?\n\nÇa efface son profil + toute son activité (lectures, quiz, énigmes). Action irréversible.\n\n⚠️ Son compte de connexion (auth) doit être supprimé à part dans Supabase.')) return;
+    try {
+      await Promise.all([
+        sb.from('reads').delete().eq('user_id', id),
+        sb.from('quiz_history').delete().eq('user_id', id),
+        sb.from('enigma_responses').delete().eq('user_id', id),
+      ]);
+      const { error } = await sb.from('profiles').delete().eq('id', id);
+      if (error) { showToast('⚠️ Suppression échouée : ' + (error.message || 'erreur RLS')); }
+      else { showToast('✓ Membre supprimé'); }
+    } catch (e) { showToast('⚠️ Erreur : ' + e.message); }
+    load();
+  }
   const pages = Math.ceil(total / PAGE);
   return (
     <div>
@@ -376,10 +405,10 @@ function ModuleUsers() {
       <div className="card" style={{ padding: 0 }}>
         <div className="tbl-wrap">
           <table>
-            <thead><tr><th>Pseudo</th><th>Record streak</th><th>Rôle</th><th>Inscrit</th></tr></thead>
+            <thead><tr><th>Pseudo</th><th>Record streak</th><th>Rôle</th><th>Inscrit</th><th>Actions</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
-               items.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun utilisateur</td></tr> :
+              {loading ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
+               items.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun utilisateur</td></tr> :
                items.map(u => {
                 return (
                   <tr key={u.id}>
@@ -395,6 +424,16 @@ function ModuleUsers() {
                       </select>
                     </td>
                     <td style={{ fontSize: '.72rem' }}>{fmt(u.joined)}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
+                        <button onClick={() => resetXp(u.id, u.username)}
+                          style={{ background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', borderRadius: '.4rem', color: '#f87171', padding: '.25rem .6rem', fontSize: '.7rem', fontFamily: 'inherit', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          title="Efface lectures, quiz, énigmes et remet le streak à 0">↺ Reset XP</button>
+                        <button onClick={() => deleteUser(u.id, u.username)}
+                          style={{ background: 'rgba(239,68,68,.16)', border: '1px solid rgba(239,68,68,.45)', borderRadius: '.4rem', color: '#ef4444', padding: '.25rem .55rem', fontSize: '.7rem', fontFamily: 'inherit', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          title="Supprime le profil et toute l'activité du membre">🗑 Suppr.</button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
