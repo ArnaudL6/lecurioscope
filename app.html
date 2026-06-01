@@ -355,7 +355,7 @@ const xpPct = nextRank ? Math.round((USER.xp - rank.minXP) / (nextRank.minXP - r
 
 const ANEC = {
   theme: '⚗️ Sciences', day: 151, total: 365, chooser: 'Arnaud_L',
-  text: `En 1947, une ingénieure de Bell Labs découvrit un vrai papillon de nuit coincé dans les relais d'un ordinateur Mark II. Elle le colla dans son journal de bord avec la note : "Premier vrai bug trouvé." Ce terme désigne encore aujourd'hui tout défaut informatique — et cette page de carnet est conservée au Smithsonian.`,
+  text: `En 1947, une ingénieure de Bell Labs découvrit un vrai papillon de nuit coincé dans les relais d'un ordinateur Mark II. Elle le colla dans son journal de bord avec la note : "Premier vrai bug trouvé." Ce terme désigne encore aujourd'hui tout défaut informatique, et cette page de carnet est conservée au Smithsonian.`,
   contexte: `Le mot "bug" existait bien avant en ingénierie pour désigner tout défaut matériel. Thomas Edison l'utilisait déjà dans les années 1870. Mais c'est Grace Hopper qui l'a popularisé en informatique avec cet insecte devenu légende.`,
   source: 'Smithsonian Institution Archives, 1947',
   note: 'Choisie par la communauté · 3 thèmes en lice ce matin.'
@@ -374,12 +374,12 @@ function useCountdown() {
 function Tutorial({ active, step, onNext, onPrev, onSkip }) {
   const [rect, setRect] = useState(null);
   const STEPS = [
-    { title: 'Bienvenue dans La Curiosphère !', desc: 'Ton hub de culture générale gamifié — anecdotes, énigmes, éphémérides et quiz chaque jour.', selector: null, ico: '🌍', color: '#00c8ff' },
+    { title: 'Bienvenue dans La Curiosphère !', desc: 'Ton hub de culture générale gamifié : anecdotes, énigmes, éphémérides et quiz chaque jour.', selector: null, ico: '🌍', color: '#00c8ff' },
     { title: 'Tes quêtes du jour', desc: 'Chaque gate = un contenu frais. Complète-les pour gagner de l\'XP et progresser dans les rangs.', selector: '.sl-gates', ico: '⚡', color: '#fbbf24' },
-    { title: 'Ton rang Hunter', desc: 'Tu grimpes de E jusqu\'au rang S légendaire. Accumule de l\'XP — et quand tu es prêt, affronte le Boss de rang !', selector: '.sl-hunter-card', ico: '🏆', color: '#ef4444' },
-    { title: 'Jouer contre les autres', desc: 'Quiz Solo, Duel, Partie Privée et 1 VS 100 — affronte la communauté seul ou en groupe en temps réel.', selector: null, ico: '🎮', color: '#a855f7' },
+    { title: 'Ton rang Hunter', desc: 'Tu grimpes de E jusqu\'au rang S légendaire. Accumule de l\'XP, et quand tu es prêt, affronte le Boss de rang !', selector: '.sl-hunter-card', ico: '🏆', color: '#ef4444' },
+    { title: 'Jouer contre les autres', desc: 'Quiz Solo, Duel, Partie Privée et 1 VS 100 : affronte la communauté seul ou en groupe en temps réel.', selector: null, ico: '🎮', color: '#a855f7' },
     { title: 'Le réseau social', desc: 'Le tab Amis te montre l\'activité de la communauté, tes défis reçus et te permet d\'en envoyer à tes amis.', selector: null, ico: '👥', color: '#34d399' },
-    { title: 'Ton profil Hunter', desc: 'XP, streak, stats hebdo et archives de toutes tes lectures — ton évolution complète en un coup d\'œil.', selector: null, ico: '👤', color: '#00c8ff' },
+    { title: 'Ton profil Hunter', desc: 'XP, streak, stats hebdo et archives de toutes tes lectures : ton évolution complète en un coup d\'œil.', selector: null, ico: '👤', color: '#00c8ff' },
   ];
   const s = STEPS[Math.min(step, STEPS.length - 1)];
   const total = STEPS.length;
@@ -465,14 +465,14 @@ function ScreenOnboarding({ onAuth }) {
   async function handleLogin() {
     if (!email.trim() || !pass) { setErr('Email et mot de passe requis'); return; }
     setLoading(true); setErr('');
-    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé — vérifie ta connexion et réessaie')), ms))]);
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé, vérifie ta connexion et réessaie')), ms))]);
     try {
       const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: pass }), 15000);
       if (error) throw error;
       const { data: prof } = await withTimeout(sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle(), 15000);
       if (!prof || !ALLOWED_ROLES.includes(prof.role)) {
         await sb.auth.signOut();
-        setErr("Accès refusé — ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt.");
+        setErr("Accès refusé : ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt.");
         setLoading(false);
         return;
       }
@@ -492,7 +492,7 @@ function ScreenOnboarding({ onAuth }) {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem', textAlign: 'center' }}>
       <div style={{ fontSize: '2.5rem' }}>✉️</div>
       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Compte créé !</div>
-      <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Vérifie ton email pour confirmer ton compte. Ton accès bêta sera activé par l'équipe — on te préviendra. Reviens ensuite te connecter.</div>
+      <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Vérifie ton email pour confirmer ton compte. Ton accès bêta sera activé par l'équipe, on te préviendra. Reviens ensuite te connecter.</div>
       <button onClick={() => { setDone(false); setAuthTab('login'); }} style={{ padding: '.6rem 1.5rem', background: 'var(--adim)', border: '1px solid var(--a)', borderRadius: '.75rem', color: 'var(--a)', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>→ Se connecter</button>
     </div>
   );
@@ -744,11 +744,11 @@ function App() {
         const { data } = await sb.from('weekly_mysteries').select('id,title,story_days,week_start').eq('week_start', ws).maybeSingle();
         const MOCK_MYSTERY = {
           id: 'mock', title: 'Le Meurtre au Musée Grimaldi', week_start: '2026-05-25',
-          intro: "Lundi matin, le musée Grimaldi est en émoi : le tableau « La Mélancolie » de Voss, estimé à 4 millions d'euros, a disparu pendant la nuit — sans la moindre trace d'effraction. Quatre personnes seulement avaient accès aux lieux cette nuit-là. Chaque jour de la semaine, un nouvel indice fait surface.",
+          intro: "Lundi matin, le musée Grimaldi est en émoi : le tableau « La Mélancolie » de Voss, estimé à 4 millions d'euros, a disparu pendant la nuit, sans la moindre trace d'effraction. Quatre personnes seulement avaient accès aux lieux cette nuit-là. Chaque jour de la semaine, un nouvel indice fait surface.",
           goal: "Recouper les indices des 5 actes et démasquer le coupable du vol au musée Grimaldi.",
           story_days: [
-          "Ce lundi matin, le directeur du musée Grimaldi découvrit avec horreur la vitrine principale brisée. Le tableau \"La Mélancolie\" de Voss — estimé à 4 millions d'euros — avait disparu. Aucune trace d'effraction sur les portes. Le gardien de nuit, Marco Ferri, prétend n'avoir rien entendu.",
-          "Les enquêteurs ont relevé des traces de poudre blanche près de la vitrine. Le chimiste de garde, Élise Morand, confirme qu'il s'agit de plâtre — comme celui utilisé dans les travaux de restauration du deuxième étage. Curieusement, le chantier a été arrêté vendredi dernier.",
+          "Ce lundi matin, le directeur du musée Grimaldi découvrit avec horreur la vitrine principale brisée. Le tableau \"La Mélancolie\" de Voss (estimé à 4 millions d'euros) avait disparu. Aucune trace d'effraction sur les portes. Le gardien de nuit, Marco Ferri, prétend n'avoir rien entendu.",
+          "Les enquêteurs ont relevé des traces de poudre blanche près de la vitrine. Le chimiste de garde, Élise Morand, confirme qu'il s'agit de plâtre, comme celui utilisé dans les travaux de restauration du deuxième étage. Curieusement, le chantier a été arrêté vendredi dernier.",
           "Une caméra de surveillance a capté une silhouette à 2h17 du matin. La qualité est mauvaise, mais la morphologie correspond à un employé de taille moyenne. La liste des personnes ayant accès au musée la nuit comprend 4 noms : Marco Ferri, Élise Morand, le restaurateur Jules Anter, et la conservatrice Nadia Blum.",
           "Jules Anter a été retrouvé en possession d'une clé de réserve non déclarée. Il affirme l'avoir trouvée par hasard. Ses empreintes digitales ont été relevées sur le cadre vide de la vitrine. Il maintient son innocence.",
           "Un témoin anonyme a contacté la police : le soir du vol, il aurait vu une voiture grise garée devant l'entrée de service. La plaque correspond au véhicule de Nadia Blum. Mais Nadia présente un alibi pour cette nuit-là..."]
@@ -773,7 +773,7 @@ function App() {
         <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '2rem', textAlign: 'center', zIndex: 300 }}>
           <div style={{ fontSize: '2.5rem' }}>🚫</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Accès réservé à la bêta</div>
-          <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt — tu seras prévenu.</div>
+          <div style={{ fontSize: '.82rem', color: 'var(--ink3)', lineHeight: 1.65, maxWidth: 320 }}>Ton compte n'a pas encore l'accès bêta. L'équipe l'activera bientôt, tu seras prévenu.</div>
           <button onClick={() => setDenied(false)} style={{ padding: '.6rem 1.5rem', background: 'var(--adim)', border: '1px solid var(--a)', borderRadius: '.75rem', color: 'var(--a)', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>← Retour à la connexion</button>
         </div>
       )}
@@ -1417,7 +1417,7 @@ function NotifButton() {
     setPerm(result);
     if (result === 'granted') {
       setPreview(true);
-      new Notification('La Curiosphère 🌍', { body: "L'anecdote du jour est disponible — viens apprendre quelque chose de nouveau !", icon: '/favicon.ico' });
+      new Notification('La Curiosphère 🌍', { body: "L'anecdote du jour est disponible. Viens apprendre quelque chose de nouveau !", icon: '/favicon.ico' });
     }
   }
 
@@ -1896,7 +1896,7 @@ function ScreenDuel() {
               </button>
           )}
           </div>
-          <div style={{ fontSize: '.62rem', color: 'rgba(168,85,247,.6)', marginTop: '.5rem' }}>⚠️ Risque de Double Éveil — le bot pourrait cacher sa vraie puissance</div>
+          <div style={{ fontSize: '.62rem', color: 'rgba(168,85,247,.6)', marginTop: '.5rem' }}>⚠️ Risque de Double Éveil : le bot pourrait cacher sa vraie puissance</div>
         </div>
       }
       <button disabled={!mode || mode === 'bot' && !selRank}
@@ -1929,7 +1929,7 @@ function ScreenDuel() {
     return (
       <div style={{ width: '100%' }}>
         <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '.58rem', fontWeight: 700, letterSpacing: '.18em', color: DUEL_COLOR, textTransform: 'uppercase', marginBottom: '.4rem' }}>Round {curRound + 1}/4 — Ton choix</div>
+          <div style={{ fontSize: '.58rem', fontWeight: 700, letterSpacing: '.18em', color: DUEL_COLOR, textTransform: 'uppercase', marginBottom: '.4rem' }}>Round {curRound + 1}/4 · Ton choix</div>
           <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '1.2rem', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '-.01em' }}>Choisis un thème →</div>
           <div style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.25rem' }}>vs <strong style={{ color: bot?.color }}>{bot?.name}</strong> [{bot?.rank}-RANG]</div>
         </div>
@@ -2039,13 +2039,13 @@ function ScreenDuel() {
         {isDoubleEveil && !win &&
         <div style={{ background: 'rgba(236,72,153,.1)', border: '1px solid rgba(236,72,153,.4)', borderRadius: '1rem', padding: '.85rem 1rem', marginBottom: '1.25rem', animation: 'sl-pulse .8s ease-in-out' }}>
             <div style={{ fontSize: '.58rem', fontWeight: 700, letterSpacing: '.18em', color: '#ec4899', textTransform: 'uppercase', marginBottom: '.25rem' }}>⚠ DOUBLE ÉVEIL DÉTECTÉ</div>
-            <div style={{ fontSize: '.8rem', color: 'var(--ink2)' }}>{bot?.name} cachait sa vraie puissance — ce n'était pas une défaite ordinaire.</div>
+            <div style={{ fontSize: '.8rem', color: 'var(--ink2)' }}>{bot?.name} cachait sa vraie puissance, ce n'était pas une défaite ordinaire.</div>
           </div>
         }
         {isDoubleEveil && win &&
         <div style={{ background: 'rgba(52,211,153,.1)', border: '1px solid rgba(52,211,153,.35)', borderRadius: '1rem', padding: '.85rem 1rem', marginBottom: '1.25rem' }}>
             <div style={{ fontSize: '.58rem', fontWeight: 700, letterSpacing: '.18em', color: '#34d399', textTransform: 'uppercase', marginBottom: '.25rem' }}>🏆 EXPLOIT</div>
-            <div style={{ fontSize: '.8rem', color: 'var(--ink2)' }}>Tu as vaincu un guerrier en état d'Éveil — performance exceptionnelle !</div>
+            <div style={{ fontSize: '.8rem', color: 'var(--ink2)' }}>Tu as vaincu un guerrier en état d'Éveil : performance exceptionnelle !</div>
           </div>
         }
         <div style={{ fontSize: win ? '4rem' : tie ? '3rem' : '3.5rem', marginBottom: '.75rem', animation: 'sl-pulse 1s ease-in-out infinite' }}>{win ? '🏆' : tie ? '🤝' : '💀'}</div>
@@ -2173,7 +2173,7 @@ function ScreenQuizSolo({ onBack }) {
           )}
         </div>
         <button onClick={start} style={{ width: '100%', padding: '1rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.82rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', background: QS_COLOR, color: '#000', border: 'none', borderRadius: '1rem', cursor: 'pointer', boxShadow: `0 4px 0 #15803d,0 6px 20px ${QS_COLOR}44` }}>
-          🎯 Commencer — {nbQ} questions
+          🎯 Commencer · {nbQ} questions
         </button>
       </div>);
   }
@@ -2674,7 +2674,7 @@ function ScreenPlay({ onNav }) {
   { ico: '🎯', name: 'Quiz Solo', desc: 'Teste tes connaissances sur les anecdotes lues', color: '#22c55e', xp: '+80 XP', rank: 'D', action: () => onNav('quiz-solo') },
   { ico: '🎮', name: 'Partie Privée', desc: 'Crée une salle et affronte tes amis en temps réel', color: '#00c8ff', xp: '+150 XP', rank: 'C', action: () => onNav('partie-privee') },
   { ico: '⚔️', name: 'Duel Quiz', desc: 'Tour par tour, choisis un thème et bats ton adversaire', color: '#a855f7', xp: '+200 XP', rank: 'B', action: () => onNav('duel') },
-  { ico: '🏆', name: 'Ligue', desc: 'Classement hebdomadaire — points accumulés en répondant', color: '#fbbf24', xp: 'Ligue', rank: 'A', action: null }];
+  { ico: '🏆', name: 'Ligue', desc: 'Classement hebdomadaire : points accumulés en répondant', color: '#fbbf24', xp: 'Ligue', rank: 'A', action: null }];
 
   return (
     <div style={{ width: '100%' }}>
@@ -2713,7 +2713,7 @@ function ScreenPlay({ onNav }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', marginBottom: '.6rem' }}>
           <span style={{ fontSize: '1.8rem' }}>🌍</span>
-          <div><div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink)' }}>1 contre 100</div><div style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.1rem' }}>Affronte 100 challengers — reste le dernier debout</div></div>
+          <div><div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink)' }}>1 contre 100</div><div style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.1rem' }}>Affronte 100 challengers. Reste le dernier debout</div></div>
         </div>
         <div style={{ fontSize: '.65rem', fontWeight: 700, letterSpacing: '.1em', textAlign: 'right', textTransform: 'uppercase', color: '#ef4444' }}>▶ Entrer dans l'arène</div>
       </div>
@@ -3000,7 +3000,7 @@ function ScreenPartiePrivee({ onBack }) {
             <span style={{ fontSize: '1.2rem' }}>💪</span>
             <div>
               <div style={{ fontSize: '.6rem', fontWeight: 700, letterSpacing: '.1em', color: PP, textTransform: 'uppercase' }}>Bonus Débutant</div>
-              <div style={{ fontSize: '.76rem', color: 'var(--ink2)', marginTop: '.1rem' }}>Tu n'avais pas lu l'anecdote — +{myBonus} pts bonus !</div>
+              <div style={{ fontSize: '.76rem', color: 'var(--ink2)', marginTop: '.1rem' }}>Tu n'avais pas lu l'anecdote : +{myBonus} pts bonus !</div>
             </div>
           </div>
         }
@@ -3108,7 +3108,7 @@ function MysteryHubCard({ mystery, dow, onNav }) {
   const acts = mystery.story_days || [];
   const todayAct = acts[Math.min(dow, 4)] || '';
   const preview = todayAct.slice(0, 120) + '…';
-  const actLabel = `Acte ${actNums[Math.min(dow, 4)]} — ${days[Math.min(dow, 4)]}`;
+  const actLabel = `Acte ${actNums[Math.min(dow, 4)]} · ${days[Math.min(dow, 4)]}`;
   return (
     <div className="wm-hub" onClick={() => onNav('mystery')}>
       <div className="wm-hd">
@@ -3132,7 +3132,7 @@ function ScreenMystery({ mystery, dow, onBack }) {
   const actNums = ['I', 'II', 'III', 'IV', 'V'];
   const unlockedCount = Math.min((dow || 0) + 1, 5);
   const acts = mystery?.story_days || [];
-  if (!mystery) return <div style={{ width: '100%', padding: '2rem', textAlign: 'center', color: 'var(--ink3)' }}>Aucun mystère cette semaine — revenez lundi !</div>;
+  if (!mystery) return <div style={{ width: '100%', padding: '2rem', textAlign: 'center', color: 'var(--ink3)' }}>Aucun mystère cette semaine, revenez lundi !</div>;
   const introText = mystery.intro || "Une nouvelle affaire t'attend cette semaine. Du lundi au vendredi, un nouvel indice est dévoilé chaque jour. Lis-les attentivement, recoupe les détails… et forge-toi une conviction.";
   const goalText = mystery.goal || `Rassembler les indices au fil des actes et désigner le coupable de « ${mystery.title} » avant la fin de la semaine.`;
   return (
@@ -3214,7 +3214,7 @@ const FALLBACK_VS100 = [
 { question: "Qui a peint la Joconde ?", answers: ["Michel-Ange", "Raphaël", "Léonard de Vinci", "Botticelli"], correctIdx: 2, explanation: "Léonard de Vinci a peint la Joconde entre 1503 et 1519. Le sourire énigmatique de Mona Lisa est dû à une technique appelée sfumato : des contours volontairement flous qui créent une ambiguïté selon l'angle de vision." },
 { question: "En quelle année la Révolution française ?", answers: ["1789", "1769", "1799", "1815"], correctIdx: 0, explanation: "Le 14 juillet 1789, la prise de la Bastille marque le début de la Révolution. La forteresse ne contenait que 7 prisonniers ce jour-là, mais elle symbolisait le despotisme royal." },
 { question: "Symbole chimique du Fer ?", answers: ["Au", "Fe", "Cu", "Ag"], correctIdx: 1, explanation: "Fe vient du latin « Ferrum ». L'or est Au (Aurum), le cuivre Cu (Cuprum) et l'argent Ag (Argentum). Ces symboles latins datent de l'Antiquité, bien avant la chimie moderne." },
-{ question: "Plus grande planète du système solaire ?", answers: ["Saturne", "Neptune", "Jupiter", "Uranus"], correctIdx: 2, explanation: "Jupiter est si massive qu'elle pourrait contenir 1 300 fois la Terre. Sa Grande Tache Rouge est une tempête qui dure depuis au moins 350 ans — plus grande que la Terre entière." },
+{ question: "Plus grande planète du système solaire ?", answers: ["Saturne", "Neptune", "Jupiter", "Uranus"], correctIdx: 2, explanation: "Jupiter est si massive qu'elle pourrait contenir 1 300 fois la Terre. Sa Grande Tache Rouge est une tempête qui dure depuis au moins 350 ans, plus grande que la Terre entière." },
 { question: "Combien d'os dans le corps humain adulte ?", answers: ["196", "206", "216", "226"], correctIdx: 1, explanation: "Un bébé naît avec environ 270-300 os. Avec la croissance, certains fusionnent pour atteindre 206 chez l'adulte. Plus de la moitié de ces os se trouvent dans les mains et les pieds." },
 { question: "Auteur des Misérables ?", answers: ["Balzac", "Zola", "Hugo", "Flaubert"], correctIdx: 2, explanation: "Victor Hugo a écrit Les Misérables en 1862, après 17 ans de travail. Le roman contient la plus courte correspondance de l'histoire : Hugo envoya un « ? » à son éditeur pour demander les ventes, qui répondit « ! »." },
 { question: "Vitesse de la lumière (km/s) ?", answers: ["100 000", "200 000", "300 000", "400 000"], correctIdx: 2, explanation: "La lumière voyage à 299 792 km/s dans le vide. À cette vitesse, elle parcourt la distance Terre-Lune en seulement 1,28 secondes, et atteint le Soleil en environ 8 minutes." },
@@ -3678,7 +3678,7 @@ function ScreenEphemeride() {
 
   // Mock data pour preview (retire quand edge function déployée)
   const mockEvents = [
-  { year: 1889, title: "Inauguration de la Tour Eiffel", description: "Le 31 mai 1889, la Tour Eiffel est officiellement inaugurée à Paris pour l'Exposition Universelle. Construite en seulement 2 ans par Gustave Eiffel, elle était censée être démontée 20 ans plus tard. Les Parisiens la trouvaient hideuse — aujourd'hui c'est le monument le plus visité du monde." },
+  { year: 1889, title: "Inauguration de la Tour Eiffel", description: "Le 31 mai 1889, la Tour Eiffel est officiellement inaugurée à Paris pour l'Exposition Universelle. Construite en seulement 2 ans par Gustave Eiffel, elle était censée être démontée 20 ans plus tard. Les Parisiens la trouvaient hideuse. Aujourd'hui c'est le monument le plus visité du monde." },
   { year: 1962, title: "Exécution d'Adolf Eichmann en Israël", description: "Le 31 mai 1962, Adolf Eichmann, l'un des principaux architectes de la Shoah, est exécuté en Israël après un procès historique suivi dans le monde entier. C'est la seule exécution civile jamais pratiquée par l'État d'Israël." },
   { year: 2019, title: "Dissolution du parlement européen sortant", description: "Le 31 mai 2019 marque la fin officielle du mandat du Parlement européen après les élections historiques de mai 2019, où les partis verts et eurosceptiques ont réalisé des percées significatives, redessinant la carte politique du continent." }];
 
@@ -3904,7 +3904,7 @@ function ScreenAmis() {
       {subTab === 'feed' && (feedLoading
         ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--ink3)', fontSize: '.78rem' }}>Chargement du feed…</div>
         : feed.length === 0
-          ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--ink3)', fontSize: '.78rem' }}>Pas encore d'activité — lis des anecdotes !</div>
+          ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--ink3)', fontSize: '.78rem' }}>Pas encore d'activité, lis des anecdotes !</div>
           : <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               {feed.map((e, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '.65rem', padding: '.65rem .85rem', background: `color-mix(in srgb,${e.color} 5%,var(--s1))`, border: `1px solid color-mix(in srgb,${e.color} 15%,transparent)`, borderRadius: '.85rem' }}>
@@ -4103,7 +4103,7 @@ function ScreenChat() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '.65rem 0', marginBottom: '.5rem', borderBottom: '1px solid rgba(255,255,255,.06)', flexShrink: 0 }}>
         <div>
           <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: '.88rem', fontWeight: 700, color: 'var(--ink)' }}>Chat communauté</div>
-          <div style={{ fontSize: '.6rem', color: 'var(--ink3)', marginTop: '.1rem' }}>Discussion ouverte — soyez sympas 👋</div>
+          <div style={{ fontSize: '.6rem', color: 'var(--ink3)', marginTop: '.1rem' }}>Discussion ouverte, soyez sympas 👋</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem', background: `color-mix(in srgb,${CHAT_COLOR} 10%,transparent)`, border: `1px solid color-mix(in srgb,${CHAT_COLOR} 25%,transparent)`, borderRadius: '999px', padding: '.25rem .65rem' }}>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: CHAT_COLOR, animation: 'sl-pulse 2s ease-in-out infinite' }} />
@@ -4113,7 +4113,7 @@ function ScreenChat() {
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '.5rem', paddingRight: '.25rem', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,.1) transparent' }}>
-        {msgs.length === 0 && <div style={{ textAlign: 'center', color: 'var(--ink3)', fontSize: '.78rem', paddingTop: '2rem' }}>Pas encore de messages — sois le premier ! 👋</div>}
+        {msgs.length === 0 && <div style={{ textAlign: 'center', color: 'var(--ink3)', fontSize: '.78rem', paddingTop: '2rem' }}>Pas encore de messages, sois le premier ! 👋</div>}
         {msgs.map((m, i) => {
           const isMe = m.user_id === userId;
           const showMeta = i === 0 || msgs[i - 1]?.user_id !== m.user_id;
@@ -4504,7 +4504,7 @@ function ScreenCrack({ profile }) {
         <div style={{ fontFamily: 'Space Grotesk,sans-serif', fontSize: 'clamp(1.6rem,3.5vw,2.2rem)', fontWeight: 800, letterSpacing: '-.02em', color: 'var(--ink)', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: '.85rem' }}>
           Crack<br /><span style={{ color: CRACK_COLOR }}>le code !</span>
         </div>
-        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.75, maxWidth: 420 }}>Choisis un type d'énigme — tout le monde a <em style={{ color: 'var(--ink2)', fontStyle: 'normal', fontWeight: 600 }}>3 tentatives</em> pour la résoudre.</p>
+        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.75, maxWidth: 420 }}>Choisis un type d'énigme : tout le monde a <em style={{ color: 'var(--ink2)', fontStyle: 'normal', fontWeight: 600 }}>3 tentatives</em> pour la résoudre.</p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.6rem', marginBottom: '2rem' }}>
         {CRACK_CATS.map((c) =>

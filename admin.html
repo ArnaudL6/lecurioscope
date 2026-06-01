@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — La Curiosphère</title>
+<title>Admin · La Curiosphère</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -641,7 +641,7 @@ function ModuleDefis() {
       <div className="card">
         <div className="card-title">Tournoi hebdomadaire</div>
         <div style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.7 }}>
-          Module à venir — gestion des brackets, inscriptions et résultats.
+          Module à venir : gestion des brackets, inscriptions et résultats.
           La table <code>tournaments</code> est à créer dans Supabase.
         </div>
         <div style={{ display: 'flex', gap: '.5rem', marginTop: '1rem' }}>
@@ -707,14 +707,14 @@ function LoginScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
   async function login() {
     setErr(''); setLoading(true);
-    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé — vérifie ta connexion et réessaie')), ms))]);
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé, vérifie ta connexion et réessaie')), ms))]);
     try {
       const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: pass }), 15000);
       if (error) throw error;
       const { data: profile } = await withTimeout(sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle(), 15000);
       if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator')) {
         await sb.auth.signOut();
-        throw new Error('Accès refusé — rôle admin requis');
+        throw new Error('Accès refusé : rôle admin requis');
       }
       onLogin(data.user, profile);
     } catch (e) { setErr(e.message); }

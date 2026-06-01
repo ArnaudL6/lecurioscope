@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>La Curiosphère — Bientôt</title>
+<title>La Curiosphère · Bientôt</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -105,7 +105,7 @@ body::before {
   <div class="logo"><div class="logo-dot"></div><span><em style="font-style:normal;color:var(--ink2)">Le</em>&thinsp;Curioscope</span></div>
   <div class="status"><div class="status-dot"></div>Bêta privée en cours</div>
   <div class="title">La culture,<br/><span>gamifiée.</span></div>
-  <div class="subtitle">Anecdotes quotidiennes, quiz, duels et classements Solo — une nouvelle façon d'apprendre chaque jour.</div>
+  <div class="subtitle">Anecdotes quotidiennes, quiz, duels et classements Solo. Une nouvelle façon d'apprendre chaque jour.</div>
   <div class="features">
     <div class="feat"><div class="feat-ico">💡</div><div class="feat-name">Anecdote du jour</div><div class="feat-desc">Nouveau contenu chaque matin</div></div>
     <div class="feat"><div class="feat-ico">⚔️</div><div class="feat-name">Boss de rang</div><div class="feat-desc">Progresse de E jusqu'au rang S</div></div>
@@ -124,7 +124,7 @@ body::before {
     <div id="modal-body">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" id="inp-email" placeholder="ton@email.fr" />
+        <input class="form-input" type="email" autocapitalize="none" autocorrect="off" autocomplete="email" inputmode="email" spellcheck="false" id="inp-email" placeholder="ton@email.fr" />
       </div>
       <div class="form-group">
         <label class="form-label">Mot de passe</label>
@@ -141,7 +141,7 @@ body::before {
   <div class="modal">
     <button class="modal-close" onclick="document.getElementById('modal-wl').style.display='none'">✕</button>
     <div class="modal-title">📬 Liste d'attente</div>
-    <div class="wl-desc">La bêta est actuellement sur invitation uniquement. Laisse ton email — on te préviendra à l'ouverture !</div>
+    <div class="wl-desc">La bêta est actuellement sur invitation uniquement. Laisse ton email, on te préviendra à l'ouverture !</div>
     <div class="form-group">
       <label class="form-label">Email</label>
       <input class="form-input" type="email" id="wl-email" placeholder="ton@email.fr" />
@@ -210,7 +210,7 @@ function getLoginFormHTML() {
     <div id="form-login">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" id="inp-email" placeholder="ton@email.fr" />
+        <input class="form-input" type="email" autocapitalize="none" autocorrect="off" autocomplete="email" inputmode="email" spellcheck="false" id="inp-email" placeholder="ton@email.fr" />
       </div>
       <div class="form-group">
         <label class="form-label">Mot de passe</label>
@@ -222,7 +222,7 @@ function getLoginFormHTML() {
     <div id="form-signup" style="display:none">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" id="inp-su-email" placeholder="ton@email.fr" />
+        <input class="form-input" type="email" autocapitalize="none" autocorrect="off" autocomplete="email" inputmode="email" spellcheck="false" id="inp-su-email" placeholder="ton@email.fr" />
       </div>
       <div class="form-group">
         <label class="form-label">Pseudo</label>
@@ -272,7 +272,7 @@ async function doSignup() {
         <div style="font-size:1rem;font-weight:700;color:var(--a);margin-bottom:.5rem">Compte créé !</div>
         <div style="font-size:.78rem;color:var(--ink2);line-height:1.65;margin-bottom:1rem">
           Vérifie ton email pour confirmer ton compte.<br/>
-          L'accès bêta sera activé par l'équipe — on te préviendra !
+          L'accès bêta sera activé par l'équipe, on te préviendra !
         </div>
         <div style="font-size:.7rem;color:var(--ink3);background:var(--s2);border-radius:.65rem;padding:.65rem .9rem;border:1px solid var(--b1)">
           💡 Une fois ton accès accordé, reviens ici et connecte-toi avec tes identifiants.
@@ -298,8 +298,9 @@ async function doLogin() {
   const btn = document.getElementById('btn-login-submit');
   if (!email || !pass) { errEl.textContent = 'Email et mot de passe requis'; errEl.style.display = 'block'; return; }
   btn.textContent = '…'; btn.disabled = true; errEl.style.display = 'none';
+  const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé, vérifie ta connexion et réessaie')), ms))]);
   try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.toLowerCase(), password: pass }), 15000);
     if (error) throw error;
     let profile = (await sb.from('profiles').select('role, username').eq('id', data.user.id).maybeSingle()).data;
     // Pas de profil ? On le crée (cas des comptes inscrits sans profil — ex. confirmation email)
