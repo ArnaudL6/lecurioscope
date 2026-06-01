@@ -324,6 +324,26 @@ const RANKS = [
 function getRank(xp) {let r = RANKS[0];for (let i = RANKS.length - 1; i >= 0; i--) {if (xp >= RANKS[i].minXP) {r = RANKS[i];break;}}return r;}
 function getNextRank(xp) {for (let i = 0; i < RANKS.length; i++) {if (xp < RANKS[i].minXP) return RANKS[i];}return null;}
 
+// XP & streak NE SONT PAS stockés en base — ils se calculent depuis l'activité (comme le module xp.js de prod)
+function computeStreak(dates) {
+  if (!dates || !dates.length) return 0;
+  const uniq = [...new Set(dates.filter(Boolean))].sort().reverse();
+  let streak = 0, cur = new Date(todayStr() + 'T00:00:00Z');
+  for (let i = 0; i < uniq.length; i++) { const exp = cur.toISOString().slice(0, 10); if (uniq[i] === exp) { streak++; cur.setUTCDate(cur.getUTCDate() - 1); } else break; }
+  return streak;
+}
+function calcSLXP({ reads = 0, quizzes = [], enigmas = [], streak = 0 }) {
+  let xp = reads * 50;
+  xp += quizzes.length * 80;
+  xp += quizzes.filter(q => q.pct === 100).length * 120;
+  xp += quizzes.filter(q => q.pct >= 80 && q.pct < 100).length * 40;
+  xp += enigmas.filter(e => e.is_correct).length * 150;
+  xp += enigmas.filter(e => !e.is_correct).length * 20;
+  let mult = 1;
+  if (streak >= 100) mult = 1.5; else if (streak >= 30) mult = 1.2; else if (streak >= 7) mult = 1.1;
+  return Math.round(xp * mult);
+}
+
 const USER = { name: 'Arnaud_L', xp: 3999, streak: 23 };
 const rank = getRank(USER.xp);
 const nextRank = getNextRank(USER.xp);
@@ -591,8 +611,20 @@ function App() {
       setAuthUser(null); setProfile(null); setDenied(true);
       return;
     }
+    // XP & streak courant : calculés depuis l'activité (reads / quiz / énigmes)
+    let xp = 0, streak = 0;
+    try {
+      const [rR, rQ, rE] = await Promise.all([
+        sb.from('reads').select('date').eq('user_id', user.id),
+        sb.from('quiz_history').select('pct').eq('user_id', user.id),
+        sb.from('enigma_responses').select('is_correct').eq('user_id', user.id),
+      ]);
+      const reads = rR?.data || [], quizzes = rQ?.data || [], enigmas = rE?.data || [];
+      streak = computeStreak(reads.map(r => r.date));
+      xp = calcSLXP({ reads: reads.length, quizzes, enigmas, streak });
+    } catch (e) { console.warn('xp calc:', e); }
     setDenied(false);
-    setProfile(p);
+    setProfile({ ...p, xp, streak });
   }
 
   useEffect(() => {

@@ -350,7 +350,7 @@ function ModuleUsers() {
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
     setLoading(true);
-    let q = sb.from('profiles').select('id, username, xp, streak, role, created_at', { count: 'exact' }).order('xp', { ascending: false }).range(page * PAGE, (page + 1) * PAGE - 1);
+    let q = sb.from('profiles').select('id, username, joined, role, streak_record', { count: 'exact' }).order('joined', { ascending: false }).range(page * PAGE, (page + 1) * PAGE - 1);
     if (search) q = q.ilike('username', `%${search}%`);
     const { data, count } = await q;
     setItems(data || []);
@@ -376,18 +376,15 @@ function ModuleUsers() {
       <div className="card" style={{ padding: 0 }}>
         <div className="tbl-wrap">
           <table>
-            <thead><tr><th>Pseudo</th><th>Rang</th><th>XP</th><th>Streak</th><th>Rôle</th><th>Inscrit</th></tr></thead>
+            <thead><tr><th>Pseudo</th><th>Record streak</th><th>Rôle</th><th>Inscrit</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
+              {loading ? <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
+               items.length === 0 ? <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun utilisateur</td></tr> :
                items.map(u => {
-                const rc = getRankColor(u.xp || 0);
-                const rl = getRankLabel(u.xp || 0);
                 return (
                   <tr key={u.id}>
-                    <td className="td-main">{u.username}</td>
-                    <td><span className="rank-badge" style={{ color: rc, borderColor: rc }}>{rl}</span></td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '.75rem' }}>{(u.xp || 0).toLocaleString('fr-FR')}</td>
-                    <td>🔥 {u.streak || 0}</td>
+                    <td className="td-main">{u.username || '—'}</td>
+                    <td>🔥 {u.streak_record || 0}</td>
                     <td>
                       <select value={u.role || 'user'} onChange={e => setRole(u.id, e.target.value)}
                         style={{ background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '.4rem', color: 'var(--ink2)', padding: '.2rem .45rem', fontSize: '.72rem', fontFamily: 'inherit', cursor: 'pointer' }}>
@@ -397,7 +394,7 @@ function ModuleUsers() {
                         <option value="admin">Admin</option>
                       </select>
                     </td>
-                    <td style={{ fontSize: '.72rem' }}>{fmt(u.created_at)}</td>
+                    <td style={{ fontSize: '.72rem' }}>{fmt(u.joined)}</td>
                   </tr>
                 );
               })}
