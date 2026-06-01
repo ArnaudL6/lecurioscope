@@ -222,7 +222,7 @@ main{position:relative;z-index:10;min-height:calc(100vh - 56px);display:flex;fle
 .streak-label{font-size:.72rem;font-weight:700;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;}
 .streak-fire{font-size:3.8rem;filter:drop-shadow(0 0 18px rgba(251,191,36,.7));animation:firebob .9s ease-in-out infinite alternate;}
 @keyframes firebob{from{transform:scale(1) rotate(-4deg);}to{transform:scale(1.1) rotate(4deg);}}
-.prof-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem;width:100%;margin-bottom:1.25rem;}
+.prof-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;width:100%;margin-bottom:1.25rem;}
 .prof-stat-card{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.18);padding:1.1rem .85rem 1rem;text-align:center;border-radius:.5rem;display:flex;flex-direction:column;align-items:center;gap:.28rem;}
 .psc-icon{font-size:1.15rem;line-height:1.4;}
 .psc-val{font-size:1.5rem;font-weight:700;line-height:1.3;color:var(--a);}
@@ -255,7 +255,7 @@ main{position:relative;z-index:10;min-height:calc(100vh - 56px);display:flex;fle
 .opp-score.w{color:var(--gr)}.opp-score.l{color:var(--re);}
 /* Responsive desktop */
 @media(min-width:768px){
-  header{padding:0 2.5rem;}
+  header{padding:0 max(2rem, calc((100% - 980px) / 2));}
   main{padding:0 2rem 6rem;}
   .hub-screen{max-width:980px;padding:1.5rem 0 3rem;}
   .sl-hub-cols{flex-direction:row!important;align-items:flex-start;gap:1.5rem;}
@@ -787,7 +787,7 @@ function App() {
         {screen === 'hub' && <div className="screen hub-screen on"><ScreenHub profile={profile} onNav={setScreen} anecDone={anecDone} anec={anec} loadingAnec={loadingAnec} league={league} mystery={mystery} mysteryDow={mysteryDow} onRandom={handleRandomAnec} onArchives={() => setScreen('archives')} onBoss={() => setScreen('boss')} /></div>}
         {screen === 'boss' && <div className="screen on"><ScreenBoss onBack={() => setScreen('hub')} /></div>}
         {screen === 'recap' && <div className="screen on"><ScreenRecap onBack={() => setScreen('profil')} /></div>}
-        {screen === 'anec' && <div className="screen on"><ScreenAnecdote anec={anec} qs={anecQs} loading={loadingAnec} onDone={() => setAnecDone(true)} onPick={() => setScreen('pick')} /></div>}
+        {screen === 'anec' && <div className="screen on"><ScreenAnecdote anec={anec} qs={anecQs} loading={loadingAnec} onDone={() => { setAnecDone(true); if (authUser) loadProfile(authUser); }} onPick={() => setScreen('pick')} /></div>}
         {screen === 'eph' && <div className="screen on"><ScreenEphemeride /></div>}
         {screen === 'mot' && <div className="screen on"><ScreenTDQ profile={profile} /></div>}
         {screen === 'crack' && <div className="screen on"><ScreenCrack profile={profile} /></div>}
@@ -1276,7 +1276,17 @@ function ScreenAnecdote({ anec, qs, loading, onDone, onPick }) {
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '.45rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-        <button className={`btn-share${readDone ? ' on' : ''}`} onClick={() => {setReadDone(true);if (onDone) onDone();}} style={{ flex: 1, minWidth: 120 }}>
+        <button className={`btn-share${readDone ? ' on' : ''}`} onClick={async () => {
+          if (readDone) return;
+          setReadDone(true);
+          try {
+            const u = (await sb.auth.getUser()).data?.user;
+            if (u && anec?.id) {
+              await sb.from('reads').upsert({ user_id: u.id, anecdote_id: anec.id, date: todayStr(), preview: (anec.anecdote || '').slice(0, 100) }, { onConflict: 'user_id,anecdote_id' });
+            }
+          } catch (e) { console.warn('read save:', e); }
+          if (onDone) onDone();
+        }} style={{ flex: 1, minWidth: 120 }}>
           {readDone ? '✓ Lu · +50 XP' : '✓ Marquer comme lu'}
         </button>
         <button className={`btn-share${fav ? ' on' : ''}`} onClick={() => setFav((f) => !f)}>{fav ? '🧡' : '🤍'}</button>
@@ -3570,7 +3580,7 @@ function ScreenPick({ profile, onBack, onGenerate }) {
       </div>
 
       {/* Theme grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.6rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '.6rem', marginBottom: '2rem' }}>
         {THEMES.map((t) =>
         <div key={t.id}
         onClick={() => setSel(t.id)}
@@ -4293,7 +4303,7 @@ function ScreenTDQ({ profile }) {
         </div>
         <p style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.75, maxWidth: 420 }}>Ton choix définit le mot du jour pour <em style={{ color: 'var(--ink2)', fontStyle: 'normal', fontWeight: 600 }}>tout le monde</em>.</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.6rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '.6rem', marginBottom: '2rem' }}>
         {TDQ_CATS.map((c) =>
         <div key={c.id} onClick={() => setSel(c.id)}
         style={{ background: sel === c.id ? `color-mix(in srgb,${c.color} 14%,var(--bg))` : `color-mix(in srgb,${c.color} 6%,var(--bg))`, border: `1px solid color-mix(in srgb,${c.color} ${sel === c.id ? 60 : 28}%,transparent)`, borderRadius: '1rem', padding: '1rem 1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'all .18s', boxShadow: sel === c.id ? `0 6px 20px color-mix(in srgb,${c.color} 22%,transparent)` : 'none' }}
@@ -4506,7 +4516,7 @@ function ScreenCrack({ profile }) {
         </div>
         <p style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.75, maxWidth: 420 }}>Choisis un type d'énigme : tout le monde a <em style={{ color: 'var(--ink2)', fontStyle: 'normal', fontWeight: 600 }}>3 tentatives</em> pour la résoudre.</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.6rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '.6rem', marginBottom: '2rem' }}>
         {CRACK_CATS.map((c) =>
         <div key={c.id} onClick={() => setSel(c.id)}
         style={{ background: sel === c.id ? `color-mix(in srgb,${c.color} 14%,var(--bg))` : `color-mix(in srgb,${c.color} 6%,var(--bg))`, border: `1px solid color-mix(in srgb,${c.color} ${sel === c.id ? 60 : 28}%,transparent)`, borderRadius: '1rem', padding: '1rem 1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'all .18s', boxShadow: sel === c.id ? `0 6px 20px color-mix(in srgb,${c.color} 22%,transparent)` : 'none' }}
@@ -4650,7 +4660,7 @@ function ScreenMDM({ profile, onNav }) {
         </div>
         <p style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.75, maxWidth: 420 }}>Ton choix définit le concept expliqué pour <em style={{ color: 'var(--ink2)', fontStyle: 'normal', fontWeight: 600 }}>tous</em> les visiteurs d'aujourd'hui.</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.6rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '.6rem', marginBottom: '2rem' }}>
         {MDM_CATS.map((c) =>
         <div key={c.id} onClick={() => setSel(c.id)}
         style={{ background: sel === c.id ? `color-mix(in srgb,${c.color} 14%,var(--bg))` : `color-mix(in srgb,${c.color} 6%,var(--bg))`, border: `1px solid color-mix(in srgb,${c.color} ${sel === c.id ? 60 : 28}%,transparent)`, borderRadius: '1rem', padding: '1rem 1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'all .18s', boxShadow: sel === c.id ? `0 6px 20px color-mix(in srgb,${c.color} 22%,transparent)` : 'none' }}
