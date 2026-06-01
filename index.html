@@ -173,8 +173,11 @@ const APP_URL = '/app';
 
 // Open login modal
 document.getElementById('btn-beta').addEventListener('click', () => {
+  document.getElementById('modal-body').innerHTML = getLoginFormHTML();
+  bindLoginForm();
   document.getElementById('modal-login').style.display = 'flex';
-  document.getElementById('inp-email').focus();
+  const e = document.getElementById('inp-email');
+  if (e) e.focus();
 });
 document.getElementById('modal-close').addEventListener('click', () => {
   document.getElementById('modal-login').style.display = 'none';

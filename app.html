@@ -435,7 +435,8 @@ const ONBOARDING_SLIDES = [
 ];
 
 function ScreenOnboarding({ onAuth }) {
-  const [step, setStep] = useState(0); // 0-2 = slides, 3 = auth
+  const [step, setStep] = useState(() => localStorage.getItem('cs_onboarded') ? 3 : 0); // 0-2 = slides (1 seule fois), 3 = auth
+  useEffect(() => { if (step >= 3) localStorage.setItem('cs_onboarded', '1'); }, [step]);
   const [authTab, setAuthTab] = useState('signup'); // signup | login
   const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [pseudo, setPseudo] = useState('');
   const [err, setErr] = useState(''); const [loading, setLoading] = useState(false);
