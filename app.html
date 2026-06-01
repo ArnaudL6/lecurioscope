@@ -618,24 +618,30 @@ function App() {
       setAuthUser(null); setProfile(null); setDenied(true);
       return;
     }
-    // XP & streak courant : calculés depuis l'activité (reads / quiz / énigmes)
-    let xp = 0, streak = 0;
-    try {
-      const [rR, rQ, rE] = await Promise.all([
-        sb.from('reads').select('date').eq('user_id', user.id),
-        sb.from('quiz_history').select('pct').eq('user_id', user.id),
-        sb.from('enigma_responses').select('is_correct').eq('user_id', user.id),
-      ]);
-      const reads = rR?.data || [], quizzes = rQ?.data || [], enigmas = rE?.data || [];
-      streak = computeStreak(reads.map(r => r.date));
-      xp = calcSLXP({ reads: reads.length, quizzes, enigmas, streak });
-    } catch (e) { console.warn('xp calc:', e); }
+    // Affiche le hub TOUT DE SUITE (rôle vérifié) — XP/streak calculés ensuite en arrière-plan
     setDenied(false);
-    setProfile({ ...p, xp, streak });
+    setProfile({ ...p, xp: 0, streak: 0 });
+    // Calcul XP & streak en arrière-plan (ne bloque pas l'affichage)
+    (async () => {
+      try {
+        const [rR, rQ, rE] = await Promise.all([
+          sb.from('reads').select('date').eq('user_id', user.id),
+          sb.from('quiz_history').select('pct').eq('user_id', user.id),
+          sb.from('enigma_responses').select('is_correct').eq('user_id', user.id),
+        ]);
+        const reads = rR?.data || [], quizzes = rQ?.data || [], enigmas = rE?.data || [];
+        const streak = computeStreak(reads.map(r => r.date));
+        const xp = calcSLXP({ reads: reads.length, quizzes, enigmas, streak });
+        setProfile(prev => (prev && prev.id === p.id) ? { ...prev, xp, streak } : prev);
+      } catch (e) { console.warn('xp calc:', e); }
+    })();
   }
 
   useEffect(() => {
     const withTimeout = (p, ms) => Promise.race([p, new Promise((res) => setTimeout(() => res({ __timeout: true }), ms))]);
+    let settled = false;
+    const finish = () => { if (!settled) { settled = true; setAuthLoading(false); } };
+    const hasStoredToken = !!localStorage.getItem('sb-zryrfmothjhywkklmniw-auth-token');
     (async () => {
       let session = null;
       try {
@@ -644,18 +650,21 @@ function App() {
         else console.warn('getSession timeout');
       } catch (e) { console.error('getSession:', e); }
       try {
-        if (session?.user) { setAuthUser(session.user); await loadProfile(session.user); }
-        else setAuthUser(null);
-      } catch (e) { console.error('auth init:', e); setAuthUser(null); }
-      finally { setAuthLoading(false); }
+        if (session?.user) { setAuthUser(session.user); await loadProfile(session.user); finish(); }
+        else if (!hasStoredToken) { setAuthUser(null); finish(); }
+        // sinon : un token est stocké → on garde le loader, onAuthStateChange va restaurer la session (pas de flash d'onboarding)
+      } catch (e) { console.error('auth init:', e); setAuthUser(null); finish(); }
     })();
     const { data: { subscription } } = sb.auth.onAuthStateChange(async (_e, session) => {
       try {
         if (session?.user) { setAuthUser(session.user); await loadProfile(session.user); }
         else { setAuthUser(null); setProfile(null); }
       } catch (e) { console.error('auth change:', e); }
+      finish();
     });
-    return () => subscription.unsubscribe();
+    // Garde-fou : ne jamais rester bloqué sur le loader
+    const guard = setTimeout(finish, 9000);
+    return () => { subscription.unsubscribe(); clearTimeout(guard); };
   }, []);
 
   // ── Theme ──
