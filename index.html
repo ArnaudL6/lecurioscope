@@ -311,7 +311,16 @@ async function doLogin() {
   try {
     const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.toLowerCase(), password: pass }), 15000);
     if (error) throw error;
-    let profile = (await sb.from('profiles').select('role, username').eq('id', data.user.id).maybeSingle()).data;
+    // Lecture du profil avec 2 tentatives (évite les faux "accès refusé" sur réseau lent)
+    let profile = null, pErr = false;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const r = await sb.from('profiles').select('role, username').eq('id', data.user.id).maybeSingle();
+      pErr = !!r.error;
+      profile = r.data;
+      if (!pErr) break;
+    }
+    // En cas d'échec réseau persistant : on NE crée PAS de profil (risque d'écraser/dupliquer). On redirige, /app réessaiera.
+    if (pErr) { window.location.href = APP_URL; return; }
     // Pas de profil ? On le crée (cas des comptes inscrits sans profil — ex. confirmation email)
     if (!profile) {
       const meta = data.user.user_metadata || {};
@@ -319,9 +328,15 @@ async function doLogin() {
       try {
         const { data: ex } = await sb.from('profiles').select('id').eq('username', uname).maybeSingle();
         if (ex) uname = uname.slice(0, 15) + '_' + Math.floor(Math.random() * 999);
-        await sb.from('profiles').insert({ id: data.user.id, username: uname, joined: new Date().toISOString().slice(0, 10) });
-      } catch (e) {}
-      profile = { role: 'user', username: uname };
+        const { error: insErr } = await sb.from('profiles').insert({ id: data.user.id, username: uname, joined: new Date().toISOString().slice(0, 10) });
+        if (insErr) {
+          // Profil déjà existant → on le relit au lieu d'inventer
+          const again = (await sb.from('profiles').select('role, username').eq('id', data.user.id).maybeSingle()).data;
+          profile = again || { role: 'user', username: uname };
+        } else {
+          profile = { role: 'user', username: uname };
+        }
+      } catch (e) { profile = { role: 'user', username: uname }; }
     }
     if (!ALLOWED_ROLES.includes(profile.role)) {
       // Not allowed

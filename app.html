@@ -611,18 +611,24 @@ function App() {
     if (!user) { setProfile(null); return; }
     const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
     let p = null, fetchFailed = false;
-    try {
-      const res = await withTimeout(sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), 8000);
-      if (res?.error) fetchFailed = true;
-      p = res?.data || null;
-    } catch (e) {
-      console.warn('profile fetch failed (réseau):', e);
-      fetchFailed = true;
+    // Jusqu'à 2 tentatives avant d'abandonner (réduit les faux échecs réseau)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      fetchFailed = false;
+      try {
+        const res = await withTimeout(sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), 8000);
+        if (res?.error) fetchFailed = true;
+        p = res?.data || null;
+        if (!fetchFailed) break;
+      } catch (e) {
+        console.warn('profile fetch failed (réseau), tentative ' + (attempt + 1) + ':', e);
+        fetchFailed = true;
+      }
     }
     if (fetchFailed) {
-      // Réseau capricieux : on NE déconnecte PAS — la session reste valide. Profil minimal le temps de réessayer.
+      // Réseau capricieux : on NE déconnecte PAS et SURTOUT on n'écrase JAMAIS un profil déjà chargé.
+      // Si un vrai profil est en mémoire (ton pseudo, ton rang), on le garde intact.
       setDenied(false);
-      setProfile({ id: user.id, username: (user.email || '').split('@')[0] || 'Hunter', role: 'beta_tester', xp: 0, streak: 0, joined: new Date().toISOString(), streak_record: 0 });
+      setProfile(prev => prev || { id: user.id, username: (user.email || '').split('@')[0] || 'Hunter', role: 'beta_tester', xp: 0, streak: 0, joined: new Date().toISOString(), streak_record: 0 });
       return;
     }
     // Pas de profil ? On le crée (comme l'app d'origine) — il y a une session, donc le RLS l'autorise
@@ -632,9 +638,19 @@ function App() {
       try {
         const { data: ex } = await sb.from('profiles').select('id').eq('username', uname).maybeSingle();
         if (ex) uname = uname.slice(0, 15) + '_' + Math.floor(Math.random() * 999);
-        const { data: created } = await sb.from('profiles').insert({ id: user.id, username: uname, joined: todayStr() }).select().maybeSingle();
-        p = created || { id: user.id, username: uname, role: 'user' };
-      } catch (e) { console.warn('create profile:', e); p = { id: user.id, username: uname, role: 'user' }; }
+        const { data: created, error: insErr } = await sb.from('profiles').insert({ id: user.id, username: uname, joined: todayStr() }).select().maybeSingle();
+        if (insErr) {
+          // L'insertion a échoué (profil déjà existant ?) → on relit l'existant plutôt que d'inventer
+          const { data: again } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+          p = again || created || { id: user.id, username: uname, role: 'user' };
+        } else {
+          p = created || { id: user.id, username: uname, role: 'user' };
+        }
+      } catch (e) {
+        console.warn('create profile:', e);
+        const { data: again } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle().catch(() => ({ data: null }));
+        p = again || { id: user.id, username: uname, role: 'user' };
+      }
     }
     if (!ALLOWED_ROLES.includes(p.role)) {
       await sb.auth.signOut();
