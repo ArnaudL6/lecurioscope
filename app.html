@@ -1244,11 +1244,25 @@ function ScreenAnecdote({ anec, qs, loading, onDone, onPick }) {
   const daysInYear = () => {const y = new Date().getFullYear();return y % 4 === 0 && y % 100 !== 0 || y % 400 === 0 ? 366 : 365;};
 
   if (loading || !anec) return (
-    <div style={{ width: '100%', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <style>{`@keyframes psk{0%,100%{opacity:.25}50%{opacity:.55}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
-      {[200, 48, 48].map((h, i) => <div key={i} style={{ height: h, background: 'var(--s1)', borderRadius: 'var(--cr)', animation: 'psk 1.5s ease-in-out infinite', animationDelay: i * .15 + 's' }} />)}
-      {onPick && <div style={{ textAlign: 'center', marginTop: '1rem' }}><button className="btn-share" onClick={onPick}>Choisir un thème →</button></div>}
+    <div style={{ width: '100%', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem' }}>
+      <style>{`
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes pulse-c{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.4}}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.la-orbit{width:60px;height:60px;position:relative}
+.la-orbit::before,.la-orbit::after{content:'';position:absolute;border-radius:50%}
+.la-orbit::before{inset:0;border:1px solid var(--b2);border-top-color:var(--a);border-right-color:var(--a);animation:sp .9s linear infinite}
+.la-orbit::after{inset:12px;border:1px solid transparent;border-bottom-color:var(--a);animation:sp 1.5s linear infinite reverse}
+.la-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.la-dot{width:6px;height:6px;border-radius:50%;background:var(--a);box-shadow:0 0 10px var(--aglow);animation:pulse-c 1s ease-in-out infinite}
+.la-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;letter-spacing:.04em;color:var(--ink2)}
+.la-prog{width:160px;height:1px;background:var(--b2);overflow:hidden}
+.la-prog-fill{height:100%;background:linear-gradient(90deg,transparent,var(--a),transparent);animation:scan 1.5s ease-in-out infinite}
+`}</style>
+      <div className="la-orbit"><div className="la-center"><div className="la-dot" /></div></div>
+      <div className="la-title">Génération en cours…</div>
+      <div className="la-prog"><div className="la-prog-fill" /></div>
+      {onPick && <div style={{ textAlign: 'center', marginTop: '.5rem' }}><button className="btn-share" onClick={onPick}>Choisir un thème →</button></div>}
     </div>);
 
 
@@ -1483,12 +1497,29 @@ function EditProfileDrawer({ open, onClose, onSave }) {
     reader.readAsDataURL(file);
   }
 
-  function save() {
-    const data = { username, bio, avatarSrc, color, notifs };
-    localStorage.setItem('profile_edit', JSON.stringify(data));
-    localStorage.setItem('proto_username', username);
-    onSave(data);
-    onClose();
+  const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState('');
+
+  async function save() {
+    const uname = username.trim();
+    if (uname.length < 2) { setSaveErr('Pseudo trop court (2 caractères min)'); return; }
+    setSaving(true); setSaveErr('');
+    try {
+      const uid = (await sb.auth.getUser()).data?.user?.id;
+      if (uid) {
+        // Pseudo déjà pris par quelqu'un d'autre ?
+        const { data: clash } = await sb.from('profiles').select('id').ilike('username', uname).neq('id', uid).maybeSingle();
+        if (clash) { setSaveErr('Ce pseudo est déjà pris'); setSaving(false); return; }
+        const { error } = await sb.from('profiles').update({ username: uname, bio: bio || null }).eq('id', uid);
+        if (error) throw error;
+      }
+      const data = { username: uname, bio, avatarSrc, color, notifs };
+      localStorage.setItem('profile_edit', JSON.stringify(data));
+      localStorage.setItem('proto_username', uname);
+      onSave(data);
+      onClose();
+    } catch (e) { setSaveErr(e.message || 'Erreur lors de la sauvegarde'); }
+    setSaving(false);
   }
 
   if (!open) return null;
@@ -3674,25 +3705,28 @@ function ScreenEphemeride() {
   const cd = useCountdown();
   const today = () => {const d = new Date();return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');};
 
+  async function loadEph() {
+    setPhase('loading');
+    try {
+      const res = await fetch(EDGE_EPH + '?date=' + today() + '&_t=' + Date.now(), { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON } });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.events && json.events.length > 0) {setEvents(json.events);setPhase('content');return;}
+      }
+    } catch (e) {console.error(e);}
+    // Auto-generate
+    try {
+      const res = await fetch(EDGE_EPH, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ date: today() }) });
+      if (res.ok) {const json = await res.json();if (json.events?.length > 0) {setEvents(json.events);setPhase('content');return;}}
+    } catch (e) {console.error(e);}
+    setPhase('error');
+  }
+
   useEffect(() => {
     const d = new Date();
     const opts = { day: 'numeric', month: 'long' };
     setDateLabel(d.toLocaleDateString('fr-FR', opts).toUpperCase());
-    (async () => {
-      try {
-        const res = await fetch(EDGE_EPH + '?date=' + today() + '&_t=' + Date.now(), { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON } });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.events && json.events.length > 0) {setEvents(json.events);setPhase('content');return;}
-        }
-      } catch (e) {console.error(e);}
-      // Auto-generate
-      try {
-        const res = await fetch(EDGE_EPH, { method: 'POST', headers: { 'Authorization': 'Bearer ' + SB_ANON, 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ date: today() }) });
-        if (res.ok) {const json = await res.json();if (json.events?.length > 0) {setEvents(json.events);setPhase('content');return;}}
-      } catch (e) {console.error(e);}
-      setPhase('error');
-    })();
+    loadEph();
   }, []);
 
   // Mock data pour preview (retire quand edge function déployée)
@@ -3715,7 +3749,8 @@ function ScreenEphemeride() {
   if (phase === 'error') return (
     <div style={{ width: '100%', paddingTop: '3rem', textAlign: 'center' }}>
       <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📅</div>
-      <div style={{ fontSize: '.85rem', color: 'var(--ink3)' }}>Impossible de charger l'éphéméride pour aujourd'hui.</div>
+      <div style={{ fontSize: '.85rem', color: 'var(--ink3)', marginBottom: '1.25rem', lineHeight: 1.6, maxWidth: 300, marginLeft: 'auto', marginRight: 'auto' }}>Impossible de charger l'éphéméride pour aujourd'hui. Le service est peut-être momentanément indisponible.</div>
+      <button onClick={loadEph} style={{ padding: '.65rem 1.5rem', background: `color-mix(in srgb,${EPH_COLOR} 12%,transparent)`, border: `1px solid ${EPH_COLOR}`, borderRadius: '.75rem', color: EPH_COLOR, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>↻ Réessayer</button>
     </div>);
 
 
