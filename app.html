@@ -811,7 +811,7 @@ function App() {
         {screen === 'quiz-solo' && <div className="screen on"><ScreenQuizSolo onBack={() => setScreen('play')} /></div>}
         {screen === 'partie-privee' && <div className="screen on"><ScreenPartiePrivee onBack={() => setScreen('play')} /></div>}
         {screen === 'mystery' && <div className="screen on"><ScreenMystery mystery={mystery} dow={mysteryDow} onBack={() => setScreen('hub')} /></div>}
-        {screen === 'profil' && <div className="screen on"><ScreenProfil profile={profile} authUser={authUser} onNav={setScreen} /></div>}
+        {screen === 'profil' && <div className="screen on"><ScreenProfil profile={profile} authUser={authUser} onProfileUpdated={() => authUser && loadProfile(authUser)} onNav={setScreen} /></div>}
       </main>
       <BottomNav screen={screen} onNav={setScreen} />
       <Tutorial active={tutoActive} step={tutoStep} onNext={() => setTutoStep(s => s + 1)} onPrev={() => setTutoStep(s => Math.max(0, s - 1))} onSkip={tutoSkip} />
@@ -1596,15 +1596,16 @@ function EditProfileDrawer({ open, onClose, onSave }) {
           ))}
         </div>
 
-        <button onClick={save} style={{ width: '100%', padding: '1rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.82rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', background: color, color: '#07090f', border: 'none', borderRadius: '.85rem', cursor: 'pointer' }}>
-          ✓ Sauvegarder
+        {saveErr && <div style={{ fontSize: '.72rem', color: 'var(--re)', textAlign: 'center', marginBottom: '.6rem' }}>{saveErr}</div>}
+        <button onClick={save} disabled={saving} style={{ width: '100%', padding: '1rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.82rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', background: color, color: '#07090f', border: 'none', borderRadius: '.85rem', cursor: saving ? 'wait' : 'pointer', opacity: saving ? .6 : 1 }}>
+          {saving ? 'Sauvegarde…' : '✓ Sauvegarder'}
         </button>
       </div>
     </>
   );
 }
 
-function ScreenProfil({ profile: authProfile, authUser, onNav }) {
+function ScreenProfil({ profile: authProfile, authUser, onProfileUpdated, onNav }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
@@ -1766,7 +1767,7 @@ function ScreenProfil({ profile: authProfile, authUser, onNav }) {
       <NotifButton />
     </div>
     <button onClick={async () => { if (window.confirm('Se déconnecter ?')) { try { await sb.auth.signOut(); } catch (e) {} window.location.href = '/'; } }} style={{ width: '100%', marginTop: '.65rem', padding: '.8rem', fontFamily: 'Space Grotesk,sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(239,68,68,.07)', border: '1px solid rgba(239,68,68,.25)', borderRadius: '.85rem', color: '#f87171', cursor: 'pointer' }}>↩ Se déconnecter</button>
-    <EditProfileDrawer open={showEdit} onClose={() => setShowEdit(false)} onSave={() => { setShowEdit(false); setEditKey(k => k + 1); }} />
+    <EditProfileDrawer open={showEdit} onClose={() => setShowEdit(false)} onSave={() => { setShowEdit(false); setEditKey(k => k + 1); fetchProfile(); if (onProfileUpdated) onProfileUpdated(); }} />
     </div>);
 
 }
