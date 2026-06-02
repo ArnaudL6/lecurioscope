@@ -11421,7 +11421,19 @@ function ScreenAmis() {
         cursor: 'pointer'
       }
     }, "+ Ajouter"));
-  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  })), !friendSearchLoading && friendSearch.trim().length >= 2 && friendResults.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.72rem',
+      color: 'var(--ink3)',
+      marginTop: '.5rem',
+      textAlign: 'center',
+      padding: '.85rem',
+      background: 'var(--s1)',
+      border: '1px solid var(--b1)',
+      borderRadius: '.75rem',
+      lineHeight: 1.55
+    }
+  }, "Aucun utilisateur trouv\xE9 pour \xAB ", friendSearch, " \xBB. V\xE9rifie le pseudo exact (ce n'est pas le pr\xE9nom), ou demande-lui de cr\xE9er son compte d'abord.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '.58rem',
       fontWeight: 700,
