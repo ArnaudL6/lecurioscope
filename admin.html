@@ -153,7 +153,16 @@ tr:hover td { background: var(--s2); }
 const { useState, useEffect, useRef, useCallback } = React;
 const SB_URL = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
-const sb = supabase.createClient(SB_URL, SB_ANON);
+const sb = supabase.createClient(SB_URL, SB_ANON, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+    storageKey: 'sb-zryrfmothjhywkklmniw-auth-token',
+    flowType: 'pkce'
+  }
+});
 
 const RANK_COLORS = { E: '#9ca3af', D: '#22c55e', C: '#00c8ff', B: '#a855f7', A: '#fbbf24', S: '#ef4444', '★': '#ec4899' };
 function getRankColor(xp) {
