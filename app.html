@@ -10893,9 +10893,12 @@ function ScreenAmis() {
       if (otherIds.length) {
         const {
           data: profs
-        } = await sb.from('profiles').select('id, username, xp').in('id', otherIds);
+        } = await sb.from('profiles').select('*').in('id', otherIds);
         (profs || []).forEach(p => {
-          profMap[p.id] = p;
+          profMap[p.id] = {
+            username: p.username,
+            xp: p.xp ?? p.total_xp ?? 0
+          };
         });
       }
       const friends = [],
@@ -10930,10 +10933,21 @@ function ScreenAmis() {
     setFriendSearchLoading(true);
     try {
       const {
-        data
-      } = await sb.from('profiles').select('id, username, xp').ilike('username', `%${q}%`).neq('id', myUserId || '').limit(8);
-      setFriendResults(data || []);
-    } catch (e) {}
+        data,
+        error
+      } = await sb.from('profiles').select('*').ilike('username', `%${q}%`).neq('id', myUserId || '').limit(8);
+      if (error) {
+        console.warn('searchFriends error:', error);
+        alert('Recherche impossible : ' + error.message);
+      }
+      setFriendResults((data || []).map(r => ({
+        id: r.id,
+        username: r.username,
+        xp: r.xp ?? r.total_xp ?? 0
+      })));
+    } catch (e) {
+      console.warn('searchFriends:', e);
+    }
     setFriendSearchLoading(false);
   }
   async function sendRequest(toUserId) {
