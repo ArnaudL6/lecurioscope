@@ -1782,6 +1782,40 @@ function Header({
   const hStreak = profile?.streak || 0;
   const hInitiale = (profile?.username || '?')[0].toUpperCase();
   const isStaff = profile?.role === 'admin' || profile?.role === 'moderator';
+  // Compteur de demandes d'amis reçues (temps réel)
+  const [reqCount, setReqCount] = useState(0);
+  useEffect(() => {
+    const uid = profile?.id;
+    if (!uid) return;
+    let active = true;
+    async function loadReq() {
+      const {
+        count
+      } = await sb.from('friendships').select('id', {
+        count: 'exact',
+        head: true
+      }).eq('receiver_id', uid).eq('status', 'pending');
+      if (active) setReqCount(count || 0);
+    }
+    loadReq();
+    let ch;
+    try {
+      ch = sb.channel('friendreq-' + uid).on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'friendships',
+        filter: 'receiver_id=eq.' + uid
+      }, loadReq).subscribe();
+    } catch (e) {}
+    return () => {
+      active = false;
+      if (ch) {
+        try {
+          sb.removeChannel(ch);
+        } catch (e) {}
+      }
+    };
+  }, [profile?.id]);
   const TABS = [{
     id: 'anec',
     label: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("em", null, "Le"), "\u2009saviez-vous\u2009?"),
@@ -1878,7 +1912,40 @@ function Header({
       letterSpacing: '.08em',
       textTransform: 'uppercase'
     }
-  }, "Boss")), /*#__PURE__*/React.createElement("div", {
+  }, "Boss")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNav('amis'),
+    title: "Demandes d'amis",
+    style: {
+      position: 'relative',
+      background: 'none',
+      border: '1px solid var(--b2)',
+      borderRadius: '999px',
+      padding: '.22rem .5rem',
+      cursor: 'pointer',
+      fontSize: '.82rem',
+      lineHeight: 1,
+      color: 'var(--ink3)'
+    }
+  }, "\uD83D\uDD14", reqCount > 0 && /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: 'absolute',
+      top: -5,
+      right: -5,
+      minWidth: 16,
+      height: 16,
+      padding: '0 4px',
+      background: 'var(--re)',
+      color: '#fff',
+      borderRadius: '999px',
+      fontSize: '.58rem',
+      fontWeight: 700,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Space Grotesk,sans-serif',
+      boxSizing: 'border-box'
+    }
+  }, reqCount)), /*#__PURE__*/React.createElement("div", {
     className: "av-btn",
     onClick: () => onNav('profil')
   }, hInitiale), isStaff && /*#__PURE__*/React.createElement("a", {
@@ -10781,7 +10848,7 @@ function ScreenEphemeride() {
 // ── AMIS ──
 function ScreenAmis() {
   const AMIS_COLOR = '#00c8ff';
-  const [subTab, setSubTab] = useState('feed');
+  const [subTab, setSubTab] = useState('amis');
   // Feed state
   const [feed, setFeed] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
@@ -10808,27 +10875,41 @@ function ScreenAmis() {
     });
   }, []);
   useEffect(() => {
-    if (subTab !== 'amis' || !myUserId) return;
+    if (!myUserId) return;
     loadFriends();
   }, [subTab, myUserId]);
   async function loadFriends() {
     setFriendsLoading(true);
     try {
       const {
-        data: rows
-      } = await sb.from('friendships').select('id, requester_id, receiver_id, status, profiles!friendships_requester_id_fkey(username,xp), profiles!friendships_receiver_id_fkey(username,xp)').or(`requester_id.eq.${myUserId},receiver_id.eq.${myUserId}`);
+        data: rows,
+        error
+      } = await sb.from('friendships').select('id, requester_id, receiver_id, status').or(`requester_id.eq.${myUserId},receiver_id.eq.${myUserId}`);
+      if (error) throw error;
+      const list = rows || [];
+      // Profils des "autres" en une seule requête (la FK pointe vers auth.users, pas profiles : on joint nous-mêmes)
+      const otherIds = [...new Set(list.map(r => r.requester_id === myUserId ? r.receiver_id : r.requester_id))];
+      let profMap = {};
+      if (otherIds.length) {
+        const {
+          data: profs
+        } = await sb.from('profiles').select('id, username, xp').in('id', otherIds);
+        (profs || []).forEach(p => {
+          profMap[p.id] = p;
+        });
+      }
       const friends = [],
         inReqs = [],
         outReqs = [];
-      (rows || []).forEach(r => {
+      list.forEach(r => {
         const isMe = r.requester_id === myUserId;
-        const other = isMe ? r.profiles_receiver : r.profiles_requester;
         const otherId = isMe ? r.receiver_id : r.requester_id;
+        const op = profMap[otherId] || {};
         const item = {
           id: r.id,
           userId: otherId,
-          username: other?.username || '?',
-          xp: other?.xp || 0
+          username: op.username || '?',
+          xp: op.xp || 0
         };
         if (r.status === 'accepted') friends.push(item);else if (r.status === 'pending' && isMe) outReqs.push(item);else if (r.status === 'pending' && !isMe) inReqs.push(item);
       });
@@ -10858,15 +10939,25 @@ function ScreenAmis() {
   async function sendRequest(toUserId) {
     if (!myUserId) return;
     try {
-      await sb.from('friendships').insert({
+      const {
+        error
+      } = await sb.from('friendships').insert({
         requester_id: myUserId,
         receiver_id: toUserId,
         status: 'pending'
       });
-      setFriendResults(prev => prev.filter(r => r.id !== toUserId));
+      if (error) throw error;
+      const r = friendResults.find(x => x.id === toUserId);
+      if (r) setPendingOut(prev => [...prev, {
+        id: 'tmp',
+        userId: toUserId,
+        username: r.username,
+        xp: r.xp
+      }]);
       loadFriends();
     } catch (e) {
       console.warn('sendRequest:', e);
+      alert("La demande n'a pas pu être envoyée : " + (e.message || e));
     }
   }
   async function respondRequest(friendshipId, accept) {
