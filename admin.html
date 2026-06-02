@@ -6,9 +6,8 @@
 <title>Admin · La Curiosphère</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 <style>
 :root {
   --bg: #07090f; --s0: #0d0f1c; --s1: #101320; --s2: #141728;
@@ -149,8 +148,13 @@ tr:hover td { background: var(--s2); }
 <body>
 <div id="root"></div>
 
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+<script>
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} = React;
 const SB_URL = 'https://zryrfmothjhywkklmniw.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyeXJmbW90aGpoeXdra2xtbml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTYzNjEsImV4cCI6MjA5NDkzMjM2MX0.BWsZ5nXj8ePlB577zozrSO3voroRp8wkqGvM9MExaDg';
 const sb = supabase.createClient(SB_URL, SB_ANON, {
@@ -163,8 +167,15 @@ const sb = supabase.createClient(SB_URL, SB_ANON, {
     flowType: 'pkce'
   }
 });
-
-const RANK_COLORS = { E: '#9ca3af', D: '#22c55e', C: '#00c8ff', B: '#a855f7', A: '#fbbf24', S: '#ef4444', '★': '#ec4899' };
+const RANK_COLORS = {
+  E: '#9ca3af',
+  D: '#22c55e',
+  C: '#00c8ff',
+  B: '#a855f7',
+  A: '#fbbf24',
+  S: '#ef4444',
+  '★': '#ec4899'
+};
 function getRankColor(xp) {
   if (xp >= 75000) return RANK_COLORS['★'];
   if (xp >= 25000) return RANK_COLORS.S;
@@ -192,26 +203,46 @@ function showToast(msg, type = 'ok') {
   el.textContent = msg;
   el.className = `toast ${type} show`;
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3000);
+  _toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 3000);
 }
-
 function fmt(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  return new Date(d).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  });
 }
 function fmtFull(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return new Date(d).toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 // ── Toggle component ──
-function Toggle({ value, onChange, color = 'var(--a)' }) {
-  return (
-    <div onClick={() => onChange(!value)}
-      className="toggle" style={{ background: value ? color : 'var(--b2)' }}>
-      <div className="toggle-knob" style={{ left: value ? 21 : 3 }} />
-    </div>
-  );
+function Toggle({
+  value,
+  onChange,
+  color = 'var(--a)'
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: () => onChange(!value),
+    className: "toggle",
+    style: {
+      background: value ? color : 'var(--b2)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "toggle-knob",
+    style: {
+      left: value ? 21 : 3
+    }
+  }));
 }
 
 // ── MODULE: Dashboard ──
@@ -221,62 +252,134 @@ function ModuleDashboard() {
   useEffect(() => {
     (async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const [{ count: users }, { count: reads }, { count: todayReads }, { count: quizzes }, { count: comments }] = await Promise.all([
-        sb.from('profiles').select('*', { count: 'exact', head: true }),
-        sb.from('reads').select('*', { count: 'exact', head: true }),
-        sb.from('reads').select('*', { count: 'exact', head: true }).eq('date', today),
-        sb.from('quiz_history').select('*', { count: 'exact', head: true }),
-        sb.from('comments').select('*', { count: 'exact', head: true }),
-      ]);
-      const { data: topAnec } = await sb.from('reads').select('anecdote_id, anecdotes(theme, date)').eq('date', today).limit(1).maybeSingle();
-      setStats({ users: users || 0, reads: reads || 0, todayReads: todayReads || 0, quizzes: quizzes || 0, comments: comments || 0 });
-      const { data: rec } = await sb.from('reads').select('user_id, created_at, anecdotes(theme), profiles(username)').order('created_at', { ascending: false }).limit(8);
+      const [{
+        count: users
+      }, {
+        count: reads
+      }, {
+        count: todayReads
+      }, {
+        count: quizzes
+      }, {
+        count: comments
+      }] = await Promise.all([sb.from('profiles').select('*', {
+        count: 'exact',
+        head: true
+      }), sb.from('reads').select('*', {
+        count: 'exact',
+        head: true
+      }), sb.from('reads').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('date', today), sb.from('quiz_history').select('*', {
+        count: 'exact',
+        head: true
+      }), sb.from('comments').select('*', {
+        count: 'exact',
+        head: true
+      })]);
+      const {
+        data: topAnec
+      } = await sb.from('reads').select('anecdote_id, anecdotes(theme, date)').eq('date', today).limit(1).maybeSingle();
+      setStats({
+        users: users || 0,
+        reads: reads || 0,
+        todayReads: todayReads || 0,
+        quizzes: quizzes || 0,
+        comments: comments || 0
+      });
+      const {
+        data: rec
+      } = await sb.from('reads').select('user_id, created_at, anecdotes(theme), profiles(username)').order('created_at', {
+        ascending: false
+      }).limit(8);
       setRecent(rec || []);
     })();
   }, []);
-  if (!stats) return <div style={{ color: 'var(--ink3)', padding: '2rem' }}>Chargement…</div>;
-  const CARDS = [
-    { lbl: 'Utilisateurs', val: stats.users, color: 'rgba(0,200,255,.12)', icon: '👥' },
-    { lbl: 'Lectures totales', val: stats.reads, color: 'rgba(52,211,153,.12)', icon: '📖' },
-    { lbl: 'Lectures aujourd\'hui', val: stats.todayReads, color: 'rgba(251,191,36,.12)', icon: '📅' },
-    { lbl: 'Quiz joués', val: stats.quizzes, color: 'rgba(168,85,247,.12)', icon: '🎯' },
-    { lbl: 'Commentaires', val: stats.comments, color: 'rgba(249,115,22,.12)', icon: '💬' },
-  ];
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>📊 VUE D'ENSEMBLE</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Dashboard</div>
-      </div>
-      <div className="stats-grid">
-        {CARDS.map(c => (
-          <div key={c.lbl} className="stat-card" style={{ '--card-color': c.color }}>
-            <div style={{ fontSize: '1.1rem', marginBottom: '.4rem' }}>{c.icon}</div>
-            <div className="stat-val">{c.val.toLocaleString('fr-FR')}</div>
-            <div className="stat-lbl">{c.lbl}</div>
-          </div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">📡 Activité récente</div>
-        {recent.length === 0 ? <div style={{ color: 'var(--ink3)', fontSize: '.78rem' }}>Aucune activité récente.</div> :
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Utilisateur</th><th>Anecdote</th><th>Date</th></tr></thead>
-            <tbody>
-              {recent.map((r, i) => (
-                <tr key={i}>
-                  <td className="td-main">{r.profiles?.username || '—'}</td>
-                  <td>{r.anecdotes?.theme || '—'}</td>
-                  <td>{fmtFull(r.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>}
-      </div>
-    </div>
-  );
+  if (!stats) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Chargement\u2026");
+  const CARDS = [{
+    lbl: 'Utilisateurs',
+    val: stats.users,
+    color: 'rgba(0,200,255,.12)',
+    icon: '👥'
+  }, {
+    lbl: 'Lectures totales',
+    val: stats.reads,
+    color: 'rgba(52,211,153,.12)',
+    icon: '📖'
+  }, {
+    lbl: 'Lectures aujourd\'hui',
+    val: stats.todayReads,
+    color: 'rgba(251,191,36,.12)',
+    icon: '📅'
+  }, {
+    lbl: 'Quiz joués',
+    val: stats.quizzes,
+    color: 'rgba(168,85,247,.12)',
+    icon: '🎯'
+  }, {
+    lbl: 'Commentaires',
+    val: stats.comments,
+    color: 'rgba(249,115,22,.12)',
+    icon: '💬'
+  }];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDCCA VUE D'ENSEMBLE"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Dashboard")), /*#__PURE__*/React.createElement("div", {
+    className: "stats-grid"
+  }, CARDS.map(c => /*#__PURE__*/React.createElement("div", {
+    key: c.lbl,
+    className: "stat-card",
+    style: {
+      '--card-color': c.color
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.1rem',
+      marginBottom: '.4rem'
+    }
+  }, c.icon), /*#__PURE__*/React.createElement("div", {
+    className: "stat-val"
+  }, c.val.toLocaleString('fr-FR')), /*#__PURE__*/React.createElement("div", {
+    className: "stat-lbl"
+  }, c.lbl)))), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "\uD83D\uDCE1 Activit\xE9 r\xE9cente"), recent.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: 'var(--ink3)',
+      fontSize: '.78rem'
+    }
+  }, "Aucune activit\xE9 r\xE9cente.") : /*#__PURE__*/React.createElement("div", {
+    className: "tbl-wrap"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Utilisateur"), /*#__PURE__*/React.createElement("th", null, "Anecdote"), /*#__PURE__*/React.createElement("th", null, "Date"))), /*#__PURE__*/React.createElement("tbody", null, recent.map((r, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "td-main"
+  }, r.profiles?.username || '—'), /*#__PURE__*/React.createElement("td", null, r.anecdotes?.theme || '—'), /*#__PURE__*/React.createElement("td", null, fmtFull(r.created_at)))))))));
 }
 
 // ── MODULE: Anecdotes ──
@@ -289,14 +392,23 @@ function ModuleAnecdotes() {
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
     setLoading(true);
-    let q = sb.from('anecdotes').select('id, date, theme, icon, chooser, created_at', { count: 'exact' }).order('date', { ascending: false }).range(page * PAGE, (page + 1) * PAGE - 1);
+    let q = sb.from('anecdotes').select('id, date, theme, icon, chooser, created_at', {
+      count: 'exact'
+    }).order('date', {
+      ascending: false
+    }).range(page * PAGE, (page + 1) * PAGE - 1);
     if (search) q = q.ilike('theme', `%${search}%`);
-    const { data, count } = await q;
+    const {
+      data,
+      count
+    } = await q;
     setItems(data || []);
     setTotal(count || 0);
     setLoading(false);
   }, [page, search]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
   async function deleteAnec(id) {
     if (!confirm('Supprimer cette anecdote et toutes ses données associées ?')) return;
     try {
@@ -306,47 +418,91 @@ function ModuleAnecdotes() {
       await sb.from('anecdotes').delete().eq('id', id);
       showToast('✓ Anecdote supprimée');
       load();
-    } catch (e) { showToast('Erreur: ' + e.message, 'err'); }
+    } catch (e) {
+      showToast('Erreur: ' + e.message, 'err');
+    }
   }
   const pages = Math.ceil(total / PAGE);
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>📖 CONTENU</div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Anecdotes <span style={{ fontSize: '1rem', color: 'var(--ink3)', fontWeight: 500 }}>({total})</span></div>
-        </div>
-      </div>
-      <div className="search-bar">
-        <input className="search-input" placeholder="Rechercher par thème…" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
-      </div>
-      <div className="card" style={{ padding: 0 }}>
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Date</th><th>Thème</th><th>Choisi par</th><th>Actions</th></tr></thead>
-            <tbody>
-              {loading ? <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
-               items.map(a => (
-                <tr key={a.id}>
-                  <td style={{ fontFamily: 'monospace', fontSize: '.75rem' }}>{a.date}</td>
-                  <td className="td-main">{a.icon} {a.theme}</td>
-                  <td>{a.chooser || '—'}</td>
-                  <td><button className="btn btn-danger btn-sm" onClick={() => deleteAnec(a.id)}>✕ Suppr.</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {pages > 1 && (
-        <div className="pagination">
-          <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>← Préc.</button>
-          <span style={{ fontSize: '.75rem', color: 'var(--ink3)' }}>{page + 1} / {pages}</span>
-          <button className="page-btn" disabled={page >= pages - 1} onClick={() => setPage(p => p + 1)}>Suiv. →</button>
-        </div>
-      )}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDCD6 CONTENU"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Anecdotes ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1rem',
+      color: 'var(--ink3)',
+      fontWeight: 500
+    }
+  }, "(", total, ")")))), /*#__PURE__*/React.createElement("div", {
+    className: "search-bar"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "search-input",
+    placeholder: "Rechercher par th\xE8me\u2026",
+    value: search,
+    onChange: e => {
+      setSearch(e.target.value);
+      setPage(0);
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tbl-wrap"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Date"), /*#__PURE__*/React.createElement("th", null, "Th\xE8me"), /*#__PURE__*/React.createElement("th", null, "Choisi par"), /*#__PURE__*/React.createElement("th", null, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, loading ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 4,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Chargement\u2026")) : items.map(a => /*#__PURE__*/React.createElement("tr", {
+    key: a.id
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontFamily: 'monospace',
+      fontSize: '.75rem'
+    }
+  }, a.date), /*#__PURE__*/React.createElement("td", {
+    className: "td-main"
+  }, a.icon, " ", a.theme), /*#__PURE__*/React.createElement("td", null, a.chooser || '—'), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-danger btn-sm",
+    onClick: () => deleteAnec(a.id)
+  }, "\u2715 Suppr.")))))))), pages > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "pagination"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "page-btn",
+    disabled: page === 0,
+    onClick: () => setPage(p => p - 1)
+  }, "\u2190 Pr\xE9c."), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '.75rem',
+      color: 'var(--ink3)'
+    }
+  }, page + 1, " / ", pages), /*#__PURE__*/React.createElement("button", {
+    className: "page-btn",
+    disabled: page >= pages - 1,
+    onClick: () => setPage(p => p + 1)
+  }, "Suiv. \u2192")));
 }
 
 // ── MODULE: Utilisateurs ──
@@ -359,106 +515,204 @@ function ModuleUsers() {
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
     setLoading(true);
-    let q = sb.from('profiles').select('id, username, joined, role, streak_record', { count: 'exact' }).order('joined', { ascending: false }).range(page * PAGE, (page + 1) * PAGE - 1);
+    let q = sb.from('profiles').select('id, username, joined, role, streak_record', {
+      count: 'exact'
+    }).order('joined', {
+      ascending: false
+    }).range(page * PAGE, (page + 1) * PAGE - 1);
     if (search) q = q.ilike('username', `%${search}%`);
-    const { data, count } = await q;
+    const {
+      data,
+      count
+    } = await q;
     setItems(data || []);
     setTotal(count || 0);
     setLoading(false);
   }, [page, search]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
   async function setRole(id, role) {
-    await sb.from('profiles').update({ role }).eq('id', id);
+    await sb.from('profiles').update({
+      role
+    }).eq('id', id);
     showToast('✓ Rôle mis à jour');
     load();
   }
   async function resetXp(id, username) {
     if (!window.confirm('Remettre à zéro le XP de ' + (username || 'ce membre') + ' ?\n\nÇa efface ses lectures, quiz et énigmes, et remet son record de streak à 0. Action irréversible.')) return;
     try {
-      const r = await Promise.all([
-        sb.from('reads').delete().eq('user_id', id),
-        sb.from('quiz_history').delete().eq('user_id', id),
-        sb.from('enigma_responses').delete().eq('user_id', id),
-        sb.from('profiles').update({ streak_record: 0 }).eq('id', id),
-      ]);
+      const r = await Promise.all([sb.from('reads').delete().eq('user_id', id), sb.from('quiz_history').delete().eq('user_id', id), sb.from('enigma_responses').delete().eq('user_id', id), sb.from('profiles').update({
+        streak_record: 0
+      }).eq('id', id)]);
       const err = r.find(x => x && x.error);
-      if (err) { showToast('⚠️ Reset partiel : ' + (err.error.message || 'erreur RLS')); }
-      else { showToast('✓ XP remis à zéro'); }
-    } catch (e) { showToast('⚠️ Erreur : ' + e.message); }
+      if (err) {
+        showToast('⚠️ Reset partiel : ' + (err.error.message || 'erreur RLS'));
+      } else {
+        showToast('✓ XP remis à zéro');
+      }
+    } catch (e) {
+      showToast('⚠️ Erreur : ' + e.message);
+    }
     load();
   }
   async function deleteUser(id, username) {
     if (!window.confirm('SUPPRIMER ' + (username || 'ce membre') + ' ?\n\nÇa efface son profil + toute son activité (lectures, quiz, énigmes). Action irréversible.\n\n⚠️ Son compte de connexion (auth) doit être supprimé à part dans Supabase.')) return;
     try {
-      await Promise.all([
-        sb.from('reads').delete().eq('user_id', id),
-        sb.from('quiz_history').delete().eq('user_id', id),
-        sb.from('enigma_responses').delete().eq('user_id', id),
-      ]);
-      const { error } = await sb.from('profiles').delete().eq('id', id);
-      if (error) { showToast('⚠️ Suppression échouée : ' + (error.message || 'erreur RLS')); }
-      else { showToast('✓ Membre supprimé'); }
-    } catch (e) { showToast('⚠️ Erreur : ' + e.message); }
+      await Promise.all([sb.from('reads').delete().eq('user_id', id), sb.from('quiz_history').delete().eq('user_id', id), sb.from('enigma_responses').delete().eq('user_id', id)]);
+      const {
+        error
+      } = await sb.from('profiles').delete().eq('id', id);
+      if (error) {
+        showToast('⚠️ Suppression échouée : ' + (error.message || 'erreur RLS'));
+      } else {
+        showToast('✓ Membre supprimé');
+      }
+    } catch (e) {
+      showToast('⚠️ Erreur : ' + e.message);
+    }
     load();
   }
   const pages = Math.ceil(total / PAGE);
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>👥 MEMBRES</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Utilisateurs <span style={{ fontSize: '1rem', color: 'var(--ink3)', fontWeight: 500 }}>({total})</span></div>
-      </div>
-      <div className="search-bar">
-        <input className="search-input" placeholder="Rechercher par pseudo…" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
-      </div>
-      <div className="card" style={{ padding: 0 }}>
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Pseudo</th><th>Record streak</th><th>Rôle</th><th>Inscrit</th><th>Actions</th></tr></thead>
-            <tbody>
-              {loading ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
-               items.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun utilisateur</td></tr> :
-               items.map(u => {
-                return (
-                  <tr key={u.id}>
-                    <td className="td-main">{u.username || '—'}</td>
-                    <td>🔥 {u.streak_record || 0}</td>
-                    <td>
-                      <select value={u.role || 'user'} onChange={e => setRole(u.id, e.target.value)}
-                        style={{ background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '.4rem', color: 'var(--ink2)', padding: '.2rem .45rem', fontSize: '.72rem', fontFamily: 'inherit', cursor: 'pointer' }}>
-                        <option value="user">User</option>
-                        <option value="beta_tester">Beta tester</option>
-                        <option value="moderator">Mod</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </td>
-                    <td style={{ fontSize: '.72rem' }}>{fmt(u.joined)}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-                        <button onClick={() => resetXp(u.id, u.username)}
-                          style={{ background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', borderRadius: '.4rem', color: '#f87171', padding: '.25rem .6rem', fontSize: '.7rem', fontFamily: 'inherit', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                          title="Efface lectures, quiz, énigmes et remet le streak à 0">↺ Reset XP</button>
-                        <button onClick={() => deleteUser(u.id, u.username)}
-                          style={{ background: 'rgba(239,68,68,.16)', border: '1px solid rgba(239,68,68,.45)', borderRadius: '.4rem', color: '#ef4444', padding: '.25rem .55rem', fontSize: '.7rem', fontFamily: 'inherit', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                          title="Supprime le profil et toute l'activité du membre">🗑 Suppr.</button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {pages > 1 && (
-        <div className="pagination">
-          <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>← Préc.</button>
-          <span style={{ fontSize: '.75rem', color: 'var(--ink3)' }}>{page + 1} / {pages}</span>
-          <button className="page-btn" disabled={page >= pages - 1} onClick={() => setPage(p => p + 1)}>Suiv. →</button>
-        </div>
-      )}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDC65 MEMBRES"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Utilisateurs ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1rem',
+      color: 'var(--ink3)',
+      fontWeight: 500
+    }
+  }, "(", total, ")"))), /*#__PURE__*/React.createElement("div", {
+    className: "search-bar"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "search-input",
+    placeholder: "Rechercher par pseudo\u2026",
+    value: search,
+    onChange: e => {
+      setSearch(e.target.value);
+      setPage(0);
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tbl-wrap"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Pseudo"), /*#__PURE__*/React.createElement("th", null, "Record streak"), /*#__PURE__*/React.createElement("th", null, "R\xF4le"), /*#__PURE__*/React.createElement("th", null, "Inscrit"), /*#__PURE__*/React.createElement("th", null, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, loading ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 5,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Chargement\u2026")) : items.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 5,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Aucun utilisateur")) : items.map(u => {
+    return /*#__PURE__*/React.createElement("tr", {
+      key: u.id
+    }, /*#__PURE__*/React.createElement("td", {
+      className: "td-main"
+    }, u.username || '—'), /*#__PURE__*/React.createElement("td", null, "\uD83D\uDD25 ", u.streak_record || 0), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("select", {
+      value: u.role || 'user',
+      onChange: e => setRole(u.id, e.target.value),
+      style: {
+        background: 'var(--s2)',
+        border: '1px solid var(--b1)',
+        borderRadius: '.4rem',
+        color: 'var(--ink2)',
+        padding: '.2rem .45rem',
+        fontSize: '.72rem',
+        fontFamily: 'inherit',
+        cursor: 'pointer'
+      }
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "user"
+    }, "User"), /*#__PURE__*/React.createElement("option", {
+      value: "beta_tester"
+    }, "Beta tester"), /*#__PURE__*/React.createElement("option", {
+      value: "moderator"
+    }, "Mod"), /*#__PURE__*/React.createElement("option", {
+      value: "admin"
+    }, "Admin"))), /*#__PURE__*/React.createElement("td", {
+      style: {
+        fontSize: '.72rem'
+      }
+    }, fmt(u.joined)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '.4rem',
+        flexWrap: 'wrap'
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => resetXp(u.id, u.username),
+      style: {
+        background: 'rgba(239,68,68,.1)',
+        border: '1px solid rgba(239,68,68,.3)',
+        borderRadius: '.4rem',
+        color: '#f87171',
+        padding: '.25rem .6rem',
+        fontSize: '.7rem',
+        fontFamily: 'inherit',
+        fontWeight: 600,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap'
+      },
+      title: "Efface lectures, quiz, \xE9nigmes et remet le streak \xE0 0"
+    }, "\u21BA Reset XP"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => deleteUser(u.id, u.username),
+      style: {
+        background: 'rgba(239,68,68,.16)',
+        border: '1px solid rgba(239,68,68,.45)',
+        borderRadius: '.4rem',
+        color: '#ef4444',
+        padding: '.25rem .55rem',
+        fontSize: '.7rem',
+        fontFamily: 'inherit',
+        fontWeight: 700,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap'
+      },
+      title: "Supprime le profil et toute l'activit\xE9 du membre"
+    }, "\uD83D\uDDD1 Suppr."))));
+  }))))), pages > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "pagination"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "page-btn",
+    disabled: page === 0,
+    onClick: () => setPage(p => p - 1)
+  }, "\u2190 Pr\xE9c."), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '.75rem',
+      color: 'var(--ink3)'
+    }
+  }, page + 1, " / ", pages), /*#__PURE__*/React.createElement("button", {
+    className: "page-btn",
+    disabled: page >= pages - 1,
+    onClick: () => setPage(p => p + 1)
+  }, "Suiv. \u2192")));
 }
 
 // ── MODULE: Commentaires ──
@@ -469,9 +723,13 @@ function ModuleComments() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let q = sb.from('comments').select('id, username, message, content_type, content_id, created_at').order('created_at', { ascending: false }).limit(50);
+      let q = sb.from('comments').select('id, username, message, content_type, content_id, created_at').order('created_at', {
+        ascending: false
+      }).limit(50);
       if (filter !== 'all') q = q.eq('content_type', filter);
-      const { data } = await q;
+      const {
+        data
+      } = await q;
       setItems(data || []);
       setLoading(false);
     })();
@@ -481,84 +739,207 @@ function ModuleComments() {
     showToast('✓ Commentaire supprimé');
     setItems(i => i.filter(x => x.id !== id));
   }
-  const FILTERS = [{ id: 'all', lbl: 'Tous' }, { id: 'anecdote', lbl: 'Anecdotes' }, { id: 'ephemeride', lbl: 'Éphéméride' }, { id: 'tdq', lbl: 'T\'as Dit Quoi' }, { id: 'enigme', lbl: 'Crack le Code' }, { id: 'mdm', lbl: 'Mais Dis Moi' }];
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>💬 MODÉRATION</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Commentaires</div>
-      </div>
-      <div className="mod-tabs">
-        {FILTERS.map(f => <button key={f.id} className={`mod-tab ${filter === f.id ? 'active' : ''}`} onClick={() => setFilter(f.id)}>{f.lbl}</button>)}
-      </div>
-      <div className="card" style={{ padding: 0 }}>
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Auteur</th><th>Message</th><th>Type</th><th>Date</th><th></th></tr></thead>
-            <tbody>
-              {loading ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
-               items.length === 0 ? <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun commentaire.</td></tr> :
-               items.map(c => (
-                <tr key={c.id}>
-                  <td className="td-main">{c.username || 'Anonyme'}</td>
-                  <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.message}</td>
-                  <td><span className="badge badge-user">{c.content_type}</span></td>
-                  <td style={{ fontSize: '.72rem' }}>{fmtFull(c.created_at)}</td>
-                  <td><button className="btn btn-danger btn-sm" onClick={() => del(c.id)}>✕</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+  const FILTERS = [{
+    id: 'all',
+    lbl: 'Tous'
+  }, {
+    id: 'anecdote',
+    lbl: 'Anecdotes'
+  }, {
+    id: 'ephemeride',
+    lbl: 'Éphéméride'
+  }, {
+    id: 'tdq',
+    lbl: 'T\'as Dit Quoi'
+  }, {
+    id: 'enigme',
+    lbl: 'Crack le Code'
+  }, {
+    id: 'mdm',
+    lbl: 'Mais Dis Moi'
+  }];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDCAC MOD\xC9RATION"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Commentaires")), /*#__PURE__*/React.createElement("div", {
+    className: "mod-tabs"
+  }, FILTERS.map(f => /*#__PURE__*/React.createElement("button", {
+    key: f.id,
+    className: `mod-tab ${filter === f.id ? 'active' : ''}`,
+    onClick: () => setFilter(f.id)
+  }, f.lbl))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tbl-wrap"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Auteur"), /*#__PURE__*/React.createElement("th", null, "Message"), /*#__PURE__*/React.createElement("th", null, "Type"), /*#__PURE__*/React.createElement("th", null, "Date"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, loading ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 5,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Chargement\u2026")) : items.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 5,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Aucun commentaire.")) : items.map(c => /*#__PURE__*/React.createElement("tr", {
+    key: c.id
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "td-main"
+  }, c.username || 'Anonyme'), /*#__PURE__*/React.createElement("td", {
+    style: {
+      maxWidth: 280,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }
+  }, c.message), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
+    className: "badge badge-user"
+  }, c.content_type)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontSize: '.72rem'
+    }
+  }, fmtFull(c.created_at)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-danger btn-sm",
+    onClick: () => del(c.id)
+  }, "\u2715")))))))));
 }
 
 // ── MODULE: Hub ──
 function ModuleHub() {
-  const GATES = [
-    { id: 'anec', ico: '💡', name: 'Le Saviez-Vous ?', desc: 'Anecdote du jour', rank: 'E', color: '#9ca3af' },
-    { id: 'mais', ico: '🔍', name: 'Mais Dis Moi ?', desc: 'Vulgarisation', rank: 'C', color: '#00c8ff' },
-    { id: 'eph', ico: '📅', name: 'Éphéméride', desc: 'Ce jour dans l\'histoire', rank: 'A', color: '#fbbf24' },
-    { id: 'mot', ico: '💬', name: 'T\'as Dit Quoi ?!', desc: 'Linguistique', rank: 'B', color: '#a855f7' },
-    { id: 'crack', ico: '🧩', name: 'Crack le Code', desc: 'Énigme du jour', rank: 'D', color: '#22c55e' },
-  ];
+  const GATES = [{
+    id: 'anec',
+    ico: '💡',
+    name: 'Le Saviez-Vous ?',
+    desc: 'Anecdote du jour',
+    rank: 'E',
+    color: '#9ca3af'
+  }, {
+    id: 'mais',
+    ico: '🔍',
+    name: 'Mais Dis Moi ?',
+    desc: 'Vulgarisation',
+    rank: 'C',
+    color: '#00c8ff'
+  }, {
+    id: 'eph',
+    ico: '📅',
+    name: 'Éphéméride',
+    desc: 'Ce jour dans l\'histoire',
+    rank: 'A',
+    color: '#fbbf24'
+  }, {
+    id: 'mot',
+    ico: '💬',
+    name: 'T\'as Dit Quoi ?!',
+    desc: 'Linguistique',
+    rank: 'B',
+    color: '#a855f7'
+  }, {
+    id: 'crack',
+    ico: '🧩',
+    name: 'Crack le Code',
+    desc: 'Énigme du jour',
+    rank: 'D',
+    color: '#22c55e'
+  }];
   const [enabled, setEnabled] = useState(() => {
     const s = localStorage.getItem('admin_hub_enabled');
-    return s ? JSON.parse(s) : { anec: true, mais: true, eph: true, mot: false, crack: true };
+    return s ? JSON.parse(s) : {
+      anec: true,
+      mais: true,
+      eph: true,
+      mot: false,
+      crack: true
+    };
   });
   function toggle(id) {
-    const next = { ...enabled, [id]: !enabled[id] };
+    const next = {
+      ...enabled,
+      [id]: !enabled[id]
+    };
     setEnabled(next);
     localStorage.setItem('admin_hub_enabled', JSON.stringify(next));
     showToast('✓ Hub mis à jour');
   }
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>⚙️ CONFIGURATION</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Gestion du Hub</div>
-      </div>
-      <div className="card">
-        <div className="card-title">Gates quotidiennes</div>
-        {GATES.map(g => (
-          <div key={g.id} className="gate-item" style={{ opacity: enabled[g.id] ? 1 : 0.4, borderColor: enabled[g.id] ? `color-mix(in srgb,${g.color} 25%,transparent)` : 'var(--b1)' }}>
-            <span className="gate-ico">{g.ico}</span>
-            <div className="gate-info">
-              <div className="gate-name">{g.name}</div>
-              <div className="gate-desc">{g.desc} · <span style={{ color: g.color }}>{g.rank}-Rang</span></div>
-            </div>
-            <Toggle value={enabled[g.id]} onChange={() => toggle(g.id)} color={g.color} />
-          </div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">XP par gate</div>
-        <div style={{ fontSize: '.78rem', color: 'var(--ink3)' }}>Toutes les gates donnent actuellement +50 XP à la completion. Modification via Supabase → table <code>app_config</code>.</div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\u2699\uFE0F CONFIGURATION"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Gestion du Hub")), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "Gates quotidiennes"), GATES.map(g => /*#__PURE__*/React.createElement("div", {
+    key: g.id,
+    className: "gate-item",
+    style: {
+      opacity: enabled[g.id] ? 1 : 0.4,
+      borderColor: enabled[g.id] ? `color-mix(in srgb,${g.color} 25%,transparent)` : 'var(--b1)'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "gate-ico"
+  }, g.ico), /*#__PURE__*/React.createElement("div", {
+    className: "gate-info"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "gate-name"
+  }, g.name), /*#__PURE__*/React.createElement("div", {
+    className: "gate-desc"
+  }, g.desc, " \xB7 ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: g.color
+    }
+  }, g.rank, "-Rang"))), /*#__PURE__*/React.createElement(Toggle, {
+    value: enabled[g.id],
+    onChange: () => toggle(g.id),
+    color: g.color
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "XP par gate"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      color: 'var(--ink3)'
+    }
+  }, "Toutes les gates donnent actuellement +50 XP \xE0 la completion. Modification via Supabase \u2192 table ", /*#__PURE__*/React.createElement("code", null, "app_config"), ".")));
 }
 
 // ── MODULE: Contenu ──
@@ -567,23 +948,49 @@ function ModuleContent() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const TABLES = {
-    anecdotes: { table: 'anecdotes', label: 'Anecdotes', cols: ['date', 'theme', 'chooser'] },
-    mdm: { table: 'mais_dis_moi', label: 'Mais Dis Moi', cols: ['date', 'title', 'category'] },
-    eph: { table: 'ephemerides', label: 'Éphéméride', cols: ['date', 'day_month'] },
-    enigmes: { table: 'daily_enigmas', label: 'Crack le Code', cols: ['date', 'category', 'difficulty'] },
-    tdq: { table: 'tas_dit_quoi', label: 'T\'as Dit Quoi', cols: ['date', 'word', 'category'] },
+    anecdotes: {
+      table: 'anecdotes',
+      label: 'Anecdotes',
+      cols: ['date', 'theme', 'chooser']
+    },
+    mdm: {
+      table: 'mais_dis_moi',
+      label: 'Mais Dis Moi',
+      cols: ['date', 'title', 'category']
+    },
+    eph: {
+      table: 'ephemerides',
+      label: 'Éphéméride',
+      cols: ['date', 'day_month']
+    },
+    enigmes: {
+      table: 'daily_enigmas',
+      label: 'Crack le Code',
+      cols: ['date', 'category', 'difficulty']
+    },
+    tdq: {
+      table: 'tas_dit_quoi',
+      label: 'T\'as Dit Quoi',
+      cols: ['date', 'word', 'category']
+    }
   };
   useEffect(() => {
     (async () => {
       setLoading(true);
       const t = TABLES[tab];
-      const { data } = await sb.from(t.table).select(t.cols.join(', ') + ', id').order('date', { ascending: false }).limit(30);
+      const {
+        data
+      } = await sb.from(t.table).select(t.cols.join(', ') + ', id').order('date', {
+        ascending: false
+      }).limit(30);
       setItems(data || []);
       setLoading(false);
     })();
   }, [tab]);
   async function del(id) {
-    const { table } = TABLES[tab];
+    const {
+      table
+    } = TABLES[tab];
     if (!confirm('Supprimer ce contenu ?')) return;
     if (tab === 'anecdotes') {
       for (const t of ['reads', 'quiz_history', 'questions', 'reactions', 'comments']) {
@@ -595,34 +1002,63 @@ function ModuleContent() {
     setItems(i => i.filter(x => x.id !== id));
   }
   const t = TABLES[tab];
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>📚 CONTENU GÉNÉRÉS</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Historique des modules</div>
-      </div>
-      <div className="mod-tabs">
-        {Object.entries(TABLES).map(([id, v]) => <button key={id} className={`mod-tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>{v.label}</button>)}
-      </div>
-      <div className="card" style={{ padding: 0 }}>
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr>{t.cols.map(c => <th key={c}>{c}</th>)}<th></th></tr></thead>
-            <tbody>
-              {loading ? <tr><td colSpan={t.cols.length + 1} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Chargement…</td></tr> :
-               items.length === 0 ? <tr><td colSpan={t.cols.length + 1} style={{ textAlign: 'center', color: 'var(--ink3)', padding: '2rem' }}>Aucun contenu.</td></tr> :
-               items.map((item, i) => (
-                <tr key={item.id || i}>
-                  {t.cols.map(c => <td key={c} className={c === t.cols[1] ? 'td-main' : ''}>{String(item[c] || '—').slice(0, 40)}</td>)}
-                  <td><button className="btn btn-danger btn-sm" onClick={() => del(item.id)}>✕</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDCDA CONTENU G\xC9N\xC9R\xC9S"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Historique des modules")), /*#__PURE__*/React.createElement("div", {
+    className: "mod-tabs"
+  }, Object.entries(TABLES).map(([id, v]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    className: `mod-tab ${tab === id ? 'active' : ''}`,
+    onClick: () => setTab(id)
+  }, v.label))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tbl-wrap"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, t.cols.map(c => /*#__PURE__*/React.createElement("th", {
+    key: c
+  }, c)), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, loading ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: t.cols.length + 1,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Chargement\u2026")) : items.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: t.cols.length + 1,
+    style: {
+      textAlign: 'center',
+      color: 'var(--ink3)',
+      padding: '2rem'
+    }
+  }, "Aucun contenu.")) : items.map((item, i) => /*#__PURE__*/React.createElement("tr", {
+    key: item.id || i
+  }, t.cols.map(c => /*#__PURE__*/React.createElement("td", {
+    key: c,
+    className: c === t.cols[1] ? 'td-main' : ''
+  }, String(item[c] || '—').slice(0, 40))), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-danger btn-sm",
+    onClick: () => del(item.id)
+  }, "\u2715")))))))));
 }
 
 // ── MODULE: Défis ──
@@ -631,142 +1067,343 @@ function ModuleDefis() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     (async () => {
-      const { data } = await sb.from('comments').select('id, username, message, created_at').eq('content_type', 'defi').order('created_at', { ascending: false }).limit(30);
+      const {
+        data
+      } = await sb.from('comments').select('id, username, message, created_at').eq('content_type', 'defi').order('created_at', {
+        ascending: false
+      }).limit(30);
       setItems(data || []);
       setLoading(false);
     })();
   }, []);
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>⚔️ SOCIAL</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Défis & Tournois</div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.75rem', marginBottom: '1.5rem' }}>
-        {[['⚔️', '—', 'Défis envoyés'], ['✓', '—', 'Défis répondus'], ['⏳', '—', 'En attente']].map(([ico, val, lbl]) => (
-          <div key={lbl} className="stat-card"><div style={{ fontSize: '1.1rem', marginBottom: '.4rem' }}>{ico}</div><div className="stat-val">{val}</div><div className="stat-lbl">{lbl}</div></div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">Tournoi hebdomadaire</div>
-        <div style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.7 }}>
-          Module à venir : gestion des brackets, inscriptions et résultats.
-          La table <code>tournaments</code> est à créer dans Supabase.
-        </div>
-        <div style={{ display: 'flex', gap: '.5rem', marginTop: '1rem' }}>
-          <button className="btn btn-ghost btn-sm" disabled>+ Créer un tournoi</button>
-          <button className="btn btn-ghost btn-sm" disabled>Voir les inscriptions</button>
-        </div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\u2694\uFE0F SOCIAL"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "D\xE9fis & Tournois")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: '.75rem',
+      marginBottom: '1.5rem'
+    }
+  }, [['⚔️', '—', 'Défis envoyés'], ['✓', '—', 'Défis répondus'], ['⏳', '—', 'En attente']].map(([ico, val, lbl]) => /*#__PURE__*/React.createElement("div", {
+    key: lbl,
+    className: "stat-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.1rem',
+      marginBottom: '.4rem'
+    }
+  }, ico), /*#__PURE__*/React.createElement("div", {
+    className: "stat-val"
+  }, val), /*#__PURE__*/React.createElement("div", {
+    className: "stat-lbl"
+  }, lbl)))), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "Tournoi hebdomadaire"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      color: 'var(--ink3)',
+      lineHeight: 1.7
+    }
+  }, "Module \xE0 venir : gestion des brackets, inscriptions et r\xE9sultats. La table ", /*#__PURE__*/React.createElement("code", null, "tournaments"), " est \xE0 cr\xE9er dans Supabase."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '.5rem',
+      marginTop: '1rem'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost btn-sm",
+    disabled: true
+  }, "+ Cr\xE9er un tournoi"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost btn-sm",
+    disabled: true
+  }, "Voir les inscriptions"))));
 }
 
 // ── MODULE: Notifications ──
 function ModuleNotifs() {
   const [config, setConfig] = useState(() => JSON.parse(localStorage.getItem('admin_notif_config') || '{"anecdote":true,"streak":true,"defi":true,"recap":true,"boss":true}'));
-  function save() { localStorage.setItem('admin_notif_config', JSON.stringify(config)); showToast('✓ Config sauvegardée'); }
-  const NOTIFS = [
-    { key: 'anecdote', ico: '📖', lbl: 'Anecdote du jour', desc: 'Envoyée chaque matin à 9h' },
-    { key: 'streak', ico: '🔥', lbl: 'Rappel streak', desc: 'Si l\'anecdote n\'est pas lue à 20h' },
-    { key: 'defi', ico: '⚔️', lbl: 'Défi reçu', desc: 'Notification immédiate à la réception' },
-    { key: 'recap', ico: '📊', lbl: 'Recap hebdo', desc: 'Chaque vendredi à 18h' },
-    { key: 'boss', ico: '💀', lbl: 'Boss disponible', desc: 'Quand la barre XP est pleine' },
-  ];
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.2em', color: 'var(--a)', textTransform: 'uppercase', marginBottom: '.3rem' }}>🔔 PUSH</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)' }}>Notifications</div>
-      </div>
-      <div className="card">
-        <div className="card-title">Types de notifications</div>
-        {NOTIFS.map((n, i, arr) => (
-          <div key={n.key} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.75rem 0', borderBottom: i < arr.length - 1 ? '1px solid var(--b1)' : 'none' }}>
-            <span style={{ fontSize: '1.1rem', width: 28, textAlign: 'center' }}>{n.ico}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--ink)' }}>{n.lbl}</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--ink3)' }}>{n.desc}</div>
-            </div>
-            <Toggle value={config[n.key]} onChange={v => setConfig(c => ({ ...c, [n.key]: v }))} />
-          </div>
-        ))}
-        <button className="btn btn-primary" style={{ marginTop: '1.25rem' }} onClick={save}>Sauvegarder</button>
-      </div>
-      <div className="card">
-        <div className="card-title">Infrastructure push</div>
-        <div style={{ fontSize: '.78rem', color: 'var(--ink3)', lineHeight: 1.7 }}>
-          Les notifications push nécessitent un service worker + VAPID keys.<br/>
-          En prod : déployer <code>sw.js</code> + configurer Web Push API via Supabase Edge Functions.
-        </div>
-        <div style={{ display: 'flex', gap: '.5rem', marginTop: '1rem' }}>
-          <button className="btn btn-ghost btn-sm" disabled>Test envoi manuel</button>
-          <button className="btn btn-ghost btn-sm" disabled>Voir les abonnés</button>
-        </div>
-      </div>
-    </div>
-  );
+  function save() {
+    localStorage.setItem('admin_notif_config', JSON.stringify(config));
+    showToast('✓ Config sauvegardée');
+  }
+  const NOTIFS = [{
+    key: 'anecdote',
+    ico: '📖',
+    lbl: 'Anecdote du jour',
+    desc: 'Envoyée chaque matin à 9h'
+  }, {
+    key: 'streak',
+    ico: '🔥',
+    lbl: 'Rappel streak',
+    desc: 'Si l\'anecdote n\'est pas lue à 20h'
+  }, {
+    key: 'defi',
+    ico: '⚔️',
+    lbl: 'Défi reçu',
+    desc: 'Notification immédiate à la réception'
+  }, {
+    key: 'recap',
+    ico: '📊',
+    lbl: 'Recap hebdo',
+    desc: 'Chaque vendredi à 18h'
+  }, {
+    key: 'boss',
+    ico: '💀',
+    lbl: 'Boss disponible',
+    desc: 'Quand la barre XP est pleine'
+  }];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.55rem',
+      fontWeight: 700,
+      letterSpacing: '.2em',
+      color: 'var(--a)',
+      textTransform: 'uppercase',
+      marginBottom: '.3rem'
+    }
+  }, "\uD83D\uDD14 PUSH"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.4rem',
+      fontWeight: 800,
+      color: 'var(--ink)'
+    }
+  }, "Notifications")), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "Types de notifications"), NOTIFS.map((n, i, arr) => /*#__PURE__*/React.createElement("div", {
+    key: n.key,
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '.75rem',
+      padding: '.75rem 0',
+      borderBottom: i < arr.length - 1 ? '1px solid var(--b1)' : 'none'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1.1rem',
+      width: 28,
+      textAlign: 'center'
+    }
+  }, n.ico), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.82rem',
+      fontWeight: 600,
+      color: 'var(--ink)'
+    }
+  }, n.lbl), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.65rem',
+      color: 'var(--ink3)'
+    }
+  }, n.desc)), /*#__PURE__*/React.createElement(Toggle, {
+    value: config[n.key],
+    onChange: v => setConfig(c => ({
+      ...c,
+      [n.key]: v
+    }))
+  }))), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    style: {
+      marginTop: '1.25rem'
+    },
+    onClick: save
+  }, "Sauvegarder")), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-title"
+  }, "Infrastructure push"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      color: 'var(--ink3)',
+      lineHeight: 1.7
+    }
+  }, "Les notifications push n\xE9cessitent un service worker + VAPID keys.", /*#__PURE__*/React.createElement("br", null), "En prod : d\xE9ployer ", /*#__PURE__*/React.createElement("code", null, "sw.js"), " + configurer Web Push API via Supabase Edge Functions."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '.5rem',
+      marginTop: '1rem'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost btn-sm",
+    disabled: true
+  }, "Test envoi manuel"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost btn-sm",
+    disabled: true
+  }, "Voir les abonn\xE9s"))));
 }
 
 // ── LOGIN ──
-function LoginScreen({ onLogin }) {
+function LoginScreen({
+  onLogin
+}) {
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   async function login() {
-    setErr(''); setLoading(true);
+    setErr('');
+    setLoading(true);
     const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Délai dépassé, vérifie ta connexion et réessaie')), ms))]);
     try {
-      const { data, error } = await withTimeout(sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: pass }), 15000);
+      const {
+        data,
+        error
+      } = await withTimeout(sb.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: pass
+      }), 15000);
       if (error) throw error;
-      const { data: profile } = await withTimeout(sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle(), 15000);
-      if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator')) {
+      const {
+        data: profile
+      } = await withTimeout(sb.from('profiles').select('role').eq('id', data.user.id).maybeSingle(), 15000);
+      if (!profile || profile.role !== 'admin' && profile.role !== 'moderator') {
         await sb.auth.signOut();
         throw new Error('Accès refusé : rôle admin requis');
       }
       onLogin(data.user, profile);
-    } catch (e) { setErr(e.message); }
-    finally { setLoading(false); }
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setLoading(false);
+    }
   }
-  return (
-    <div className="login-wrap">
-      <div className="login-box">
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '.25rem' }}>
-            <span style={{ color: 'var(--a)' }}>•</span> La Curiosphère
-          </div>
-          <div style={{ fontSize: '.65rem', fontWeight: 700, letterSpacing: '.15em', color: 'var(--ink3)', textTransform: 'uppercase' }}>Panneau d'administration</div>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Email admin</label>
-          <input className="form-input" type="email" autoCapitalize="none" autoCorrect="off" autoComplete="email" inputMode="email" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} placeholder="admin@curiosphere.fr" />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Mot de passe</label>
-          <input className="form-input" type="password" value={pass} onChange={e => setPass(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} placeholder="••••••••" />
-        </div>
-        {err && <div style={{ fontSize: '.75rem', color: 'var(--re)', marginBottom: '.75rem', padding: '.5rem .75rem', background: 'rgba(248,113,113,.08)', borderRadius: '.5rem', border: '1px solid rgba(248,113,113,.2)' }}>{err}</div>}
-        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '.7rem' }} onClick={login} disabled={loading}>
-          {loading ? '…' : '→ Accéder au panneau'}
-        </button>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "login-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "login-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginBottom: '1.75rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.5rem',
+      fontWeight: 800,
+      color: 'var(--ink)',
+      marginBottom: '.25rem'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: 'var(--a)'
+    }
+  }, "\u2022"), " La Curiosph\xE8re"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.65rem',
+      fontWeight: 700,
+      letterSpacing: '.15em',
+      color: 'var(--ink3)',
+      textTransform: 'uppercase'
+    }
+  }, "Panneau d'administration")), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "form-label"
+  }, "Email admin"), /*#__PURE__*/React.createElement("input", {
+    className: "form-input",
+    type: "email",
+    autoCapitalize: "none",
+    autoCorrect: "off",
+    autoComplete: "email",
+    inputMode: "email",
+    spellCheck: false,
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && login(),
+    placeholder: "admin@curiosphere.fr"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "form-label"
+  }, "Mot de passe"), /*#__PURE__*/React.createElement("input", {
+    className: "form-input",
+    type: "password",
+    value: pass,
+    onChange: e => setPass(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && login(),
+    placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+  })), err && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.75rem',
+      color: 'var(--re)',
+      marginBottom: '.75rem',
+      padding: '.5rem .75rem',
+      background: 'rgba(248,113,113,.08)',
+      borderRadius: '.5rem',
+      border: '1px solid rgba(248,113,113,.2)'
+    }
+  }, err), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    style: {
+      width: '100%',
+      justifyContent: 'center',
+      padding: '.7rem'
+    },
+    onClick: login,
+    disabled: loading
+  }, loading ? '…' : '→ Accéder au panneau')));
 }
 
 // ── MAIN APP ──
-const MODULES = [
-  { id: 'dashboard', ico: '📊', lbl: 'Dashboard' },
-  { id: 'users', ico: '👥', lbl: 'Utilisateurs' },
-  { id: 'comments', ico: '💬', lbl: 'Commentaires' },
-  null,
-  { id: 'hub', ico: '⚙️', lbl: 'Hub' },
-  { id: 'content', ico: '📚', lbl: 'Contenu' },
-  { id: 'defis', ico: '⚔️', lbl: 'Défis' },
-  { id: 'notifs', ico: '🔔', lbl: 'Notifications' },
-];
-
+const MODULES = [{
+  id: 'dashboard',
+  ico: '📊',
+  lbl: 'Dashboard'
+}, {
+  id: 'users',
+  ico: '👥',
+  lbl: 'Utilisateurs'
+}, {
+  id: 'comments',
+  ico: '💬',
+  lbl: 'Commentaires'
+}, null, {
+  id: 'hub',
+  ico: '⚙️',
+  lbl: 'Hub'
+}, {
+  id: 'content',
+  ico: '📚',
+  lbl: 'Contenu'
+}, {
+  id: 'defis',
+  ico: '⚔️',
+  lbl: 'Défis'
+}, {
+  id: 'notifs',
+  ico: '🔔',
+  lbl: 'Notifications'
+}];
 function AdminApp() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -774,9 +1411,15 @@ function AdminApp() {
 
   // Check existing session
   useEffect(() => {
-    sb.auth.getSession().then(({ data: { session } }) => {
+    sb.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       if (session) {
-        sb.from('profiles').select('role, username').eq('id', session.user.id).maybeSingle().then(({ data: p }) => {
+        sb.from('profiles').select('role, username').eq('id', session.user.id).maybeSingle().then(({
+          data: p
+        }) => {
           if (p && (p.role === 'admin' || p.role === 'moderator')) {
             setUser(session.user);
             setProfile(p);
@@ -785,73 +1428,114 @@ function AdminApp() {
       }
     });
   }, []);
-
   async function logout() {
     await sb.auth.signOut();
-    setUser(null); setProfile(null);
+    setUser(null);
+    setProfile(null);
   }
-
-  if (!user) return <LoginScreen onLogin={(u, p) => { setUser(u); setProfile(p); }} />;
-
+  if (!user) return /*#__PURE__*/React.createElement(LoginScreen, {
+    onLogin: (u, p) => {
+      setUser(u);
+      setProfile(p);
+    }
+  });
   const isAdmin = profile?.role === 'admin';
   const isMod = profile?.role === 'moderator';
-
-  const ALL_MODULES = [
-    { id: 'dashboard', ico: '📊', lbl: 'Dashboard' },
-    ...(isAdmin ? [
-      { id: 'users', ico: '👥', lbl: 'Utilisateurs' },
-    ] : []),
-    { id: 'comments', ico: '💬', lbl: 'Commentaires' },
-    ...(isAdmin ? [null] : []),
-    ...(isAdmin ? [
-      { id: 'hub', ico: '⚙️', lbl: 'Hub' },
-      { id: 'content', ico: '📚', lbl: 'Contenu' },
-      { id: 'defis', ico: '⚔️', lbl: 'Défis' },
-      { id: 'notifs', ico: '🔔', lbl: 'Notifications' },
-    ] : []),
-  ];
-  const MODULE_COMPONENTS = { dashboard: ModuleDashboard, users: ModuleUsers, comments: ModuleComments, hub: ModuleHub, content: ModuleContent, defis: ModuleDefis, notifs: ModuleNotifs };
+  const ALL_MODULES = [{
+    id: 'dashboard',
+    ico: '📊',
+    lbl: 'Dashboard'
+  }, ...(isAdmin ? [{
+    id: 'users',
+    ico: '👥',
+    lbl: 'Utilisateurs'
+  }] : []), {
+    id: 'comments',
+    ico: '💬',
+    lbl: 'Commentaires'
+  }, ...(isAdmin ? [null] : []), ...(isAdmin ? [{
+    id: 'hub',
+    ico: '⚙️',
+    lbl: 'Hub'
+  }, {
+    id: 'content',
+    ico: '📚',
+    lbl: 'Contenu'
+  }, {
+    id: 'defis',
+    ico: '⚔️',
+    lbl: 'Défis'
+  }, {
+    id: 'notifs',
+    ico: '🔔',
+    lbl: 'Notifications'
+  }] : [])];
+  const MODULE_COMPONENTS = {
+    dashboard: ModuleDashboard,
+    users: ModuleUsers,
+    comments: ModuleComments,
+    hub: ModuleHub,
+    content: ModuleContent,
+    defis: ModuleDefis,
+    notifs: ModuleNotifs
+  };
   const ActiveModule = MODULE_COMPONENTS[mod] || ModuleDashboard;
-
-  return (
-    <>
-      <header className="admin-header">
-        <div className="admin-logo">
-          <div className="dot" />
-          La Curiosphère <span className="admin-badge">{isMod ? 'Modérateur' : 'Admin'}</span>
-        </div>
-        <div className="admin-user-chip">
-          <span>{profile?.username || user.email}</span>
-          <button className="admin-logout" onClick={logout}>Déconnexion</button>
-        </div>
-      </header>
-      <div className="admin-layout">
-        <aside className="admin-sidebar">
-          <div style={{ padding: '.5rem .35rem', flex: 1 }}>
-            {ALL_MODULES.map((m, i) => m === null
-              ? <div key={i} className="sidebar-sep" />
-              : <div key={m.id} className={`sidebar-item ${mod === m.id ? 'active' : ''}`} onClick={() => setMod(m.id)}>
-                  <span className="ico">{m.ico}</span>
-                  <span>{m.lbl}</span>
-                </div>
-            )}
-          </div>
-          <div style={{ borderTop: '1px solid var(--b1)', padding: '.5rem' }}>
-            <div className="sidebar-section">Liens</div>
-            <a className="sidebar-link" href="Le Curioscope v3.html" target="_blank">→ Ouvrir le proto</a>
-            {isAdmin && <a className="sidebar-link" href="https://zryrfmothjhywkklmniw.supabase.co" target="_blank">→ Supabase</a>}
-          </div>
-        </aside>
-        <main className="admin-main">
-          <ActiveModule key={mod} />
-        </main>
-      </div>
-      <div id="toast" className="toast" />
-    </>
-  );
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("header", {
+    className: "admin-header"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "admin-logo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "dot"
+  }), "La Curiosph\xE8re ", /*#__PURE__*/React.createElement("span", {
+    className: "admin-badge"
+  }, isMod ? 'Modérateur' : 'Admin')), /*#__PURE__*/React.createElement("div", {
+    className: "admin-user-chip"
+  }, /*#__PURE__*/React.createElement("span", null, profile?.username || user.email), /*#__PURE__*/React.createElement("button", {
+    className: "admin-logout",
+    onClick: logout
+  }, "D\xE9connexion"))), /*#__PURE__*/React.createElement("div", {
+    className: "admin-layout"
+  }, /*#__PURE__*/React.createElement("aside", {
+    className: "admin-sidebar"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '.5rem .35rem',
+      flex: 1
+    }
+  }, ALL_MODULES.map((m, i) => m === null ? /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "sidebar-sep"
+  }) : /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    className: `sidebar-item ${mod === m.id ? 'active' : ''}`,
+    onClick: () => setMod(m.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ico"
+  }, m.ico), /*#__PURE__*/React.createElement("span", null, m.lbl)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderTop: '1px solid var(--b1)',
+      padding: '.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-section"
+  }, "Liens"), /*#__PURE__*/React.createElement("a", {
+    className: "sidebar-link",
+    href: "Le Curioscope v3.html",
+    target: "_blank"
+  }, "\u2192 Ouvrir le proto"), isAdmin && /*#__PURE__*/React.createElement("a", {
+    className: "sidebar-link",
+    href: "https://zryrfmothjhywkklmniw.supabase.co",
+    target: "_blank"
+  }, "\u2192 Supabase"))), /*#__PURE__*/React.createElement("main", {
+    className: "admin-main"
+  }, /*#__PURE__*/React.createElement(ActiveModule, {
+    key: mod
+  }))), /*#__PURE__*/React.createElement("div", {
+    id: "toast",
+    className: "toast"
+  }));
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(<AdminApp />);
+ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(AdminApp, null));
 </script>
 </body>
 </html>
