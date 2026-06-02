@@ -1801,7 +1801,7 @@ function Header({
       } = await sb.from('friendships').select('id', {
         count: 'exact',
         head: true
-      }).eq('receiver_id', uid).eq('status', 'pending');
+      }).eq('addressee_id', uid).eq('status', 'pending');
       if (active) setReqCount(count || 0);
     }
     loadReq();
@@ -1811,7 +1811,7 @@ function Header({
         event: '*',
         schema: 'public',
         table: 'friendships',
-        filter: 'receiver_id=eq.' + uid
+        filter: 'addressee_id=eq.' + uid
       }, loadReq).subscribe();
     } catch (e) {}
     return () => {
@@ -10882,11 +10882,11 @@ function ScreenAmis() {
       const {
         data: rows,
         error
-      } = await sb.from('friendships').select('id, requester_id, receiver_id, status').or(`requester_id.eq.${myUserId},receiver_id.eq.${myUserId}`);
+      } = await sb.from('friendships').select('id, requester_id, addressee_id, status').or(`requester_id.eq.${myUserId},addressee_id.eq.${myUserId}`);
       if (error) throw error;
       const list = rows || [];
       // Profils des "autres" en une seule requête (la FK pointe vers auth.users, pas profiles : on joint nous-mêmes)
-      const otherIds = [...new Set(list.map(r => r.requester_id === myUserId ? r.receiver_id : r.requester_id))];
+      const otherIds = [...new Set(list.map(r => r.requester_id === myUserId ? r.addressee_id : r.requester_id))];
       let profMap = {};
       if (otherIds.length) {
         const {
@@ -10904,7 +10904,7 @@ function ScreenAmis() {
         outReqs = [];
       list.forEach(r => {
         const isMe = r.requester_id === myUserId;
-        const otherId = isMe ? r.receiver_id : r.requester_id;
+        const otherId = isMe ? r.addressee_id : r.requester_id;
         const op = profMap[otherId] || {};
         const item = {
           id: r.id,
@@ -10956,7 +10956,7 @@ function ScreenAmis() {
         error
       } = await sb.from('friendships').insert({
         requester_id: myUserId,
-        receiver_id: toUserId,
+        addressee_id: toUserId,
         status: 'pending'
       });
       if (error) throw error;
