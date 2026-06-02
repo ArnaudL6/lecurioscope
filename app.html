@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="preconnect" href="https://unpkg.com" crossorigin/>
+<link rel="preconnect" href="https://zryrfmothjhywkklmniw.supabase.co" crossorigin/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <title>La Curiosphère</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1262,7 +1267,7 @@ function App() {
     for (let attempt = 0; attempt < 2; attempt++) {
       fetchFailed = false;
       try {
-        const res = await withTimeout(sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), 8000);
+        const res = await withTimeout(sb.from('profiles').select('*').eq('id', user.id).maybeSingle(), 5000);
         if (res?.error) fetchFailed = true;
         p = res?.data || null;
         if (!fetchFailed) break;
@@ -1387,7 +1392,7 @@ function App() {
     (async () => {
       let session = null;
       try {
-        const r = await withTimeout(sb.auth.getSession(), 6000);
+        const r = await withTimeout(sb.auth.getSession(), 3500);
         if (!r.__timeout) session = r?.data?.session || null;else console.warn('getSession timeout');
       } catch (e) {
         console.error('getSession:', e);
@@ -1395,8 +1400,8 @@ function App() {
       try {
         if (session?.user) {
           setAuthUser(session.user);
-          await loadProfile(session.user);
           finish();
+          loadProfile(session.user);
         } else if (!hasStoredToken) {
           setAuthUser(null);
           finish();
@@ -1416,18 +1421,20 @@ function App() {
       try {
         if (session?.user) {
           setAuthUser(session.user);
-          await loadProfile(session.user);
+          finish();
+          loadProfile(session.user);
         } else {
           setAuthUser(null);
           setProfile(null);
+          finish();
         }
       } catch (e) {
         console.error('auth change:', e);
+        finish();
       }
-      finish();
     });
     // Garde-fou : ne jamais rester bloqué sur le loader
-    const guard = setTimeout(finish, 9000);
+    const guard = setTimeout(finish, 6000);
     return () => {
       subscription.unsubscribe();
       clearTimeout(guard);
@@ -1625,23 +1632,7 @@ function App() {
     }
   }, "\u2190 Retour \xE0 la connexion")), !authLoading && !denied && !authUser && /*#__PURE__*/React.createElement(ScreenOnboarding, {
     onAuth: setAuthUser
-  }), !authLoading && !denied && authUser && !profile && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'fixed',
-      inset: 0,
-      background: 'var(--bg)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 9999
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "logo-dot",
-    style: {
-      width: 14,
-      height: 14
-    }
-  })), !authLoading && !denied && authUser && profile && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), !authLoading && !denied && authUser && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "aurora"
   }), /*#__PURE__*/React.createElement(Header, {
     profile: profile,
