@@ -1,11 +1,13 @@
-# Routes SPA → app (Cloudflare Pages sert app.html sur /app automatiquement)
-# ⚠️ NE JAMAIS pointer vers *.html en cible : Pages redirige .html → URL propre = boucle infinie
-/le-saviez-vous     /app     200
-/enigme             /app     200
-/quiz               /app     200
-/duels              /app     200
-/ligue              /app     200
-/vs100              /app     200
-/mystere            /app     200
-/profile            /app     200
-/admin              /admin   200
+# www → canonical (force www.lecurioscope.fr)
+https://lecurioscope.fr/*  https://www.lecurioscope.fr/:splat  301
+
+# SPA routing — toutes les routes servent index.html (Cloudflare Pages)
+/le-saviez-vous     /   200
+/enigme             /   200
+/quiz               /   200
+/duels              /   200
+/ligue              /   200
+/vs100              /   200
+/mystere            /   200
+/profile            /   200
+/profile.html       /   200
