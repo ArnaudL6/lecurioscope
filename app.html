@@ -10935,16 +10935,17 @@ function ScreenAmis() {
       const {
         data,
         error
-      } = await sb.from('profiles').select('*').ilike('username', `%${q}%`).neq('id', myUserId || '').limit(8);
+      } = await sb.from('profiles').select('*').ilike('username', `%${q}%`).limit(12);
       if (error) {
         console.warn('searchFriends error:', error);
         alert('Recherche impossible : ' + error.message);
       }
-      setFriendResults((data || []).map(r => ({
-        id: r.id,
-        username: r.username,
-        xp: r.xp ?? r.total_xp ?? 0
-      })));
+      const mapped = (data || []).filter(d => d.id !== myUserId).slice(0, 8).map(d => ({
+        id: d.id,
+        username: d.username,
+        xp: d.xp ?? d.total_xp ?? 0
+      }));
+      setFriendResults(mapped);
     } catch (e) {
       console.warn('searchFriends:', e);
     }
